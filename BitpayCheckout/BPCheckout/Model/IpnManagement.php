@@ -1,6 +1,7 @@
 <?php
 
 namespace BitpayCheckout\BPCheckout\Model;
+
 use Magento\Sales\Model\Order;
 
 class IpnManagement implements \BitpayCheckout\BPCheckout\Api\IpnManagementInterface
@@ -10,9 +11,13 @@ class IpnManagement implements \BitpayCheckout\BPCheckout\Api\IpnManagementInter
      * {@inheritdoc}
      */
     public function __construct(
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig, \Magento\Framework\App\ResponseFactory $responseFactory,
-        \Magento\Framework\UrlInterface $url
+        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
+        \Magento\Framework\App\ResponseFactory $responseFactory,
+        \Magento\Framework\UrlInterface $url,
+        \Magento\Framework\Module\ModuleListInterface $moduleList
     ) {
+        $this->_moduleList = $moduleList;
+
         $this->_scopeConfig = $scopeConfig;
         $this->_responseFactory = $responseFactory;
         $this->_url = $url;
@@ -73,7 +78,7 @@ class IpnManagement implements \BitpayCheckout\BPCheckout\Api\IpnManagementInter
             $params = (new \stdClass());
 
             $params->invoiceID = $order_invoice;
-            $params->extension_version = '1.0.0.0';
+            $params->extension_version = $this->getExtensionVersion();
 
             $item = (new \Item($config, $params));
             $invoice = (new \Invoice($item));
@@ -133,5 +138,13 @@ class IpnManagement implements \BitpayCheckout\BPCheckout\Api\IpnManagementInter
 
         die();
 
+    }
+    public function getExtensionVersion()
+    {
+        $moduleCode = 'MagePsycho_Easypathhints'; #Edit here with your Namespace_Module
+        $moduleInfo = $this->_moduleList->getOne($moduleCode);
+        return $moduleInfo['setup_version'];
+
+        return 'BitPay Checkout - ' . $moduleInfo['setup_version'];
     }
 }

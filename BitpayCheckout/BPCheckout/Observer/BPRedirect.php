@@ -7,8 +7,10 @@ class BPRedirect implements ObserverInterface
 {
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig, \Magento\Framework\App\ResponseFactory $responseFactory,
-        \Magento\Framework\UrlInterface $url
+        \Magento\Framework\UrlInterface $url,
+        \Magento\Framework\Module\ModuleListInterface $moduleList
     ) {
+        $this->_moduleList = $moduleList;
         $this->_scopeConfig = $scopeConfig;
         $this->_responseFactory = $responseFactory;
         $this->_url = $url;
@@ -114,12 +116,9 @@ class BPRedirect implements ObserverInterface
         $connection = $resource->getConnection();
         $table_name = $resource->getTableName('bitpay_transactions');
 
-       $sql = "INSERT INTO $table_name (order_id,transaction_id,transaction_status) VALUES ('" . $order_id . "','" . $invoiceID . "','new')";
+        $sql = "INSERT INTO $table_name (order_id,transaction_id,transaction_status) VALUES ('" . $order_id . "','" . $invoiceID . "','new')";
 
         $connection->query($sql);
-
-
-
 
         switch ($modal) {
             case true:
@@ -134,5 +133,13 @@ class BPRedirect implements ObserverInterface
         }
 
     } //end execute function
+    public function getExtensionVersion()
+    {
+        $moduleCode = 'MagePsycho_Easypathhints'; #Edit here with your Namespace_Module
+        $moduleInfo = $this->_moduleList->getOne($moduleCode);
+        return $moduleInfo['setup_version'];
+
+        return 'BitPay Checkout - ' . $moduleInfo['setup_version'];
+    }
 
 }
