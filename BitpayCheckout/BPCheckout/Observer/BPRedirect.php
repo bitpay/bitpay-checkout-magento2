@@ -43,8 +43,9 @@ class BPRedirect implements ObserverInterface
 
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
-        $path = __DIR__ . '/';
+        $path = $_SERVER['DOCUMENT_ROOT'] . '/app/code/BitpayCheckout/BPCheckout/';
 
+        #include our custom BP2 classes
         require_once $path . 'classes/Config.php';
         require_once $path . 'classes/Client.php';
         require_once $path . 'classes/Item.php';
@@ -68,7 +69,7 @@ class BPRedirect implements ObserverInterface
 
         $config = (new \Configuration($bitpay_token, $env));
 
-//create an item, should be passed as an object'
+        //create an item, should be passed as an object'
         $params = (new \stdClass());
         $params->extension_version = '1.0.0.';
         $params->price = $order['base_grand_total'];
@@ -91,11 +92,12 @@ class BPRedirect implements ObserverInterface
 
         $params->redirectURL = $this->getBaseUrl() . 'sales/order/view/order_id/' . $order_id . '/';
         #ipn
-        #$params->notificationURL = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB, true) . 'bitpayipn/index/bitpayipn';
+        $params->notificationURL = $this->getBaseUrl() . 'rest/V1/bitpaycheckout-bpcheckout/ipn';
 
-        #$cartFix = Mage::getBaseUrl() . 'cartfix/index/renewcart/orderid/' . $orderId;
+        #cartfix for modal
+        $cartFix = $this->getBaseUrl() . 'rest/V1/bitpaycheckout-bpcheckout/cartfix/' . $order_id;
+
         $item = (new \Item($config, $params));
-
         $invoice = (new \Invoice($item));
 
         //this creates the invoice with all of the config params from the item
@@ -104,6 +106,21 @@ class BPRedirect implements ObserverInterface
 
         //now we have to append the invoice transaction id for the callback verification
         $invoiceID = $invoiceData->data->id;
+
+        #insert into the database
+        #database
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of object manager
+        $resource = $objectManager->get('Magento\Framework\App\ResourceConnection');
+        $connection = $resource->getConnection();
+        $table_name = $resource->getTableName('bitpay_transactions');
+
+       $sql = "INSERT INTO $table_name (order_id,transaction_id,transaction_status) VALUES ('" . $order_id . "','" . $invoiceID . "','new')";
+
+        $connection->query($sql);
+
+
+
+
         switch ($modal) {
             case true:
             default:
@@ -112,10 +129,6 @@ class BPRedirect implements ObserverInterface
 
                 $this->_responseFactory->create()->setRedirect($invoice->getInvoiceURL())->sendResponse();
                 return $this;
-
-                #return $resultRedirect->setPath($invoice->getInvoiceURL());
-
-                #return;
 
                 break;
         }
