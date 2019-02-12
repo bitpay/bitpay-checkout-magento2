@@ -93,16 +93,16 @@ class IpnManagement implements \BitpayCheckout\BPCheckout\Api\IpnManagementInter
             switch ($invoice_status) {
                 case 'complete':
 
-                    $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> processing has been completed.',
-                        Order::STATE_COMPLETE);
+                    $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> processing has been completed.');
+                    $order->setState(Order::STATE_COMPLETE)->setStatus(Order::STATE_COMPLETE);
                     $order->save();
                     return true;
                     break;
 
                 case 'confirmed':
 
-                    $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> is now processing.',
-                        Order::STATE_PROCESSING);
+                    $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> is now processing.');
+                    $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
                     $order->save();
                     return true;
                     break;
@@ -110,25 +110,25 @@ class IpnManagement implements \BitpayCheckout\BPCheckout\Api\IpnManagementInter
                 case 'paid':
                 default:
 
-                    $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> is now processing.',
-                        Order::STATE_PROCESSING);
-
+                    $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> is now processing.');
+                    $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
+                    $order->save();
                     return true;
 
                     break;
 
                 case 'invalid':
 
-                    $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> has become invalid because of network congestion.  Order will automatically update when the status changes.',
-                        Order::STATE_PENDING_PAYMENT);
+                    $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> has become invalid because of network congestion.  Order will automatically update when the status changes.');
+                    $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT);
                     $order->save();
                     return true;
                     break;
 
                 case 'expired':
 
-                    $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> has expired, order has been canceled.',
-                        Order::STATE_CANCELED);
+                    $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> has expired, order has been canceled.');
+                    $order->setState(Order::STATE_CANCELED)->setStatus(Order::STATE_CANCELED);
                     $order->save();
                     return true;
                     break;
