@@ -122,20 +122,27 @@ class BPRedirect implements ObserverInterface
 
         switch ($modal) {
             case true:
-            default:
-                break;
+            $modal_obj =  (new \stdClass());
+            $modal_obj->redirectURL = $params->redirectURL;
+            $modal_obj->notificationURL = $params->notificationURL;
+            $modal_obj->cartFix = $cartFix;
+            $modal_obj->invoiceID = $invoiceID;
+            setcookie("invoicedata",json_encode($modal_obj),time() + (86400 * 30), "/");
+            $this->_responseFactory->create()->setRedirect($params->redirectURL.'?modal')->sendResponse();
+                return $this;
+            break;
             case false:
-
+            default:
                 $this->_responseFactory->create()->setRedirect($invoice->getInvoiceURL())->sendResponse();
                 return $this;
 
-                break;
+            break;
         }
 
     } //end execute function
     public function getExtensionVersion()
     {
-        $moduleCode = 'MagePsycho_Easypathhints'; #Edit here with your Namespace_Module
+        $moduleCode = 'BitpayCheckout_BPCheckout'; #Edit here with your Namespace_Module
         $moduleInfo = $this->_moduleList->getOne($moduleCode);
         return $moduleInfo['setup_version'];
 

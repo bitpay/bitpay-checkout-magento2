@@ -40,9 +40,9 @@ class IpnManagement implements \BitpayCheckout\BPCheckout\Api\IpnManagementInter
         return $order;
 
     }
-    public function postIpn($param)
+    public function postIpn()
     {
-
+      
         #database
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of object manager
         $resource = $objectManager->get('Magento\Framework\App\ResourceConnection');
@@ -141,7 +141,7 @@ class IpnManagement implements \BitpayCheckout\BPCheckout\Api\IpnManagementInter
     }
     public function getExtensionVersion()
     {
-        $moduleCode = 'MagePsycho_Easypathhints'; #Edit here with your Namespace_Module
+        $moduleCode = 'BitpayCheckout_BPCheckout'; #Edit here with your Namespace_Module
         $moduleInfo = $this->_moduleList->getOne($moduleCode);
         return $moduleInfo['setup_version'];
 

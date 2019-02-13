@@ -1,14 +1,15 @@
 <?php
 
+
 namespace BitpayCheckout\BPCheckout\Api;
 
-interface IpnManagementInterface
+interface ModalManagementInterface
 {
 
     /**
-     * POST for ipn api
+     * POST for modal api
      * @param string $param
      * @return string
      */
-    public function postIpn($param);
+    public function postModal();
 }

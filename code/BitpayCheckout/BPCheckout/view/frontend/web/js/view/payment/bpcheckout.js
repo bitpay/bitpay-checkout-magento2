@@ -14,12 +14,10 @@ define(
         rendererList
     ) {
         'use strict';
-        rendererList.push(
-            {
-                type: 'bpcheckout',
-                component: 'BitpayCheckout_BPCheckout/js/view/payment/method-renderer/bpcheckout-method'
-            }
-        );
+        rendererList.push({
+            type: 'bpcheckout',
+            component: 'BitpayCheckout_BPCheckout/js/view/payment/method-renderer/bpcheckout-method'
+        });
         /** Add view logic here if needed */
         return Component.extend({});
     }
