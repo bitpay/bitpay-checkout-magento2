@@ -6,12 +6,6 @@
 			<resource ref="anonymous"/>
 		</resources>
 	</route>
-	<route method="POST" url="/V1/bitpaycheckout-bpcheckout/cartfix">
-		<service class="BitpayCheckout\BPCheckout\Api\CartfixManagementInterface" method="postCartfix"/>
-		<resources>
-			<resource ref="anonymous"/>
-		</resources>
-	</route>
 	<route method="POST" url="/V1/bitpaycheckout-bpcheckout/modal">
 		<service class="BitpayCheckout\BPCheckout\Api\ModalManagementInterface" method="postModal"/>
 		<resources>

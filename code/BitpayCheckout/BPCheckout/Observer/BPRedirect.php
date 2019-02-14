@@ -10,10 +10,10 @@ class BPRedirect implements ObserverInterface
         \Magento\Framework\UrlInterface $url,
         \Magento\Framework\Module\ModuleListInterface $moduleList
     ) {
-        $this->_moduleList = $moduleList;
-        $this->_scopeConfig = $scopeConfig;
-        $this->_responseFactory = $responseFactory;
-        $this->_url = $url;
+            $this->_moduleList      = $moduleList;
+            $this->_scopeConfig     = $scopeConfig;
+            $this->_responseFactory = $responseFactory;
+            $this->_url             = $url;
 
     }
 
@@ -29,8 +29,7 @@ class BPRedirect implements ObserverInterface
     {
 
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $order = $objectManager->create('Magento\Sales\Api\Data\OrderInterface')->load($_order_id);
-
+        $order         = $objectManager->create('Magento\Sales\Api\Data\OrderInterface')->load($_order_id);
         return $order;
 
     }
@@ -38,7 +37,7 @@ class BPRedirect implements ObserverInterface
     public function getBaseUrl()
     {
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
+        $storeManager  = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
         return $storeManager->getStore()->getBaseUrl();
 
     }
@@ -54,39 +53,39 @@ class BPRedirect implements ObserverInterface
         require_once $path . 'classes/Invoice.php';
 
         $order_ids = $observer->getEvent()->getOrderIds();
-        $order_id = $order_ids[0];
-        $order = $this->getOrder($order_id);
+        $order_id  = $order_ids[0];
+        $order     = $this->getOrder($order_id);
         #get the environment
-        $env = $this->getStoreConfig('payment/bpcheckout/bitpay_endpoint');
+        $env          = $this->getStoreConfig('payment/bpcheckout/bitpay_endpoint');
         $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_devtoken');
-        if ($env == 'prod'):
+        if ($env == 'prod'): 
             $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_prodtoken');
         endif;
 
         #get the ux type
         $modal = false;
-        if ($this->getStoreConfig('payment/bpcheckout/bitpay_ux') == 'modal'):
+        if ($this->getStoreConfig('payment/bpcheckout/bitpay_ux') == 'modal'): 
             $modal = true;
         endif;
 
         $config = (new \Configuration($bitpay_token, $env));
 
         //create an item, should be passed as an object'
-        $params = (new \stdClass());
+        $params                    = (new \stdClass());
         $params->extension_version = '1.0.0.';
-        $params->price = $order['base_grand_total'];
-        $params->currency = $order['base_currency_code']; //set as needed
+        $params->price             = $order['base_grand_total'];
+        $params->currency          = $order['base_currency_code'];  //set as needed
 
         $bitpay_currency = $this->getStoreConfig('payment/bpcheckout/bitpay_currency');
         switch ($bitpay_currency) {
-            default:
-            case 1:
+                                     default: 
+                                case 1      : 
                 $params->buyerSelectedTransactionCurrency = 1;
                 break;
-            case 'BTC':
+            case 'BTC': 
                 $params->buyerSelectedTransactionCurrency = 'BTC';
                 break;
-            case 'BCH':
+            case 'BCH': 
                 $params->buyerSelectedTransactionCurrency = 'BCH';
                 break;
         }
@@ -97,9 +96,9 @@ class BPRedirect implements ObserverInterface
         $params->notificationURL = $this->getBaseUrl() . 'rest/V1/bitpaycheckout-bpcheckout/ipn';
 
         #cartfix for modal
-        $cartFix = $this->getBaseUrl() . 'rest/V1/bitpaycheckout-bpcheckout/cartfix/' . $order_id;
+        $params->cartFix = $this->getBaseUrl() . 'cartfix/cartfix?order_id='.$order_id;
 
-        $item = (new \Item($config, $params));
+        $item    = (new \Item($config, $params));
         $invoice = (new \Invoice($item));
 
         //this creates the invoice with all of the config params from the item
@@ -111,28 +110,28 @@ class BPRedirect implements ObserverInterface
 
         #insert into the database
         #database
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of object manager
-        $resource = $objectManager->get('Magento\Framework\App\ResourceConnection');
-        $connection = $resource->getConnection();
-        $table_name = $resource->getTableName('bitpay_transactions');
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();              // Instance of object manager
+        $resource      = $objectManager->get('Magento\Framework\App\ResourceConnection');
+        $connection    = $resource->getConnection();
+        $table_name    = $resource->getTableName('bitpay_transactions');
 
         $sql = "INSERT INTO $table_name (order_id,transaction_id,transaction_status) VALUES ('" . $order_id . "','" . $invoiceID . "','new')";
 
         $connection->query($sql);
-
+        error_log(print_r($params,true));
         switch ($modal) {
-            case true:
-            $modal_obj =  (new \stdClass());
-            $modal_obj->redirectURL = $params->redirectURL;
+            case true: 
+            $modal_obj                  = (new \stdClass());
+            $modal_obj->redirectURL     = $params->redirectURL;
             $modal_obj->notificationURL = $params->notificationURL;
-            $modal_obj->cartFix = $cartFix;
-            $modal_obj->invoiceID = $invoiceID;
+            $modal_obj->cartFix         = $params->cartFix;
+            $modal_obj->invoiceID       = $invoiceID;
             setcookie("invoicedata",json_encode($modal_obj),time() + (86400 * 30), "/");
             $this->_responseFactory->create()->setRedirect($params->redirectURL.'?modal')->sendResponse();
                 return $this;
             break;
-            case false:
-            default:
+            case false  : 
+                 default: 
                 $this->_responseFactory->create()->setRedirect($invoice->getInvoiceURL())->sendResponse();
                 return $this;
 
