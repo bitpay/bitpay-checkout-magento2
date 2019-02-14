@@ -16,9 +16,9 @@ $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
 
 
 
-if($_order->getId() && isset($_GET['modal']) && isset($_COOKIE['invoicedata'])):
+if($_order->getId() && isset($_GET['modal']) && isset($_COOKIE['invoicedata'])): 
 
-$env = $objectManager->get('Magento\Framework\App\Config\ScopeConfigInterface')->getValue('payment/bpcheckout/bitpay_endpoint');
+$env         = $objectManager->get('Magento\Framework\App\Config\ScopeConfigInterface')->getValue('payment/bpcheckout/bitpay_endpoint');
 $invoiceData = $_COOKIE['invoicedata'];
 #error_log(print_r(json_decode($invoiceData),true));
 #delete the cookie, comment to leave and test on refresh
@@ -36,36 +36,36 @@ hideOrder();
 <?php endif;?>
 <!----END BITPAYCHECKOUT--->
 
-<div class="order-details-items ordered">
+<div class = "order-details-items ordered">
   
 
-    <div class="order-title">
-        <strong><?= /* @escapeNotVerified */ __('Items Ordered') ?></strong>
-        <?php if ($_order->getTracksCollection()->count()) : ?>
-            <?= $block->getChildHtml('tracking-info-link') ?>
+    <div class      = "order-title">
+         <strong><? = /* @escapeNotVerified */ __('Items Ordered') ?></strong>
+        <?php if ($_order->getTracksCollection()->count()): ?>
+            <? = $block->getChildHtml('tracking-info-link') ?>
         <?php endif; ?>
     </div>
 
-    <?= $block->getChildHtml('order_items') ?>
+    <? = $block->getChildHtml('order_items') ?>
 
     <?php if ($this->helper('Magento\GiftMessage\Helper\Message')->isMessagesAllowed('order', $_order) && $_order->getGiftMessageId()): ?>
-    <div class="block block-order-details-gift-message">
-        <div class="block-title"><strong><?= /* @escapeNotVerified */ __('Gift Message for This Order') ?></strong></div>
-        <?php $_giftMessage = $this->helper('Magento\GiftMessage\Helper\Message')->getGiftMessageForEntity($_order); ?>
-        <div class="block-content">
-            <dl class="item-options">
-                <dt class="item-sender"><strong class="label"><?= /* @escapeNotVerified */ __('From') ?></strong><?= $block->escapeHtml($_giftMessage->getSender()) ?></dt>
-                <dt class="item-recipient"><strong class="label"><?= /* @escapeNotVerified */ __('To') ?></strong><?= $block->escapeHtml($_giftMessage->getRecipient()) ?></dt>
-                <dd class="item-message"><?= /* @escapeNotVerified */ $this->helper('Magento\GiftMessage\Helper\Message')->getEscapedGiftMessage($_order) ?></dd>
+    <div  class         = "block block-order-details-gift-message">
+    <div  class         = "block-title"><strong><?       = /* @escapeNotVerified */ __('Gift Message for This Order') ?></strong></div>
+    <?php $_giftMessage = $this->helper('Magento\GiftMessage\Helper\Message')->getGiftMessageForEntity($_order); ?>
+    <div  class         = "block-content">
+    <dl   class         = "item-options">
+    <dt   class         = "item-sender"><strong class    = "label"><? = /* @escapeNotVerified */ __('From') ?></strong><? = $block->escapeHtml($_giftMessage->getSender()) ?></dt>
+    <dt   class         = "item-recipient"><strong class = "label"><? = /* @escapeNotVerified */ __('To') ?></strong><?   = $block->escapeHtml($_giftMessage->getRecipient()) ?></dt>
+    <dd   class         = "item-message"><?              = /* @escapeNotVerified */ $this->helper('Magento\GiftMessage\Helper\Message')->getEscapedGiftMessage($_order) ?></dd>
             </dl>
         </div>
     </div>
     <?php endif; ?>
 
-    <div class="actions-toolbar">
-        <div class="secondary">
-            <a class="action back" href="<?= /* @escapeNotVerified */ $block->getBackUrl() ?>">
-                <span><?= /* @escapeNotVerified */ $block->getBackTitle() ?></span>
+    <div class    = "actions-toolbar">
+    <div class    = "secondary">
+    <a   class    = "action back" href = "<?= /* @escapeNotVerified */ $block->getBackUrl() ?>">
+         <span><? = /* @escapeNotVerified */ $block->getBackTitle() ?></span>
             </a>
         </div>
     </div>

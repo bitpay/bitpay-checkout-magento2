@@ -1,6 +1,6 @@
 <?php
 
-#host/cartfix/cartfix?order_id=order_id
+#host/cartfix/cartfix?order_id = order_id
 namespace BitpayCheckout\BPCheckout\Controller\Cartfix;
 
 class Index extends \Magento\Framework\App\Action\Action
@@ -20,7 +20,7 @@ class Index extends \Magento\Framework\App\Action\Action
         #\Magento\Framework\App\Response\RedirectInterface $redirect
     ) {
         $this->resultPageFactory = $resultPageFactory;
-        parent::__construct($context);
+        parent:: __construct($context);
     }
 
     /**
