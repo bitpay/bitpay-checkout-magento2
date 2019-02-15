@@ -25,13 +25,20 @@ $invoiceData = $_COOKIE['invoicedata'];
 setcookie("invoicedata", '', time() - 3600,"/");
 
 ?>
+"></script>
 <script type = "text/javascript">
+
 function hideOrder(){
+
     jQuery(".columns").hide()
     showModal('<?php echo $env;?>','<?php echo $invoiceData;?>')
 
 }
-hideOrder();
+setTimeout(function () {
+   hideOrder();
+
+    1000);
+
 </script>
 <?php endif;?>
 <!----END BITPAYCHECKOUT--->
