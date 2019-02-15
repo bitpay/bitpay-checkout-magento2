@@ -15,7 +15,7 @@ This version requires the following
 ```
 php bin/magento setup:upgrade
 php bin/magento module:enable BitpayCheckout_BPCheckout
-php bin/magento setup:static-content:deploy
+php bin/magento setup:static-content:deploy -f
 ```
 
 * Flush your Magento2 Caches
