@@ -3,7 +3,7 @@
 class Invoice { 
 
    function __construct($item) {
-      $this->item =$item;
+      $this->item = $item;
      
     
 }
@@ -26,10 +26,10 @@ function createInvoice(){
    $post_fields = json_encode($this->item->item_params);
   
    
-   $pluginInfo = $this->item->item_params->extension_version;
-   $request_headers = array();
-   $request_headers[] = 'X-BitPay-Plugin-Info: '. $pluginInfo;
-   $request_headers[] = 'Content-Type: application/json';
+                    $pluginInfo      = $this->item->item_params->extension_version;
+                    $request_headers = array();
+   $request_headers[]                = 'X-BitPay-Plugin-Info: '. $pluginInfo;
+   $request_headers[]                = 'Content-Type: application/json';
   
    $ch = curl_init();
    curl_setopt($ch, CURLOPT_URL, 'https://'.$this->item->item_params->invoice_endpoint);
@@ -40,8 +40,13 @@ function createInvoice(){
    $result = curl_exec($ch);
 
    #if the currency was set for BTC or BCH, do another call to update this invoice id
-   if($this->item->item_params->buyerSelectedTransactionCurrency != 1):
+   if($this->item->item_params->buyerSelectedTransactionCurrency != 1): 
       $this->updateBuyerCurrency($result,$this->item->item_params->buyerSelectedTransactionCurrency);
+   endif;
+
+    #update buyers email
+   if (isset($this->item->item_params->buyers_email)): 
+      $this->updateBuyersEmail($result, $this->item->item_params->buyers_email);
    endif;
 
 
@@ -65,11 +70,11 @@ function getInvoiceURL(){
 function updateBuyersEmail($invoice_result,$buyers_email){
    $invoice_result = json_decode($invoice_result);
   
-   $update_fields = new stdClass();
-   $update_fields->token = $this->item->item_params->token;
+   $update_fields                     = new stdClass();
+   $update_fields->token              = $this->item->item_params->token;
    $update_fields->buyerProvidedEmail = $buyers_email;
-   $update_fields->invoiceId = $invoice_result->data->id;
-   $update_fields = json_encode($update_fields);
+   $update_fields->invoiceId          = $invoice_result->data->id;
+   $update_fields                     = json_encode($update_fields);
    
    $ch = curl_init();
    curl_setopt($ch, CURLOPT_URL, 'https://'.$this->item->item_params->buyers_email_endpoint);
@@ -86,11 +91,11 @@ function updateBuyersEmail($invoice_result,$buyers_email){
 function updateBuyerCurrency($invoice_result,$buyer_currency){
    $invoice_result = json_decode($invoice_result);
   
-   $update_fields = new stdClass();
-   $update_fields->token = $this->item->item_params->token;
+   $update_fields                                   = new stdClass();
+   $update_fields->token                            = $this->item->item_params->token;
    $update_fields->buyerSelectedTransactionCurrency = $buyer_currency;
-   $update_fields->invoiceId = $invoice_result->data->id;
-   $update_fields = json_encode($update_fields);
+   $update_fields->invoiceId                        = $invoice_result->data->id;
+   $update_fields                                   = json_encode($update_fields);
 
    $ch = curl_init();
    curl_setopt($ch, CURLOPT_URL, 'https://'.$this->item->item_params->buyer_transaction_endpoint);

@@ -45,6 +45,7 @@ class BPRedirect implements ObserverInterface
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
         $path = $_SERVER['DOCUMENT_ROOT'] . '/app/code/BitpayCheckout/BPCheckout/';
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();              // Instance of object manager
 
         #include our custom BP2 classes
         require_once $path . 'classes/Config.php';
@@ -78,8 +79,8 @@ class BPRedirect implements ObserverInterface
 
         $bitpay_currency = $this->getStoreConfig('payment/bpcheckout/bitpay_currency');
         switch ($bitpay_currency) {
-                                          default: 
-                                     case 1      : 
+            default: 
+            case 1: 
                 $params->buyerSelectedTransactionCurrency = 1;
                 break;
             case 'BTC': 
@@ -89,6 +90,17 @@ class BPRedirect implements ObserverInterface
                 $params->buyerSelectedTransactionCurrency = 'BCH';
                 break;
         }
+
+        #buyer email
+        $bitpay_capture_email = $this->getStoreConfig('payment/bpcheckout/bitpay_capture_email');
+        if($bitpay_capture_email == 1):
+            $customerSession = $objectManager->create('Magento\Customer\Model\Session');
+            if ($customerSession->isLoggedIn()) {
+                $params->buyers_email = $customerSession->getCustomer()->getEmail();
+            }
+        endif;
+
+
         $params->orderId = trim($order_id);
 
         $params->redirectURL = $this->getBaseUrl() . 'sales/order/view/order_id/' . $order_id . '/';
@@ -110,7 +122,7 @@ class BPRedirect implements ObserverInterface
 
         #insert into the database
         #database
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();              // Instance of object manager
+       
         $resource      = $objectManager->get('Magento\Framework\App\ResourceConnection');
         $connection    = $resource->getConnection();
         $table_name    = $resource->getTableName('bitpay_transactions');
