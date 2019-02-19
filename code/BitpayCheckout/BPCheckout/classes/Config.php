@@ -13,15 +13,6 @@ class Configuration {
     endif;
 }
 
-function setConfig( $apiToken, $network = null) {
-    $this->apiToken = $apiToken;
-    if($network == 'test' || $network == null):
-        $this->network = $this->getApiHostDev();
-    else:
-        $this->network = $this->getApiHostProd();
-    endif;
-}
-
 function getAPIToken() {
     return $this->apiToken;
 }

@@ -13,9 +13,9 @@ class Item {
 
 
 function getItem(){
-   $this->item_params->invoice_endpoint = $this->endpoint.'/invoices';
-   $this->item_params->buyer_transaction_endpoint = $this->endpoint.'/invoiceData/setBuyerSelectedTransactionCurrency';
-   $this->item_params->buyers_email_endpoint = $this->endpoint.'/invoiceData/setBuyerProvidedEmail';
+   $this->invoice_endpoint = $this->endpoint.'/invoices';
+   $this->buyer_transaction_endpoint = $this->endpoint.'/invoiceData/setBuyerSelectedTransactionCurrency';
+  # $this->item_params->buyers_email_endpoint = $this->endpoint.'/invoiceData/setBuyerProvidedEmail';
 
    $this->item_params->token = $this->token;
    return ($this->item_params);
