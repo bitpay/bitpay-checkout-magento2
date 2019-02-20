@@ -10,7 +10,7 @@
         <section id="payment">
             <group id="bpcheckout" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1"
                 showInStore="1">
-                <label>BitPay Checkout</label>
+                <label>BitPay</label>
                 <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1"
                     showInStore="0">
                     <label>Enabled</label>
@@ -44,11 +44,12 @@
                     <source_model>BitpayCheckout\BPCheckout\Model\Config\Source\Environment</source_model>
                 </field>
 
-                <field id="bitpay_currency" translate="label" type="select" sortOrder="10" showInDefault="1"
+                <field id="bitpay_currency" translate="label" type="multiselect" sortOrder="10" showInDefault="1"
                     showInWebsite="1" showInStore="1">
                     <label>Accepted Cryptocurrencies</label>
-                    <comment><![CDATA[Bitcoin (BTC), Bitcoin Cash (BCH), or All.]]></comment>
+                    <comment><![CDATA[Bitcoin (BTC) or Bitcoin Cash (BCH).]]></comment>
                      <source_model>BitpayCheckout\BPCheckout\Model\Config\Source\Crypto</source_model>
+                     <can_be_empty>1</can_be_empty>
                 </field>
 
                 <field id="bitpay_ux" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -59,7 +60,7 @@
 
                 <field id="bitpay_capture_email" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Auto-Capture Email</label>
-                    <comment><![CDATA[Should BitPay Checkout try to auto-add the client\'s email address?<br>If <b>Yes</b>, the client will not be able to change the email address on the BitPay Checkout invoice.<br>If <b>No</b>, they will be able to add their own email address when paying the invoice.]]></comment>
+                    <comment><![CDATA[Should BitPay try to auto-add the client\'s email address?<br>If <b>Yes</b>, the client will not be able to change the email address on the BitPay invoice.<br>If <b>No</b>, they will be able to add their own email address when paying the invoice.]]></comment>
                     <source_model>BitpayCheckout\BPCheckout\Model\Config\Source\Capture</source_model>
                 </field>
 

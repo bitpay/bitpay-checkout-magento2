@@ -5,7 +5,7 @@ This version requires the following
 * A BitPay merchant account ([Test](http://test.bitpay.com) or [Production](http://www.bitpay.com))
 * An API Token ([Test](https://test.bitpay.com/dashboard/merchant/api-tokens) or [Production](https://bitpay.com/dashboard/merchant/api-tokens)
 	* When setting up your token, **uncheck** the *Require Authentication button*
-* Magento 1.9.x
+* Magento 2.0.x
 
 # Installation
 
@@ -23,7 +23,7 @@ php bin/magento setup:static-content:deploy -f
 
 
 
-You can now activate the BitPay Checkout in the *Sales->Configuration->Sales->Payment Methods*
+You can now activate BitPay in the *Sales->Configuration->Sales->Payment Methods*
 
 
 

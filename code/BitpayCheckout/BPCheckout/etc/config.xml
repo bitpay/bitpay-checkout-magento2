@@ -10,7 +10,7 @@
         <payment>
                 <bpcheckout>
                 <active>1</active>
-                <title>BitPay Checkout</title>
+                <title>BitPay</title>
                 <order_status>pending_payment</order_status>
                 <instructions>Instruction.</instructions>
                 <payment_action>true</payment_action>

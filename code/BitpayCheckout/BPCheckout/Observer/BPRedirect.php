@@ -73,23 +73,14 @@ class BPRedirect implements ObserverInterface
 
         //create an item, should be passed as an object'
         $params                    = (new \stdClass());
-        $params->extension_version = '1.0.0.';
+        $params->extension_version = $this->getExtensionVersion();
         $params->price             = $order['base_grand_total'];
         $params->currency          = $order['base_currency_code'];  //set as needed
 
         $bitpay_currency = $this->getStoreConfig('payment/bpcheckout/bitpay_currency');
-        switch ($bitpay_currency) {
-            default: 
-            case 1: 
-                $params->buyerSelectedTransactionCurrency = 1;
-                break;
-            case 'BTC': 
-                $params->buyerSelectedTransactionCurrency = 'BTC';
-                break;
-            case 'BCH': 
-                $params->buyerSelectedTransactionCurrency = 'BCH';
-                break;
-        }
+        error_log($bitpay_currency);
+        die();
+        
 
         #buyer email
         $bitpay_capture_email = $this->getStoreConfig('payment/bpcheckout/bitpay_capture_email');
@@ -155,9 +146,8 @@ class BPRedirect implements ObserverInterface
     {
         $moduleCode = 'BitpayCheckout_BPCheckout'; #Edit here with your Namespace_Module
         $moduleInfo = $this->_moduleList->getOne($moduleCode);
-        return $moduleInfo['setup_version'];
+        return 'Magento2_'.$moduleInfo['setup_version'];
 
-        return 'BitPay Checkout - ' . $moduleInfo['setup_version'];
     }
 
 }
