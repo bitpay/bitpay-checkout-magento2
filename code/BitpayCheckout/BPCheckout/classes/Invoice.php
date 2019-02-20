@@ -42,10 +42,6 @@ class Invoice
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $result = curl_exec($ch);
 
-        #if the currency was set for BTC or BCH, do another call to update this invoice id
-        if ($this->item->item_params->buyerSelectedTransactionCurrency != 1):
-            $this->updateBuyerCurrency($result, $this->item->buyerSelectedTransactionCurrency);
-        endif;
 
         $this->invoiceData = $result;
 

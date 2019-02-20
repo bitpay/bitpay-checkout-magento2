@@ -78,8 +78,14 @@ class BPRedirect implements ObserverInterface
         $params->currency          = $order['base_currency_code'];  //set as needed
 
         $bitpay_currency = $this->getStoreConfig('payment/bpcheckout/bitpay_currency');
-        error_log($bitpay_currency);
-        die();
+       
+        
+        $bitpay_currency = explode(",", $this::getStoreConfig('payment/bpcheckout/bitpay_currency'));
+        if (empty($bitpay_currency)):
+            $bitpay_currency = array("BTC", "BCH");
+        endif;
+        $params->paymentCurrencies = $bitpay_currency;
+        
         
 
         #buyer email
