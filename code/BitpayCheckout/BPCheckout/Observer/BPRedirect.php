@@ -93,7 +93,11 @@ class BPRedirect implements ObserverInterface
         if($bitpay_capture_email == 1):
             $customerSession = $objectManager->create('Magento\Customer\Model\Session');
             if ($customerSession->isLoggedIn()) {
-                $params->buyers_email = $customerSession->getCustomer()->getEmail();
+                #$params->buyers_email = $customerSession->getCustomer()->getEmail();
+                    $buyerInfo = (new \stdClass());
+                    $buyerInfo->name = $customerSession->getCustomer()->getName();
+                    $buyerInfo->email =$customerSession->getCustomer()->getEmail();
+                    $params->buyer = $buyerInfo;
             }
         endif;
 
