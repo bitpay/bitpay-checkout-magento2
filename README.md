@@ -20,7 +20,27 @@ php bin/magento setup:static-content:deploy -f
 
 * Flush your Magento2 Caches
 
+```
+php bin/magento cache:flush
+```
 
+Verify that following file has been updated
+
+```
+<magento install directory>/vendor/magento/module-checkout/view/frontend/templates/success.phtml
+```
+
+You should see a codeblock that begins with
+
+```
+<!----BEGIN BITPAY CHECKOUT --->
+```
+
+and ends with
+
+```
+<!----END BITPAY CHECKOUT --->
+```
 
 
 You can now activate BitPay in the *Sales->Configuration->Sales->Payment Methods*

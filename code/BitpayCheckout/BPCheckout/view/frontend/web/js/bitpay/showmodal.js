@@ -8,7 +8,7 @@ console.log('response', response);
     window.addEventListener("message", function (event) {
         payment_status = event.data.status;
         if (payment_status == "paid") {
-            jQuery(".columns").show()
+            jQuery(".maincontent").show()
             return;
         }
     }, false);

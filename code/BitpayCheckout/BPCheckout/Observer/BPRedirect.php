@@ -56,6 +56,8 @@ class BPRedirect implements ObserverInterface
         $order_ids = $observer->getEvent()->getOrderIds();
         $order_id  = $order_ids[0];
         $order     = $this->getOrder($order_id);
+        if($order->getPayment()->getMethodInstance()->getCode() == 'bpcheckout'){
+
         #get the environment
         $env          = $this->getStoreConfig('payment/bpcheckout/bitpay_endpoint');
         $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_devtoken');
@@ -68,7 +70,6 @@ class BPRedirect implements ObserverInterface
         if ($this->getStoreConfig('payment/bpcheckout/bitpay_ux') == 'modal'): 
             $modal = true;
         endif;
-
         $config = (new \Configuration($bitpay_token, $env));
 
         //create an item, should be passed as an object'
@@ -121,17 +122,19 @@ class BPRedirect implements ObserverInterface
         $sql = "INSERT INTO $table_name (order_id,transaction_id,transaction_status) VALUES ('" . $order_id . "','" . $invoiceID . "','new')";
 
         $connection->query($sql);
-        error_log(print_r($params,true));
         switch ($modal) {
             case true: 
+            case 1: 
             $modal_obj                  = (new \stdClass());
             $modal_obj->redirectURL     = $params->redirectURL;
             $modal_obj->notificationURL = $params->notificationURL;
             $modal_obj->cartFix         = $params->cartFix;
             $modal_obj->invoiceID       = $invoiceID;
             setcookie("invoicedata",json_encode($modal_obj),time() + (86400 * 30), "/");
-            $this->_responseFactory->create()->setRedirect($params->redirectURL.'?modal')->sendResponse();
-                return $this;
+            setcookie("modal", 1, time() + (86400 * 30), "/");
+
+           # $this->_responseFactory->create()->setRedirect($params->redirectURL.'?modal=1')->sendResponse();
+            #    return $this;
             break;
             case false  : 
                  default: 
@@ -140,7 +143,7 @@ class BPRedirect implements ObserverInterface
 
             break;
         }
-
+}
     } //end execute function
     public function getExtensionVersion()
     {
