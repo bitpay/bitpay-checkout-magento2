@@ -5,7 +5,7 @@
         <!-- Add js-->
         <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" src_type="url" />
 
-        <script src="BitpayCheckout_BPCheckout::js/bitpay/showmodal.js"/>
+        <script src="BitpayCheckout_BPCheckout::js/bitpay/config.js"/>
     
 
         <!-- Add external js -->

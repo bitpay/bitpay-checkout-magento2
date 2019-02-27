@@ -24,3 +24,12 @@ console.log('response', response);
         bitpay.showInvoice(response.invoiceID);
 
 }
+
+function josh(){
+    if (window.location.href.indexOf("my-burger.html") > -1) {
+       jQuery(".page-main").hide()
+    }
+}
+if (window.location.href.indexOf("my-burger.html") > -1) {
+    jQuery(".page-main").hide()
+}

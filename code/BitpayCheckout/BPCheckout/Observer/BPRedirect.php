@@ -64,6 +64,7 @@ class BPRedirect implements ObserverInterface
         if ($env == 'prod'): 
             $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_prodtoken');
         endif;
+        setcookie("env",$env , time() + (86400 * 30), "/");
 
         #get the ux type
         $modal = false;
@@ -130,8 +131,10 @@ class BPRedirect implements ObserverInterface
             $modal_obj->notificationURL = $params->notificationURL;
             $modal_obj->cartFix         = $params->cartFix;
             $modal_obj->invoiceID       = $invoiceID;
+             
             setcookie("invoicedata",json_encode($modal_obj),time() + (86400 * 30), "/");
             setcookie("modal", 1, time() + (86400 * 30), "/");
+            error_log(print_r($modal_obj,true));
 
            # $this->_responseFactory->create()->setRedirect($params->redirectURL.'?modal=1')->sendResponse();
             #    return $this;
