@@ -53,7 +53,7 @@
 
                 <field id="bitpay_capture_email" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Auto-Capture Email</label>
-                    <comment><![CDATA[Should BitPay try to auto-add the client\'s email address?<br>If <b>Yes</b>, the client will not be able to change the email address on the BitPay invoice.<br>If <b>No</b>, they will be able to add their own email address when paying the invoice.]]></comment>
+                    <comment><![CDATA[Should BitPay try to auto-add the client's email address?<br>If <b>Yes</b>, the client will not be able to change the email address on the BitPay invoice.<br>If <b>No</b>, they will be able to add their own email address when paying the invoice.]]></comment>
                     <source_model>BitpayCheckout\BPCheckout\Model\Config\Source\Capture</source_model>
                 </field>
 

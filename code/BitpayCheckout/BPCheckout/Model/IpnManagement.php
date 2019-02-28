@@ -57,14 +57,16 @@ class IpnManagement implements \BitpayCheckout\BPCheckout\Api\IpnManagementInter
         $order_status  = $data['status'];
         $order_invoice = $data['id'];
 
+
+
         #is it in the lookup table
         $sql = "SELECT * FROM $table_name WHERE order_id = '$orderid' AND transaction_id = '$order_invoice' ";
 
         $result = $connection->query($sql);
         $row    = $result->fetch();
         if ($row): 
+           
             $path = $_SERVER['DOCUMENT_ROOT'] . '/app/code/BitpayCheckout/BPCheckout/';
-
             #include our custom BP2 classes
             require_once $path . 'classes/Config.php';
             require_once $path . 'classes/Client.php';
@@ -77,6 +79,7 @@ class IpnManagement implements \BitpayCheckout\BPCheckout\Api\IpnManagementInter
             if ($env == 'prod'): 
                 $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_prodtoken');
             endif;
+
             $config = (new \Configuration($bitpay_token, $env));
             $params = (new \stdClass());
 
@@ -85,10 +88,12 @@ class IpnManagement implements \BitpayCheckout\BPCheckout\Api\IpnManagementInter
 
             $item    = (new \Item($config, $params));
             $invoice = (new \Invoice($item));
-
+            
             $orderStatus    = json_decode($invoice->checkInvoiceStatus($order_invoice));
             $invoice_status = $orderStatus->data->status;
             $update_sql     = "UPDATE $table_name SET transaction_status = '$invoice_status' WHERE order_id = '$orderid' AND transaction_id = '$order_invoice'";
+            
+           
             $update_result  = $connection->query($update_sql);
 
             $order = $this->getOrder($orderid);
