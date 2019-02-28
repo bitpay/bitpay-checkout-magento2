@@ -39,7 +39,7 @@ You can now activate BitPay in the *Sales->Configuration->Sales->Payment Methods
 	* **Redirect** - This will send the user to the BitPay invoice screen, and they will be redirected after the transaction to the Order Completed page
 	* **Modal** - This will open a popup modal on your site, and will display the order details once the transaction is completed.
 * **Auto Capture Email** - If enabled, the plugin will attempt to auto-fill the buyer's email address when paying the invoice
-* ***Payment from Specific Countries	*** - You **MUST** select the countries to enable BitPay to appear in the checkout  
+* **Payment from Specific Countries**	 - You **MUST** select the countries to enable BitPay to appear in the checkout  
 
 	
 
