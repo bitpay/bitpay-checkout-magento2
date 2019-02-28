@@ -11,6 +11,11 @@
             <group id="bpcheckout" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1"
                 showInStore="1">
                 <label>BitPay</label>
+                <comment>
+                    <![CDATA[
+                        <div style="background-color:#002855;padding:5px;color:#ffffff"><img src="https://raw.githubusercontent.com/bitpay/bitpay-brand/master/bitpay-logo-primary.png" style = "vertical-align:middle;" alt="BitPay"  height="44" /><a style="color:#ffffff;font-family:\'Ubuntu\',sans-serif;text-decoration:none;margin:15px" href="https://support.bitpay.com/?ref=magento" target="_blank">Support</a><a style="color:#ffffff;font-family:\'Ubuntu\',sans-serif;text-decoration:none;margin:15px" href="https://bitpay.com/start?ref=magento" target="_blank">Sign Up</a><a style="color:#ffffff;font-family:\'Ubuntu\',sans-serif;text-decoration:none;margin:15px" href="https://bitpay.com/merchant-login?ref=magento" target="_blank">Login</a></div>
+                    ]]>
+                </comment>
                 <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1"
                     showInStore="0">
                     <label>Enabled</label>
@@ -61,8 +66,8 @@
                 <field id="specificcountry" translate="label" type="multiselect" sortOrder="41" showInDefault="1"
                     showInWebsite="1" showInStore="0">
                     <label>Payment from Specific Countries</label>
-                    <source_model>Magento\Directory\Model\Config\Source\Country</source_model>
-                    <can_be_empty>1</can_be_empty>
+                    <source_model>BitpayCheckout\BPCheckout\Model\Config\Source\Countries</source_model>
+                    <can_be_empty>0</can_be_empty>
                 </field>
                 <!--
                 <field id="instructions" translate="label" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
