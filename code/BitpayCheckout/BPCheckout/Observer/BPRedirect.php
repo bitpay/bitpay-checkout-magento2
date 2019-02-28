@@ -65,6 +65,7 @@ class BPRedirect implements ObserverInterface
         $order_ids = $observer->getEvent()->getOrderIds();
         $order_id  = $order_ids[0];
         $order     = $this->getOrder($order_id);
+        $order_id_long = $order->getIncrementId();
         if($order->getPayment()->getMethodInstance()->getCode() == 'bpcheckout'){
 
         #get the environment
@@ -100,9 +101,8 @@ class BPRedirect implements ObserverInterface
             endif;
     }
 
-        $params->orderId = trim($order_id);
+        $params->orderId = trim($order_id_long);
 
-       # $params->redirectURL = $this->getBaseUrl() . 'sales/order/view/order_id/' . $order_id . '/';
         #ipn
        
         
@@ -141,7 +141,7 @@ class BPRedirect implements ObserverInterface
         $connection    = $resource->getConnection();
         $table_name    = $resource->getTableName('bitpay_transactions');
 
-        $sql = "INSERT INTO $table_name (order_id,transaction_id,transaction_status) VALUES ('" . $order_id . "','" . $invoiceID . "','new')";
+        $sql = "INSERT INTO $table_name (order_id,transaction_id,transaction_status) VALUES ('" . $order_id_long . "','" . $invoiceID . "','new')";
 
         $connection->query($sql);
         switch ($modal) {

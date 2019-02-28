@@ -35,7 +35,7 @@ class IpnManagement implements \BitpayCheckout\BPCheckout\Api\IpnManagementInter
     {
 
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $order         = $objectManager->create('Magento\Sales\Api\Data\OrderInterface')->load($_order_id);
+        $order         = $objectManager->create('Magento\Sales\Api\Data\OrderInterface')->loadByIncrementId($_order_id);
 
         return $order;
 
