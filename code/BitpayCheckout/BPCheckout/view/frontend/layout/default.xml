@@ -9,6 +9,6 @@
     
 
         <!-- Add external js -->
-        <script src="//bitpay.com/bitpay.min.js" src_type="url" />
+        <script src="https://bitpay.com/bitpay.min.js" src_type="url" />
     </head>
 </page>
