@@ -118,8 +118,8 @@ class IpnManagement implements \BitpayCheckout\BPCheckout\Api\IpnManagementInter
                 case 'invoice_paidInFull' : 
                      default: 
 
-                    $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> is now processing.');
-                    $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
+                    $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> is pending.');
+                    $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PENDING_PAYMENT);
                     $order->save();
                     return true;
 
