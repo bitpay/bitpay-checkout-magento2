@@ -3,7 +3,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <head>
         <!-- Add js-->
-        <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" src_type="url" />
+        <!--<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" src_type="url" />-->
 
         <script src="BitpayCheckout_BPCheckout::js/bitpay/config.js"/>
     
