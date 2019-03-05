@@ -18,9 +18,9 @@ class IpnManagement implements \BitpayCheckout\BPCheckout\Api\IpnManagementInter
     ) {
         $this->_moduleList = $moduleList;
 
-        $this->_scopeConfig     = $scopeConfig;
+        $this->_scopeConfig = $scopeConfig;
         $this->_responseFactory = $responseFactory;
-        $this->_url             = $url;
+        $this->_url = $url;
 
     }
     public function getStoreConfig($_env)
@@ -35,37 +35,35 @@ class IpnManagement implements \BitpayCheckout\BPCheckout\Api\IpnManagementInter
     {
 
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $order         = $objectManager->create('Magento\Sales\Api\Data\OrderInterface')->loadByIncrementId($_order_id);
+        $order = $objectManager->create('Magento\Sales\Api\Data\OrderInterface')->loadByIncrementId($_order_id);
 
         return $order;
 
     }
     public function postIpn()
     {
-      
+
         #database
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();              // Instance of object manager
-        $resource      = $objectManager->get('Magento\Framework\App\ResourceConnection');
-        $connection    = $resource->getConnection();
-        $table_name    = $resource->getTableName('bitpay_transactions');
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of object manager
+        $resource = $objectManager->get('Magento\Framework\App\ResourceConnection');
+        $connection = $resource->getConnection();
+        $table_name = $resource->getTableName('bitpay_transactions');
         #json ipn
-        $all_data          = json_decode(file_get_contents("php://input"), true);
+        $all_data = json_decode(file_get_contents("php://input"), true);
         $data = $all_data['data'];
         $event = $all_data['event'];
 
-        $orderid       = $data['orderId'];
-        $order_status  = $data['status'];
+        $orderid = $data['orderId'];
+        $order_status = $data['status'];
         $order_invoice = $data['id'];
-
-
 
         #is it in the lookup table
         $sql = "SELECT * FROM $table_name WHERE order_id = '$orderid' AND transaction_id = '$order_invoice' ";
 
         $result = $connection->query($sql);
-        $row    = $result->fetch();
-        if ($row): 
-           
+        $row = $result->fetch();
+        if ($row):
+
             $path = $_SERVER['DOCUMENT_ROOT'] . '/app/code/BitpayCheckout/BPCheckout/';
             #include our custom BP2 classes
             require_once $path . 'classes/Config.php';
@@ -74,32 +72,31 @@ class IpnManagement implements \BitpayCheckout\BPCheckout\Api\IpnManagementInter
             require_once $path . 'classes/Invoice.php';
 
             #verify the ipn
-            $env          = $this->getStoreConfig('payment/bpcheckout/bitpay_endpoint');
+            $env = $this->getStoreConfig('payment/bpcheckout/bitpay_endpoint');
             $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_devtoken');
-            if ($env == 'prod'): 
+            if ($env == 'prod'):
                 $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_prodtoken');
             endif;
 
             $config = (new \Configuration($bitpay_token, $env));
             $params = (new \stdClass());
 
-            $params->invoiceID         = $order_invoice;
+            $params->invoiceID = $order_invoice;
             $params->extension_version = $this->getExtensionVersion();
 
-            $item    = (new \Item($config, $params));
+            $item = (new \Item($config, $params));
             $invoice = (new \Invoice($item));
-            
-            $orderStatus    = json_decode($invoice->checkInvoiceStatus($order_invoice));
+
+            $orderStatus = json_decode($invoice->checkInvoiceStatus($order_invoice));
             $invoice_status = $orderStatus->data->status;
-            $update_sql     = "UPDATE $table_name SET transaction_status = '$invoice_status' WHERE order_id = '$orderid' AND transaction_id = '$order_invoice'";
-            
-           
-            $update_result  = $connection->query($update_sql);
+            $update_sql = "UPDATE $table_name SET transaction_status = '$invoice_status' WHERE order_id = '$orderid' AND transaction_id = '$order_invoice'";
+
+            $update_result = $connection->query($update_sql);
 
             $order = $this->getOrder($orderid);
             #now update the order
-           switch($event['name']){
-                case 'invoice_completed': 
+            switch ($event['name']) {
+                case 'invoice_confirmed':
 
                     $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> processing has been completed.');
                     $order->setState(Order::STATE_COMPLETE)->setStatus(Order::STATE_COMPLETE);
@@ -107,16 +104,7 @@ class IpnManagement implements \BitpayCheckout\BPCheckout\Api\IpnManagementInter
                     return true;
                     break;
 
-                case 'invoice_confirmed': 
-
-                    $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> is now processing.');
-                    $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
-                    $order->save();
-                    return true;
-                    break;
-
-                case 'invoice_paidInFull' : 
-                     default: 
+                case 'invoice_paidInFull':
 
                     $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> is pending.');
                     $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PENDING_PAYMENT);
@@ -125,7 +113,7 @@ class IpnManagement implements \BitpayCheckout\BPCheckout\Api\IpnManagementInter
 
                     break;
 
-                case 'invoice_failedToConfirm': 
+                case 'invoice_failedToConfirm':
 
                     $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> has become invalid because of network congestion.  Order will automatically update when the status changes.');
                     $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT);
@@ -133,7 +121,7 @@ class IpnManagement implements \BitpayCheckout\BPCheckout\Api\IpnManagementInter
                     return true;
                     break;
 
-                case 'invoice_expired': 
+                case 'invoice_expired':
 
                     $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> has expired, order has been canceled.');
                     $order->setState(Order::STATE_CANCELED)->setStatus(Order::STATE_CANCELED);
@@ -141,17 +129,16 @@ class IpnManagement implements \BitpayCheckout\BPCheckout\Api\IpnManagementInter
                     return true;
                     break;
 
-
                 case 'invoice_refundComplete':
-                       #load the order to update
+                    #load the order to update
 
-                       $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> has been refunded.');
-                       $order->setState(Order::STATE_CLOSED)->setStatus(Order::STATE_CLOSED);
+                    $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> has been refunded.');
+                    $order->setState(Order::STATE_CLOSED)->setStatus(Order::STATE_CLOSED);
 
-                       $order->save();
+                    $order->save();
 
-                       return true;
-                       break;
+                    return true;
+                    break;
             }
 
         endif;
