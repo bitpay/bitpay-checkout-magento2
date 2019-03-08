@@ -65,11 +65,12 @@ class IpnManagement implements \BitpayCheckout\BPCheckout\Api\IpnManagementInter
         if ($row):
 
             $path = $_SERVER['DOCUMENT_ROOT'] . '/app/code/BitpayCheckout/BPCheckout/';
-            #include our custom BP2 classes
-            require_once $path . 'classes/Config.php';
-            require_once $path . 'classes/Client.php';
-            require_once $path . 'classes/Item.php';
-            require_once $path . 'classes/Invoice.php';
+            include $path . 'BitPayLib/BPC_Client.php';
+            include $path . 'BitPayLib/BPC_Configuration.php';
+            include $path . 'BitPayLib/BPC_Invoice.php';
+            include $path . 'BitPayLib/BPC_Item.php';
+
+
 
             #verify the ipn
             $env = $this->getStoreConfig('payment/bpcheckout/bitpay_endpoint');
@@ -78,16 +79,16 @@ class IpnManagement implements \BitpayCheckout\BPCheckout\Api\IpnManagementInter
                 $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_prodtoken');
             endif;
 
-            $config = (new \Configuration($bitpay_token, $env));
+            $config = (new \BPC_Configuration($bitpay_token, $env));
             $params = (new \stdClass());
 
             $params->invoiceID = $order_invoice;
             $params->extension_version = $this->getExtensionVersion();
 
-            $item = (new \Item($config, $params));
-            $invoice = (new \Invoice($item));
+            $item = (new \BPC_Item($config, $params));
+            $invoice = (new \BPC_Invoice($item));
 
-            $orderStatus = json_decode($invoice->checkInvoiceStatus($order_invoice));
+            $orderStatus = json_decode($invoice->BPC_checkInvoiceStatus($order_invoice));
             $invoice_status = $orderStatus->data->status;
             $update_sql = "UPDATE $table_name SET transaction_status = '$invoice_status' WHERE order_id = '$orderid' AND transaction_id = '$order_invoice'";
 

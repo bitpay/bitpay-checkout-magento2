@@ -1,10 +1,10 @@
 <?php
 
-class Buttons { 
+class BPC_Buttons { 
    function __construct() {   
 }
 
-function getButtons(){
+function BPC_getButtons(){
    
    
    $button_url = 'https://bitpay.com/resources/paymentButtons';

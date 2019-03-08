@@ -1,6 +1,6 @@
 <?php
 
-class Invoice
+class BPC_Invoice
 {
 
     public function __construct($item)
@@ -9,7 +9,7 @@ class Invoice
 
     }
 
-    public function checkInvoiceStatus($orderID)
+    public function BPC_checkInvoiceStatus($orderID)
     {
 
         $post_fields = ($this->item->item_params);
@@ -23,7 +23,7 @@ class Invoice
         return $result;
     }
 
-    public function createInvoice()
+    public function BPC_createInvoice()
     {
        
        
@@ -48,18 +48,18 @@ class Invoice
 
     }
 
-    public function getInvoiceData()
+    public function BPC_getInvoiceData()
     {
         return $this->invoiceData;
     }
 
-    public function getInvoiceURL()
+    public function BPC_getInvoiceURL()
     {
         $data = json_decode($this->invoiceData);
         return $data->data->url;
     }
 
-    public function updateBuyersEmail($invoice_result, $buyers_email)
+    public function BPC_updateBuyersEmail($invoice_result, $buyers_email)
     {
         $invoice_result = json_decode($invoice_result);
 
@@ -81,7 +81,7 @@ class Invoice
 
     }
 
-    public function updateBuyerCurrency($invoice_result, $buyer_currency)
+    public function BPC_updateBuyerCurrency($invoice_result, $buyer_currency)
     {
         $invoice_result = json_decode($invoice_result);
 

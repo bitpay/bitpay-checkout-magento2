@@ -1,42 +1,42 @@
 <?php
 
-class Configuration { 
+class BPC_Configuration { 
    private $apiToken;
    private $network;
 
    function __construct( $apiToken, $network = null) {
     $this->apiToken = $apiToken;
     if($network == 'test' || $network == null):
-        $this->network = $this->getApiHostDev();
+        $this->network = $this->BPC_getApiHostDev();
     else:
-        $this->network = $this->getApiHostProd();
+        $this->network = $this->BPC_getApiHostProd();
     endif;
 }
 
-function getAPIToken() {
+function BPC_getAPIToken() {
     return $this->apiToken;
 }
 
-function getNetwork() {
+function BPC_getNetwork() {
     return $this->network;
 }
 
-public function getApiHostDev()
+public function BPC_getApiHostDev()
 {
     return 'test.bitpay.com';
 }
 
-public function getApiHostProd()
+public function BPC_getApiHostProd()
 {
     return 'bitpay.com';
 }
 
-public function getApiPort()
+public function BPC_getApiPort()
 {
     return 443;
 }
 
-public function getInvoiceURL(){
+public function BPC_getInvoiceURL(){
     return $this->network.'/invoices';
 }
 
