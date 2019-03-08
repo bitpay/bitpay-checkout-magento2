@@ -123,10 +123,8 @@ class IpnManagement implements \BitpayCheckout\BPCheckout\Api\IpnManagementInter
                     break;
 
                 case 'invoice_expired':
+                    $order->delete();
 
-                    $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> has expired, order has been canceled.');
-                    $order->setState(Order::STATE_CANCELED)->setStatus(Order::STATE_CANCELED);
-                    $order->save();
                     return true;
                     break;
 
