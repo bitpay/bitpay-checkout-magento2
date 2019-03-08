@@ -119,6 +119,8 @@ class BPRedirect implements ObserverInterface
             }
             $params->notificationURL = $this->getBaseUrl() . 'rest/V1/bitpaycheckout-bpcheckout/ipn';
             $params->extendedNotifications = true;
+            $params->acceptanceWindow = 1200000;
+
 
             #cartfix for modal
             $params->cartFix = $this->getBaseUrl() . 'cartfix/cartfix?order_id=' . $order_id;
