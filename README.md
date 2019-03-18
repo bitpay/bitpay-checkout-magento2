@@ -43,10 +43,11 @@ You can now activate BitPay in the *Sales->Configuration->Sales->Payment Methods
 
 	
 
-This plugin also includes an IPN endpoint that will update  your Magento order status.
+This plugin also includes an IPN (Instant Payment Notification) endpoint that will update your Magento 2 order status.
 
-An order note will automatically be added with a link to the invoice to monitor the status.
+An order note will automatically be added with a link to the BitPay invoice to monitor the status
 
-* Initially your order will be in a **Pending Payment** status when it is intially created
-* After the invoice is paid by the user, it will change to a **Processing** status
-* When BitPay finalizes the transaction, it will change to a **Completed** status, and your order will be safe to ship, allow access to downloadable products, etc.
+ * Initially your order will be in a **Pending** status when it is intially created
+ * After the invoice is paid by the user, it will change to a **Processing** status
+ * When BitPay finalizes the transaction, it will change to a **Complete** status, and your order will be safe to ship, allow access to downloadable products, etc.
+ * If you decide to refund a payment via your BitPay dashboard, the Magento 2 order status will change to **Closed** once the refund is executed.
