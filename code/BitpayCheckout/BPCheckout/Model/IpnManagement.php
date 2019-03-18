@@ -117,7 +117,7 @@ class IpnManagement implements \BitpayCheckout\BPCheckout\Api\IpnManagementInter
                 case 'invoice_failedToConfirm':
 
                     $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> has become invalid because of network congestion.  Order will automatically update when the status changes.');
-                    $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT);
+                    $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
                     $order->save();
                     return true;
                     break;
