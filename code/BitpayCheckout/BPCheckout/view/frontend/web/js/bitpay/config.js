@@ -5,11 +5,12 @@ function showModal(env, response) {
     }
 
     response = JSON.parse(response);
-    console.log('response', response);
+    var is_paid = false
 
     window.addEventListener("message", function (event) {
         payment_status = event.data.status;
         if (payment_status == "paid") {
+            is_paid = true
             //clear the cookies
             deleteCookie('env')
             deleteCookie('invoicedata')
@@ -22,7 +23,7 @@ function showModal(env, response) {
 
     //show the order info
     bitpay.onModalWillLeave(function () {
-        if (payment_status != "paid") {
+        if (!is_paid) {
             //clear the cookies
             deleteCookie('env')
             deleteCookie('invoicedata')
