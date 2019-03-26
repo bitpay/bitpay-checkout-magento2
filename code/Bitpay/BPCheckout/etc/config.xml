@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © 2015 Magento. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../Store/etc/config.xsd">
+    <default>
+        <payment>
+                <bpcheckout>
+                <active>1</active>
+                <title>BitPay</title>
+                <order_status>pending_payment</order_status>
+                <instructions>Instruction.</instructions>
+                <payment_action>true</payment_action>
+                <model>Bitpay\BPCheckout\Model\BPCheckout</model>
+                <group>offline</group>
+            </bpcheckout>
+            <!-- payment-config -->
+        </payment>
+    </default>
+</config>

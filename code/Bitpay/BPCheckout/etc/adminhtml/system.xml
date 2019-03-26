@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © 2015 Magento. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Config/etc/system_file.xsd">
+    <system>
+        <section id="payment">
+            <group id="bpcheckout" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1"
+                showInStore="1">
+                <label>BitPay</label>
+                <comment>
+                    <![CDATA[
+                        <div style="background-color:#002855;padding:5px;color:#ffffff"><img src="https://raw.githubusercontent.com/bitpay/bitpay-brand/master/bitpay-logo-primary.png" style = "vertical-align:middle;" alt="BitPay"  height="44" /><a style="color:#ffffff;font-family:\'Ubuntu\',sans-serif;text-decoration:none;margin:15px" href="https://support.bitpay.com/?ref=magento" target="_blank">Support</a><a style="color:#ffffff;font-family:\'Ubuntu\',sans-serif;text-decoration:none;margin:15px" href="https://bitpay.com/start?ref=magento" target="_blank">Sign Up</a><a style="color:#ffffff;font-family:\'Ubuntu\',sans-serif;text-decoration:none;margin:15px" href="https://bitpay.com/merchant-login?ref=magento" target="_blank">Login</a></div>
+                    ]]>
+                </comment>
+                <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1"
+                    showInStore="0">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="title" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
+                    showInStore="1">
+                    <label>Title</label>
+                </field>
+                <field id="order_status" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1"
+                    showInStore="0">
+                    <label>New Order Status</label>
+                    <source_model>Bitpay\BPCheckout\Model\Config\Source\Order\Status\Pendingpayment</source_model>
+                </field>
+
+                <field id="bitpay_devtoken" translate="label" type="text" sortOrder="10" showInDefault="1"
+                    showInWebsite="1" showInStore="1">
+                    <label>Developer Token</label>
+                    <comment><![CDATA[Your <b>development</b> merchant token.  <a href = "https://test.bitpay.com/dashboard/merchant/api-tokens" target = "_blank">Create one here</a> and <b>uncheck</b> `Require Authentication`.]]></comment>
+                </field>
+                <field id="bitpay_prodtoken" translate="label" type="text" sortOrder="10" showInDefault="1"
+                    showInWebsite="1" showInStore="1">
+                    <label>Production Token</label>
+                    <comment><![CDATA[Your <b>production</b> merchant token.  <a href = "https://www.bitpay.com/dashboard/merchant/api-tokens" target = "_blank">Create one here</a> and <b>uncheck</b> `Require Authentication`.]]></comment>
+                </field>
+
+                <field id="bitpay_endpoint" translate="label" type="select" sortOrder="10" showInDefault="1"
+                    showInWebsite="1" showInStore="1">
+                    <label>Environment</label>
+                    <comment><![CDATA[Select <b>Test</b> for testing the plugin, <b>Production</b> when you are ready to go live.]]></comment>
+                    <source_model>Bitpay\BPCheckout\Model\Config\Source\Environment</source_model>
+                </field>
+
+                
+                <field id="bitpay_ux" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Checkout Flow </label>
+                    <comment><![CDATA[If this is set to <b>Redirect</b>, then the customer will be redirected to <b>BitPay</b> to checkout, and return to the checkout page once the payment is made.<br><br>If this is set to <b>Modal</b>, the user will stay on your e-commerce site and complete the transaction.]]></comment>
+                    <source_model>Bitpay\BPCheckout\Model\Config\Source\Ux</source_model>
+                </field>
+
+                <field id="bitpay_capture_email" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Auto-Capture Email</label>
+                    <comment><![CDATA[Should BitPay try to auto-add the client's email address?<br>If <b>Yes</b>, the client will not be able to change the email address on the BitPay invoice.<br>If <b>No</b>, they will be able to add their own email address when paying the invoice.]]></comment>
+                    <source_model>Bitpay\BPCheckout\Model\Config\Source\Capture</source_model>
+                </field>
+
+                
+                <field id="specificcountry" translate="label" type="multiselect" sortOrder="41" showInDefault="1"
+                    showInWebsite="1" showInStore="0">
+                    <label>Payment from Specific Countries</label>
+                    <source_model>Bitpay\BPCheckout\Model\Config\Source\Countries</source_model>
+                    <can_be_empty>0</can_be_empty>
+                </field>
+                <!--
+                <field id="instructions" translate="label" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Instructions</label>
+                </field>
+                -->
+                <field id="sort_order" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1"
+                    showInStore="0">
+                    <label>Sort Order</label>
+                    <frontend_class>validate-number</frontend_class>
+                </field>
+            </group>
+            <!-- payment-group -->
+        </section>
+    </system>
+</config>
