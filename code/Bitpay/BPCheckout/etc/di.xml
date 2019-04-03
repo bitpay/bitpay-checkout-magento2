@@ -1,6 +1,40 @@
-<?xml version="1.0" ?>
+<?xml version="1.0"?>
+<!--
+/**
+ * @license Copyright 2011-2014 BitPay Inc., MIT License
+ * 
+ */
+ -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-	<preference for="Bitpay\BPCheckout\Api\IpnManagementInterface" type="Bitpay\BPCheckout\Model\IpnManagement"/>
-	<preference for="Bitpay\BPCheckout\Api\CartfixManagementInterface" type="Bitpay\BPCheckout\Model\CartfixManagement"/>
-	<preference for="Bitpay\BPCheckout\Api\ModalManagementInterface" type="Bitpay\BPCheckout\Model\ModalManagement"/>
+
+    <type name="Bitpay\Core\Model\Config">
+        <arguments>
+            <argument name="methodCode" xsi:type="const">Bitpay\Core\Model\Method\Bitcoin::CODE</argument>
+        </arguments>
+    </type>
+
+    <type name="Magento\Checkout\Model\CompositeConfigProvider">
+        <arguments>
+            <argument name="configProviders" xsi:type="array">
+                <item name="bitpay_core_config_provider" xsi:type="object">Bitpay\Core\Model\ConfigProvider</item>
+            </argument>
+        </arguments>
+    </type>
+
+     <type name="Bitpay\Core\Logger\Handler">
+        <arguments>
+            <argument name="filesystem" xsi:type="object">Magento\Framework\Filesystem\Driver\File</argument>
+        </arguments>
+    </type>
+
+    <type name="Bitpay\Core\Logger\Logger">
+        <arguments>
+            <argument name="name" xsi:type="string">Bitpay</argument>
+            <argument name="handlers"  xsi:type="array">
+                <item name="system" xsi:type="object">Bitpay\Core\Logger\Handler</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <preference for="Magento\Sales\Model\Order\Payment" type="Bitpay\Core\Model\Order\Payment" />
 </config>

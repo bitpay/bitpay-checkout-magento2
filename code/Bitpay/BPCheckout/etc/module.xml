@@ -1,9 +1,17 @@
 <?xml version="1.0"?>
 <!--
 /**
-* @copyright Copyright (c) 2015 X.commerce, Inc. (http://www.magentocommerce.com)
-*/
--->
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../lib/internal/Magento/Framework/Module/etc/module.xsd">
-  <module name="Bitpay_BPCheckout" setup_version="3.0.0"></module>
+ * @license Copyright 2011-2014 BitPay Inc., MIT License
+ * 
+ */
+ -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
+    <module name="Bitpay_Core" setup_version="2.0.1">
+    	<sequence>
+            <module name="Magento_Sales" />
+            <module name="Magento_Payment" />
+            <module name="Magento_Directory" />
+            <module name="Magento_Config" />
+        </sequence>
+    </module>
 </config>

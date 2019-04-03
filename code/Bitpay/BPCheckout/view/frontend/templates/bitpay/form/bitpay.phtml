@@ -1,0 +1,18 @@
+<?php
+/**
+ * @license Copyright 2011-2014 BitPay Inc., MIT License
+ * @see https://github.com/bitpay/magento-plugin/blob/master/LICENSE
+ */
+
+/**
+ * @var $block \Bitpay\Core\Block\Form\Bitpay
+ * @see Bitpay\Core\Block\Form\Bitpay
+ */
+
+if ($block->getHelper()->isFullScreen()) {
+	echo '<ul class="form-list" id="payment_form_' . $block->getMethodCode() . '" style="display:none;">' .
+	         '<li>You will be transferred to <a href="https://bitpay.com" target="_blank">BitPay</a> to complete your purchase when using this payment method.</li>' .
+	     '</ul>';
+}
+
+?>

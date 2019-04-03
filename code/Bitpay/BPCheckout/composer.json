@@ -1,23 +1,29 @@
 {
-    "name": "bitpay/module-bpcheckout",
-    "description": "",
-    "type": "magento2-module",
-    "license": "mit",
-    "version":"3.0.0",
-    "authors": [
-        {
-            "email": "integrations@bitpay.com",
-            "name": "BitPay"
-        }
-    ],
-    "minimum-stability": "dev",
-    "require": {},
-    "autoload": {
-        "files": [
-            "registration.php"
-        ],
-        "psr-4": {
-            "Bitpay\\BPCheckout\\": ""
-        }
+  "name": "bitpay/magento2-plugin",
+  "description": "Bitcoin payment plugin for Magento using the bitpay.com service.",
+  "type": "magento2-module",
+  "version": "1.0.0",
+  "license": [
+    "OSL-3.0",
+    "AFL-3.0"
+  ],
+  "authors": [
+    {
+      "name": "BitPayInc",
+      "email": "support@bitpay.com",
+      "role": "Integrations Team"
     }
+  ],
+  "require": {
+    "bitpay/php-client": "~2.2"
+  },
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "Bitpay\\Core\\": ""
+    }
+  }
 }
+
