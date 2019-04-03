@@ -1,5 +1,7 @@
 # Quick Setup
 
+[![Build Status](https://travis-ci.org/bitpay/bitpay-checkout-magento2.svg?branch=master)](https://travis-ci.org/bitpay/bitpay-checkout-magento2)
+
 This version requires the following
 
 * A BitPay merchant account ([Test](http://test.bitpay.com) or [Production](http://www.bitpay.com))
