@@ -1,0 +1,66 @@
+#!/usr/bin/env php
+<?php
+/**
+ * @license Copyright 2011-2014 BitPay Inc., MIT License
+ * @see https://github.com/bitpay/magento-plugin/blob/master/LICENSE
+ */
+
+error_reporting(E_ALL | E_STRICT);
+ini_set('display_errors', 1);
+
+$moduleRootPath = __DIR__ . '/../';
+$distPath       = $moduleRootPath . 'build';
+
+$content = file_get_contents($moduleRootPath . 'composer.json');
+$content = json_decode($content, true);
+
+list($vendor, $name) = explode('/', $content['name']);
+
+$vendor     = str_replace('_', '-', $vendor);
+$name       = str_replace('_', '-', $name);
+$version    = $content['version'];
+
+$packageFileName = $vendor . '_' . $name . '-' . $version;
+
+$excludedPaths = [
+    'tests',
+    'scripts',
+    'docs',
+    'build',
+    'build.xml',
+    'vendor',
+    'GUIDE.md',
+    '.git',
+    '.gitignore',
+    '.gitattributes',
+];
+
+if( ! file_exists($distPath) ) {
+    mkdir($distPath);
+}
+
+foreach($excludedPaths as $index => $excludedPath) {
+    if( ! file_exists($moduleRootPath . $excludedPath) ) {
+        unset($excludedPaths[$index]);
+    }
+}
+
+$zipExcludedPaths = array_map(function($path) use($moduleRootPath) {
+    if( is_dir($moduleRootPath . $path) ) {
+        return $path . '\*';
+    }
+
+    return '"' . $path . '"';
+}, $excludedPaths);
+
+$output = [];
+
+exec(sprintf('cd %s; zip -r %s * -x %s', $moduleRootPath, $distPath . '/' . $packageFileName . '.zip', implode(' ', $zipExcludedPaths)), $output);
+
+$tarExcludedPaths = array_map(function($path) {
+    return '--exclude=' . $path;
+}, $excludedPaths);
+
+$output = [];
+
+exec(sprintf('cd %s; tar -czf %s * %s', $moduleRootPath, $distPath . '/' . $packageFileName . '.tgz', implode(' ', $tarExcludedPaths)), $output);

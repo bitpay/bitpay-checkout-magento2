@@ -1,0 +1,17 @@
+<?php
+/**
+ * @license Copyright 2011-2014 BitPay Inc., MIT License
+ * @see https://github.com/bitpay/magento-plugin/blob/master/LICENSE
+ */
+
+/**
+ * @see Bitpay\Core\Block\Info
+ */
+
+echo '<h3>Ordered with BitPay</h3>';
+
+if ($url = $block->getBitpayInvoiceUrl()) {
+    echo '<p><a href="' . $url . '" target="_blank">View Invoice</a></p>';
+}
+
+?>

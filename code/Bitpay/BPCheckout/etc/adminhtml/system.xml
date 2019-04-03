@@ -1,86 +1,155 @@
 <?xml version="1.0"?>
 <!--
 /**
- * Copyright © 2015 Magento. All rights reserved.
- * See COPYING.txt for license details.
+ * @license Copyright 2011-2014 BitPay Inc., MIT License
+ * 
  */
--->
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Config/etc/system_file.xsd">
+ -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
     <system>
         <section id="payment">
-            <group id="bpcheckout" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1"
-                showInStore="1">
-                <label>BitPay</label>
+            <group id="bitpay_section" translate="label" type="text" sortOrder="1000" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Bitpay</label>
                 <comment>
                     <![CDATA[
-                        <div style="background-color:#002855;padding:5px;color:#ffffff"><img src="https://raw.githubusercontent.com/bitpay/bitpay-brand/master/bitpay-logo-primary.png" style = "vertical-align:middle;" alt="BitPay"  height="44" /><a style="color:#ffffff;font-family:\'Ubuntu\',sans-serif;text-decoration:none;margin:15px" href="https://support.bitpay.com/?ref=magento" target="_blank">Support</a><a style="color:#ffffff;font-family:\'Ubuntu\',sans-serif;text-decoration:none;margin:15px" href="https://bitpay.com/start?ref=magento" target="_blank">Sign Up</a><a style="color:#ffffff;font-family:\'Ubuntu\',sans-serif;text-decoration:none;margin:15px" href="https://bitpay.com/merchant-login?ref=magento" target="_blank">Login</a></div>
+                        <div style="background-color:#002855;padding:5px;color:#ffffff"><img src="https://raw.githubusercontent.com/bitpay/bitpay-brand/master/bitpay-logo-primary.png" alt="BitPay" witdth="113" height="44" /><a style="color:#ffffff;font-family:\'Ubuntu\',sans-serif;text-decoration:none;margin:15px" href="https://support.bitpay.com/?ref=magento" target="_blank">Support</a><a style="color:#ffffff;font-family:\'Ubuntu\',sans-serif;text-decoration:none;margin:15px" href="https://bitpay.com/start?ref=magento" target="_blank">Sign Up</a><a style="color:#ffffff;font-family:\'Ubuntu\',sans-serif;text-decoration:none;margin:15px" href="https://bitpay.com/merchant-login?ref=magento" target="_blank">Login</a></div>
                     ]]>
                 </comment>
-                <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1"
-                    showInStore="0">
-                    <label>Enabled</label>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-                <field id="title" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1"
-                    showInStore="1">
-                    <label>Title</label>
-                </field>
-                <field id="order_status" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1"
-                    showInStore="0">
-                    <label>New Order Status</label>
-                    <source_model>Bitpay\BPCheckout\Model\Config\Source\Order\Status\Pendingpayment</source_model>
-                </field>
-
-                <field id="bitpay_devtoken" translate="label" type="text" sortOrder="10" showInDefault="1"
-                    showInWebsite="1" showInStore="1">
-                    <label>Developer Token</label>
-                    <comment><![CDATA[Your <b>development</b> merchant token.  <a href = "https://test.bitpay.com/dashboard/merchant/api-tokens" target = "_blank">Create one here</a> and <b>uncheck</b> `Require Authentication`.]]></comment>
-                </field>
-                <field id="bitpay_prodtoken" translate="label" type="text" sortOrder="10" showInDefault="1"
-                    showInWebsite="1" showInStore="1">
-                    <label>Production Token</label>
-                    <comment><![CDATA[Your <b>production</b> merchant token.  <a href = "https://www.bitpay.com/dashboard/merchant/api-tokens" target = "_blank">Create one here</a> and <b>uncheck</b> `Require Authentication`.]]></comment>
-                </field>
-
-                <field id="bitpay_endpoint" translate="label" type="select" sortOrder="10" showInDefault="1"
-                    showInWebsite="1" showInStore="1">
-                    <label>Environment</label>
-                    <comment><![CDATA[Select <b>Test</b> for testing the plugin, <b>Production</b> when you are ready to go live.]]></comment>
-                    <source_model>Bitpay\BPCheckout\Model\Config\Source\Environment</source_model>
-                </field>
-
-                
-                <field id="bitpay_ux" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Checkout Flow </label>
-                    <comment><![CDATA[If this is set to <b>Redirect</b>, then the customer will be redirected to <b>BitPay</b> to checkout, and return to the checkout page once the payment is made.<br><br>If this is set to <b>Modal</b>, the user will stay on your e-commerce site and complete the transaction.]]></comment>
-                    <source_model>Bitpay\BPCheckout\Model\Config\Source\Ux</source_model>
-                </field>
-
-                <field id="bitpay_capture_email" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Auto-Capture Email</label>
-                    <comment><![CDATA[Should BitPay try to auto-add the client's email address?<br>If <b>Yes</b>, the client will not be able to change the email address on the BitPay invoice.<br>If <b>No</b>, they will be able to add their own email address when paying the invoice.]]></comment>
-                    <source_model>Bitpay\BPCheckout\Model\Config\Source\Capture</source_model>
-                </field>
-
-                
-                <field id="specificcountry" translate="label" type="multiselect" sortOrder="41" showInDefault="1"
-                    showInWebsite="1" showInStore="0">
-                    <label>Payment from Specific Countries</label>
-                    <source_model>Bitpay\BPCheckout\Model\Config\Source\Countries</source_model>
-                    <can_be_empty>0</can_be_empty>
-                </field>
-                <!--
-                <field id="instructions" translate="label" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Instructions</label>
-                </field>
-                -->
-                <field id="sort_order" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1"
-                    showInStore="0">
-                    <label>Sort Order</label>
-                    <frontend_class>validate-number</frontend_class>
-                </field>
+                <group id="bitpay" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Bitpay</label>
+                    <attribute type="expanded">1</attribute>
+                    <frontend_model>Magento\Config\Block\System\Config\Form\Fieldset</frontend_model>
+                    <field id="pairing_code" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Pairing Code</label>
+                        <comment>
+                            <![CDATA[You must first create a pairing code for your BitPay Merchant account at <a href="https://bitpay.com/api-tokens" target="_blank">https://bitpay.com/api-tokens</a> and copy/paste 
+                            that code here. Once you have successfully paired this Magento store with your BitPay Merchant account, you can begin accepting Bitcoins as payment.]]>
+                        </comment>
+                        <backend_model>Bitpay\Core\Model\Config\Backend\PairingCode</backend_model>
+                        <config_path>payment/bitpay/pairing_code</config_path>
+                    </field>
+                    <field id="fullscreen" translate="label" type="select" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Redirect Checkout</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>payment/bitpay/fullscreen</config_path>
+                    </field>
+                    <field id="active" translate="label" type="select" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Enabled</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>payment/bitpay/active</config_path>
+                    </field>
+                    <field id="title" translate="label" type="text" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Title</label>
+                        <comment>
+                            <![CDATA[This is the payment method name your customers will see during checkout.]]>
+                        </comment>
+                        <config_path>payment/bitpay/title</config_path>
+                    </field>
+                    <field id="network" translate="label" type="select" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Network</label>
+                        <source_model>Bitpay\Core\Model\Config\Source\Network</source_model>
+                        <config_path>payment/bitpay/network</config_path>
+                        <comment>
+                            <![CDATA[You can sign up for a test account at <a href="https://test.bitpay.com" target="_blank">test.bitpay.com</a>.]]>
+                        </comment>
+                    </field>
+                    <field id="debug" translate="label" type="select" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Debug</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>payment/bitpay/debug</config_path>
+                        <comment>
+                            <![CDATA[By enabling this, it will output more verbose information in log files.]]>
+                        </comment>
+                    </field>
+                    <field id="notification_url" translate="label" type="text" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Notification URL</label>
+                        <config_path>payment/bitpay/notification_url</config_path>
+                    </field>
+                    <field id="redirect_url" translate="label" type="text" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Redirect URL</label>
+                        <config_path>payment/bitpay/redirect_url</config_path>
+                    </field>
+                    <field id="speed" translate="label" type="select" sortOrder="9" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Transaction Speed</label>
+                        <source_model>Bitpay\Core\Model\Config\Source\TransactionSpeed</source_model>
+                        <config_path>payment/bitpay/speed</config_path>
+                        <comment>
+                            <![CDATA[Determines when a BitPay payment confirmation is sent.<br /><strong>High:</strong> an invoice is confirmed immediately when payment received.<br /><strong>Medium:</strong> an invoice is confirmed after 1 block confirmation by the Bitcoin network (~10 mins).<br /><strong>Low:</strong> an invoice is confirmed after 6 block confirmations by the Bitcoin network (~1 hour).<br />The default and safest setting is "Low".  A "High" setting is quicker to generate a payment confirmation but is riskier since the transaction could have not been officially confirmed by the Bitcoin network itself.]]>
+                        </comment>
+                    </field>
+                </group>
+                <group id="bitpay_settings" translate="label" showInDefault="1" showInWebsite="1" sortOrder="10">
+                    <label>Magento Specific Settings</label>
+                    <attribute type="expanded">1</attribute>
+                    <frontend_model>Magento\Config\Block\System\Config\Form\Fieldset</frontend_model>
+                    <field id="allowspecific" translate="label" type="allowspecific" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Payment from Applicable Countries</label>
+                        <source_model>Magento\Payment\Model\Config\Source\Allspecificcountries</source_model>
+                        <config_path>payment/bitpay/allowspecific</config_path>
+                    </field>
+                    <field id="specificcountry" translate="label" type="multiselect" sortOrder="11" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Payment from Specific Countries</label>
+                        <source_model>Magento\Directory\Model\Config\Source\Country</source_model>
+                        <can_be_empty>1</can_be_empty>
+                        <config_path>payment/bitpay/specificcountry</config_path>
+                    </field>
+                    <field id="min_order_total" translate="label" type="text" sortOrder="12" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Minimum Order Total</label>
+                        <config_path>payment/bitpay/min_order_total</config_path>
+                    </field>
+                    <field id="max_order_total" translate="label" type="text" sortOrder="13" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Maximum Order Total</label>
+                        <config_path>payment/bitpay/max_order_total</config_path>
+                    </field>
+                    <field id="sort_order" translate="label" type="text" sortOrder="14" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Sort Order</label>
+                        <frontend_class>validate-number</frontend_class>
+                        <config_path>payment/bitpay/sort_order</config_path>
+                    </field>
+                </group>
+                <group id="bitpay_orderstatus" translate="label" showInDefault="1" showInWebsite="1" sortOrder="15">
+                    <label>Invoice Settings</label>
+                    <attribute type="expanded">1</attribute>
+                    <frontend_model>Magento\Config\Block\System\Config\Form\Fieldset</frontend_model>
+                    <field id="invoice_paid" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Paid</label>
+                        <source_model>Magento\Sales\Model\Config\Source\Order\Status</source_model>
+                        <config_path>payment/bitpay/invoice_paid</config_path>
+                        <comment>
+                            <![CDATA[An invoice is considered "paid" when the Bitcoin network sees a transaction.]]>
+                        </comment>
+                    </field>
+                    <field id="invoice_confirmed" translate="label" type="select" sortOrder="31" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Confirmed</label>
+                        <source_model>Magento\Sales\Model\Config\Source\Order\Status</source_model>
+                        <config_path>payment/bitpay/invoice_confirmed</config_path>
+                        <comment>
+                            <![CDATA[A confirmed invoice means that the Bitcoin network has approved the transaction.]]>
+                        </comment>
+                    </field>
+                    <field id="invoice_complete" translate="label" type="select" sortOrder="32" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Complete</label>
+                        <source_model>Magento\Sales\Model\Config\Source\Order\Status</source_model>
+                        <config_path>payment/bitpay/invoice_complete</config_path>
+                        <comment>
+                            <![CDATA[A completed BitPay invoice indicates the payment for the invoice has been fully confirmed by the Bitcoin network and the funds have been deposited into your BitPay Merchant account.]]>
+                        </comment>
+                    </field>
+                </group>
+                <group id="bitpay_requirements" translate="label" showInDefault="1" showInWebsite="1" sortOrder="16">
+                    <label>Requirements</label>
+                    <attribute type="expanded">1</attribute>
+                    <frontend_model>Magento\Config\Block\System\Config\Form\Fieldset</frontend_model>
+                    <comment>
+                        <![CDATA[This extension will not function if you do not meet the system requirements.]]>
+                    </comment>
+                    <field id="has_openssl" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>OpenSSL</label>
+                        <attribute type="php_extension">openssl</attribute>       
+                        <frontend_model>Bitpay\Core\Block\Adminhtml\System\Config\Form\Field\Extension</frontend_model>
+                    </field>
+                </group>
             </group>
-            <!-- payment-group -->
         </section>
     </system>
 </config>
