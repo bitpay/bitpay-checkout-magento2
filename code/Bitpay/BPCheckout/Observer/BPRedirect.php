@@ -81,7 +81,7 @@ class BPRedirect implements ObserverInterface
             if ($this->getStoreConfig('payment/bpcheckout/bitpay_ux') == 'modal'):
                 $modal = true;
             endif;
-            $config = (new \BPC_Configuration($bitpay_token, $env));
+            $config = (new \Bitpay\BPCheckout\BitPayLib\BPC_Configuration($bitpay_token, $env));
 
             //create an item, should be passed as an object'
             $params = (new \stdClass());
@@ -125,8 +125,8 @@ class BPRedirect implements ObserverInterface
             #cartfix for modal
             $params->cartFix = $this->getBaseUrl() . 'cartfix/cartfix?order_id=' . $order_id;
             #error_log(print_r($params,true));
-            $item = (new \BPC_Item($config, $params));
-            $invoice = (new \BPC_Invoice($item));
+            $item = (new \Bitpay\BPCheckout\BitPayLib\BPC_Item($config, $params));
+            $invoice = (new \Bitpay\BPCheckout\BitPayLib\BPC_Invoice($item));
 
             //this creates the invoice with all of the config params from the item
             $invoice->BPC_createInvoice();

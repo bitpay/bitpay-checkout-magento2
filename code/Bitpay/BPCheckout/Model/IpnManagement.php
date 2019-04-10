@@ -79,14 +79,14 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
                 $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_prodtoken');
             endif;
 
-            $config = (new \BPC_Configuration($bitpay_token, $env));
+            $config = (new \Bitpay\BPCheckout\BitPayLib\BPC_Configuration($bitpay_token, $env));
             $params = (new \stdClass());
 
             $params->invoiceID = $order_invoice;
             $params->extension_version = $this->getExtensionVersion();
 
-            $item = (new \BPC_Item($config, $params));
-            $invoice = (new \BPC_Invoice($item));
+            $item = (new \Bitpay\BPCheckout\BitPayLib\BPC_Item($config, $params));
+            $invoice = (new \Bitpay\BPCheckout\BitPayLib\BPC_Invoice($item));
 
             $orderStatus = json_decode($invoice->BPC_checkInvoiceStatus($order_invoice));
             $invoice_status = $orderStatus->data->status;

@@ -1,4 +1,5 @@
 <?php
+namespace Bitpay\BPCheckout\BitPayLib;
 
 class BPC_Item { 
   function __construct($config,$item_params) {
@@ -17,5 +18,3 @@ function BPC_getItem(){
 }
 
 }
-
-?>
