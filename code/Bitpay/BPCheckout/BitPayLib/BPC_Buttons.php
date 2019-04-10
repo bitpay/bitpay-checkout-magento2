@@ -1,4 +1,5 @@
 <?php
+namespace Bitpay\BPCheckout\BitPayLib;
 
 class BPC_Buttons { 
    function __construct() {   
@@ -20,5 +21,3 @@ function BPC_getButtons(){
 
 
 }
-
-?>

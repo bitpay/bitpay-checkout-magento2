@@ -1,4 +1,5 @@
 <?php
+namespace Bitpay\BPCheckout\BitPayLib;
 
 class BPC_Invoice
 {

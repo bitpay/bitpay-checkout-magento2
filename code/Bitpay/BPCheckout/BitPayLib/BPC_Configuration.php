@@ -1,4 +1,5 @@
 <?php
+namespace Bitpay\BPCheckout\BitPayLib;
 
 class BPC_Configuration { 
    private $apiToken;
@@ -41,5 +42,4 @@ public function BPC_getInvoiceURL(){
 }
 
 
-} 
-?>
+}

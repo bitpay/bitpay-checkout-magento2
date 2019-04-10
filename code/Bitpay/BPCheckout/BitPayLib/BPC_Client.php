@@ -1,4 +1,5 @@
 <?php
+namespace Bitpay\BPCheckout\BitPayLib;
 
 class BPC_Client { 
    private $network;
@@ -7,5 +8,3 @@ class BPC_Client {
     
 }
 }
-
-?>
