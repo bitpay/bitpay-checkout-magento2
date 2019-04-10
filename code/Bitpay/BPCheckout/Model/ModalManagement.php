@@ -18,8 +18,6 @@ class ModalManagement implements \Bitpay\BPCheckout\Api\ModalManagementInterface
         $table_name    = $resource->getTableName('bitpay_transactions');
         #json ipn
         $data = json_decode(file_get_contents("php://input"), true);
-       #return $data
        
-       die();
     }
 }
