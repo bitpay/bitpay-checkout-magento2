@@ -67,9 +67,12 @@ class Index extends \Magento\Framework\App\Action\Action
         $registry->register('isSecureArea','true');
         $order->delete();
         $registry->unregister('isSecureArea'); 
-        header('Location: /checkout/cart/');
-
-        die();
+       # header('Location: /checkout/cart/');
+        #$this->_redirect('/checkout/cart/');
+       
+        $resultRedirect = $this->resultRedirectFactory->create();
+        $resultRedirect->setUrl('/checkout/cart/');
+        return $resultRedirect;
         //endforeach
     }
 }
