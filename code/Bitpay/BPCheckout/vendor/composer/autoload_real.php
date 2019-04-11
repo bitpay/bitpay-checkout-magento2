@@ -18,6 +18,7 @@ class ComposerAutoloaderInit3b6f58ae51920ebef1a3fc22a952ae98
         if (null !== self::$loader) {
             return self::$loader;
         }
+        $class_arr = array();
 
         spl_autoload_register(array('ComposerAutoloaderInit3b6f58ae51920ebef1a3fc22a952ae98', 'loadClassLoader'), true, true);
         self::$loader = $loader = new \Composer\Autoload\ClassLoader();
@@ -53,7 +54,10 @@ class ComposerAutoloaderInit3b6f58ae51920ebef1a3fc22a952ae98
             $includeFiles = require __DIR__ . '/autoload_files.php';
         }
         foreach ($includeFiles as $fileIdentifier => $file) {
-            composerRequire3b6f58ae51920ebef1a3fc22a952ae98($fileIdentifier, $file);
+            if(empty($class_arr[$fileIdentifier]) || $class_arr[$fileIdentifier] != true){
+                $class_arr[$fileIdentifier = true;
+                composerRequire3b6f58ae51920ebef1a3fc22a952ae98($fileIdentifier, $file);
+            }
         }
 
         return $loader;
@@ -62,9 +66,9 @@ class ComposerAutoloaderInit3b6f58ae51920ebef1a3fc22a952ae98
 
 function composerRequire3b6f58ae51920ebef1a3fc22a952ae98($fileIdentifier, $file)
 {
-    if (empty($GLOBALS['__composer_autoload_files'][$fileIdentifier])) {
+   
         require $file;
 
-        $GLOBALS['__composer_autoload_files'][$fileIdentifier] = true;
-    }
+      
+   
 }
