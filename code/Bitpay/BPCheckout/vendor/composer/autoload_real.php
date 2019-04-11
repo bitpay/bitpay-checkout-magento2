@@ -55,7 +55,7 @@ class ComposerAutoloaderInit3b6f58ae51920ebef1a3fc22a952ae98
         }
         foreach ($includeFiles as $fileIdentifier => $file) {
             if(empty($class_arr[$fileIdentifier]) || $class_arr[$fileIdentifier] != true){
-                $class_arr[$fileIdentifier = true;
+                $class_arr[$fileIdentifier] = true;
                 composerRequire3b6f58ae51920ebef1a3fc22a952ae98($fileIdentifier, $file);
             }
         }
