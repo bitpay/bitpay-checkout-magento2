@@ -166,9 +166,7 @@ class BPRedirect implements ObserverInterface
     } //end execute function
     public function getExtensionVersion()
     {
-        $moduleCode = 'Bitpay_BPCheckout'; #Edit here with your Namespace_Module
-        $moduleInfo = $this->_moduleList->getOne($moduleCode);
-        return 'BitPay_Checkout_Magento2_' . $moduleInfo['setup_version'];
+        return 'Bitpay_BPCheckout_Magento2_3.0.0.1';
 
     }
 
