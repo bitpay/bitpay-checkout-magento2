@@ -64,13 +64,10 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         $row = $result->fetch();
         if ($row):
 
-            $path = $_SERVER['DOCUMENT_ROOT'] . '/app/code/Bitpay/BPCheckout/';
-            include $path . 'BitPayLib/BPC_Client.php';
-            include $path . 'BitPayLib/BPC_Configuration.php';
-            include $path . 'BitPayLib/BPC_Invoice.php';
-            include $path . 'BitPayLib/BPC_Item.php';
-
-
+            include(dirname(__FILE__)."/../BitPayLib/BPC_Client.php");
+            include(dirname(__FILE__)."/../BitPayLib/BPC_Configuration.php");
+            include(dirname(__FILE__)."/../BitPayLib/BPC_Invoice.php");
+            include(dirname(__FILE__)."/../BitPayLib/BPC_Item.php");
 
             #verify the ipn
             $env = $this->getStoreConfig('payment/bpcheckout/bitpay_endpoint');

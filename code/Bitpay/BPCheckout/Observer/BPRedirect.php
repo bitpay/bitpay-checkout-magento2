@@ -55,14 +55,11 @@ class BPRedirect implements ObserverInterface
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of object manager
 
         
-        $path = $_SERVER['DOCUMENT_ROOT'] . '/app/code/Bitpay/BPCheckout/';
-        include $path . 'BitPayLib/BPC_Client.php';
-        include $path . 'BitPayLib/BPC_Configuration.php';
-        include $path . 'BitPayLib/BPC_Invoice.php';
-        include $path . 'BitPayLib/BPC_Item.php';
-
-          
-
+        include(dirname(__FILE__)."/../BitPayLib/BPC_Client.php");
+        include(dirname(__FILE__)."/../BitPayLib/BPC_Configuration.php");
+        include(dirname(__FILE__)."/../BitPayLib/BPC_Invoice.php");
+        include(dirname(__FILE__)."/../BitPayLib/BPC_Item.php");
+       
         $order_ids = $observer->getEvent()->getOrderIds();
         $order_id = $order_ids[0];
         $order = $this->getOrder($order_id);
