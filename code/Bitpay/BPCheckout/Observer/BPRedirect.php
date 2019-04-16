@@ -7,20 +7,32 @@ class BPRedirect implements ObserverInterface
 {
     protected $checkoutSession;
     protected $resultRedirect;
+    protected $url;
+    protected $coreRegistry;
+    protected $_redirect;
+    protected $_response;
 
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig, \Magento\Framework\App\ResponseFactory $responseFactory,
         \Magento\Framework\UrlInterface $url,
         \Magento\Framework\Module\ModuleListInterface $moduleList,
         \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Framework\Controller\ResultFactory $result
+        \Magento\Framework\Controller\ResultFactory $result,
+        \Magento\Framework\Registry $registry,
+        \Magento\Framework\App\ActionFlag $actionFlag,
+        \Magento\Framework\App\Response\RedirectInterface $redirect,
+        \Magento\Framework\App\ResponseInterface $response
     ) {
+        $this->coreRegistry = $registry;
         $this->_moduleList = $moduleList;
         $this->_scopeConfig = $scopeConfig;
         $this->_responseFactory = $responseFactory;
         $this->_url = $url;
         $this->checkoutSession = $checkoutSession;
         $this->resultRedirect = $result;
+        $this->_actionFlag = $actionFlag;
+        $this->_redirect = $redirect;
+        $this->_response = $response;
 
     }
 
@@ -51,14 +63,17 @@ class BPRedirect implements ObserverInterface
 
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
-
+        $controller = $observer->getControllerAction();
+        $this->_actionFlag->set('', \Magento\Framework\App\Action\Action::FLAG_NO_DISPATCH, true);
+       
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of object manager
+        $level = 1;
+       
+        include(dirname(__DIR__, $level)."/BitPayLib/BPC_Client.php");
+        include(dirname(__DIR__, $level)."/BitPayLib/BPC_Configuration.php");
+        include(dirname(__DIR__, $level)."/BitPayLib/BPC_Invoice.php");
+        include(dirname(__DIR__, $level)."/BitPayLib/BPC_Item.php");
 
-        
-        include(dirname(__FILE__)."/../BitPayLib/BPC_Client.php");
-        include(dirname(__FILE__)."/../BitPayLib/BPC_Configuration.php");
-        include(dirname(__FILE__)."/../BitPayLib/BPC_Invoice.php");
-        include(dirname(__FILE__)."/../BitPayLib/BPC_Item.php");
        
         $order_ids = $observer->getEvent()->getOrderIds();
         $order_id = $order_ids[0];
@@ -78,6 +93,7 @@ class BPRedirect implements ObserverInterface
             if ($this->getStoreConfig('payment/bpcheckout/bitpay_ux') == 'modal'):
                 $modal = true;
             endif;
+
             $config = (new \Bitpay\BPCheckout\BitPayLib\BPC_Configuration($bitpay_token, $env));
 
             //create an item, should be passed as an object'
@@ -140,6 +156,7 @@ class BPRedirect implements ObserverInterface
             $table_name = $resource->getTableName('bitpay_transactions');
 
             $sql = "INSERT INTO $table_name (order_id,transaction_id,transaction_status) VALUES ('" . $order_id_long . "','" . $invoiceID . "','new')";
+            
 
             $connection->query($sql);
             switch ($modal) {
@@ -157,10 +174,9 @@ class BPRedirect implements ObserverInterface
                     break;
                 case false:
                 default:
-                    $this->_responseFactory->create()->setRedirect($invoice->BPC_getInvoiceURL())->sendResponse();
-                    return $this;
-
-                    break;
+                
+                $this->_redirect->redirect($this->_response, $invoice->BPC_getInvoiceURL());;
+                break;
             }
         }
     } //end execute function
