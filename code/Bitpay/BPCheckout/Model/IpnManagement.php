@@ -64,10 +64,12 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         $row = $result->fetch();
         if ($row):
 
-            include(dirname(__FILE__)."/../BitPayLib/BPC_Client.php");
-            include(dirname(__FILE__)."/../BitPayLib/BPC_Configuration.php");
-            include(dirname(__FILE__)."/../BitPayLib/BPC_Invoice.php");
-            include(dirname(__FILE__)."/../BitPayLib/BPC_Item.php");
+            $level = 1;
+
+            include(dirname(__DIR__, $level)."/BitPayLib/BPC_Client.php");
+            include(dirname(__DIR__, $level)."/BitPayLib/BPC_Configuration.php");
+            include(dirname(__DIR__, $level)."/BitPayLib/BPC_Invoice.php");
+            include(dirname(__DIR__, $level)."/BitPayLib/BPC_Item.php");
 
             #verify the ipn
             $env = $this->getStoreConfig('payment/bpcheckout/bitpay_endpoint');
@@ -141,6 +143,6 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
     }
     public function getExtensionVersion()
     {
-       return 'Bitpay_BPCheckout_Magento2_3.0.0.1';
+        return 'Bitpay_BPCheckout_Magento2_3.0.0.1';
     }
 }
