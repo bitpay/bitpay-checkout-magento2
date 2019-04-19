@@ -137,7 +137,6 @@ class BPRedirect implements ObserverInterface
 
             #cartfix for modal
             $params->cartFix = $this->getBaseUrl() . 'cartfix/cartfix?order_id=' . $order_id;
-            #error_log(print_r($params,true));
             $item = (new \Bitpay\BPCheckout\BitPayLib\BPC_Item($config, $params));
             $invoice = (new \Bitpay\BPCheckout\BitPayLib\BPC_Invoice($item));
 
