@@ -157,6 +157,6 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
     }
     public function getExtensionVersion()
     {
-        return 'Bitpay_BPCheckout_Magento2_3.0.1.0';
+        return 'Bitpay_BPCheckout_Magento2_3.0.4.0';
     }
 }
