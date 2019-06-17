@@ -94,18 +94,18 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
 
             $order = $this->getOrder($orderid);
             #now update the order
-           
             switch ($event['name']) {
 
                 case 'invoice_completed':
 
                     $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> status has changed to Completed.');
+                    $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
                     $order->save();
                     return true;
                     break;
 
                 case 'invoice_confirmed':
-                    #pending or pcoressing from plugin settings
+                    #pending or processing from plugin settings
                     
                     $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> processing has been completed.');
                     if($bitpay_ipn_mapping != 'processing'):
