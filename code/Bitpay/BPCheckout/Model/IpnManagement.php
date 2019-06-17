@@ -59,7 +59,6 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
 
         #is it in the lookup table
         $sql = "SELECT * FROM $table_name WHERE order_id = '$orderid' AND transaction_id = '$order_invoice' ";
-
         $result = $connection->query($sql);
         $row = $result->fetch();
         if ($row):
@@ -77,13 +76,13 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
             if ($env == 'prod'):
                 $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_prodtoken');
             endif;
+            $bitpay_ipn_mapping = $this->getStoreConfig('payment/bpcheckout/bitpay_ipn_mapping');
 
             $config = (new \Bitpay\BPCheckout\BitPayLib\BPC_Configuration($bitpay_token, $env));
             $params = (new \stdClass());
 
             $params->invoiceID = $order_invoice;
             $params->extension_version = $this->getExtensionVersion();
-
             $item = (new \Bitpay\BPCheckout\BitPayLib\BPC_Item($config, $params));
             $invoice = (new \Bitpay\BPCheckout\BitPayLib\BPC_Invoice($item));
 
@@ -95,19 +94,35 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
 
             $order = $this->getOrder($orderid);
             #now update the order
+           
             switch ($event['name']) {
-                case 'invoice_confirmed':
 
+                case 'invoice_completed':
+
+                    $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> status has changed to Completed.');
+                    $order->save();
+                    return true;
+                    break;
+
+                case 'invoice_confirmed':
+                    #pending or pcoressing from plugin settings
+                    
                     $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> processing has been completed.');
-                    $order->setState(Order::STATE_COMPLETE)->setStatus(Order::STATE_COMPLETE);
+                    if($bitpay_ipn_mapping != 'processing'):
+                        $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT);
+                    else:
+                        $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
+                    endif;
+                    
+                    
                     $order->save();
                     return true;
                     break;
 
                 case 'invoice_paidInFull':
-
+                       #STATE_PENDING
                     $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> is processing.');
-                    $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
+                    $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT);
                     $order->save();
                     return true;
 
@@ -116,7 +131,6 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
                 case 'invoice_failedToConfirm':
 
                     $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> has become invalid because of network congestion.  Order will automatically update when the status changes.');
-                    $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
                     $order->save();
                     return true;
                     break;
@@ -143,6 +157,6 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
     }
     public function getExtensionVersion()
     {
-        return 'Bitpay_BPCheckout_Magento2_3.0.0.1';
+        return 'Bitpay_BPCheckout_Magento2_3.0.0.2';
     }
 }

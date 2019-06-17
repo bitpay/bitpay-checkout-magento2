@@ -77,6 +77,11 @@
                     <source_model>Bitpay\BPCheckout\Model\Config\Source\Environment</source_model>
                 </field>
 
+                <field id="bitpay_ipn_mapping" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Status mapping - BitPay invoice / Magento order</label>
+                    <comment><![CDATA[Map the BitPay “confirmed” invoice status to the preferred Magento order status, based on the transaction speed you have selected in your BitPay <a target = "_blank" href = "https://bitpay.com/dashboard/settings/edit/order">dashboard</a>]]></comment>
+                    <source_model>Bitpay\BPCheckout\Model\Config\Source\Ipn</source_model>
+                </field>
                 
                 <field id="bitpay_ux" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Checkout Flow </label>
