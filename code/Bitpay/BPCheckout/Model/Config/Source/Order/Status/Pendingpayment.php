@@ -16,5 +16,5 @@ class Pendingpayment extends Status
     /**
      * @var string[]
      */
-    protected $_stateStatuses = [Order::STATE_PENDING_PAYMENT];
+    protected $_stateStatuses = [Order::STATE_NEW];
 }

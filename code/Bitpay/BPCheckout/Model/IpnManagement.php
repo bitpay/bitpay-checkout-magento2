@@ -109,7 +109,7 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
                     
                     $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> processing has been completed.');
                     if($bitpay_ipn_mapping != 'processing'):
-                        $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT);
+                        $order->setState(Order::STATE_NEW)->setStatus(Order::STATE_NEW);
                     else:
                         $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
                     endif;
@@ -122,7 +122,7 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
                 case 'invoice_paidInFull':
                        #STATE_PENDING
                     $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> is processing.');
-                    $order->setState(Order::STATE_PENDING_PAYMENT)->setStatus(Order::STATE_PENDING_PAYMENT);
+                    $order->setState(Order::STATE_NEW)->setStatus(Order::STATE_NEW);
                     $order->save();
                     return true;
 
@@ -157,6 +157,6 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
     }
     public function getExtensionVersion()
     {
-        return 'Bitpay_BPCheckout_Magento2_3.0.4.0';
+        return 'Bitpay_BPCheckout_Magento2_3.0.5.0';
     }
 }

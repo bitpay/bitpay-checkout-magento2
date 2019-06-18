@@ -11,6 +11,7 @@ class BPRedirect implements ObserverInterface
     protected $coreRegistry;
     protected $_redirect;
     protected $_response;
+    public $orderRepository;
 
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig, \Magento\Framework\App\ResponseFactory $responseFactory,
@@ -21,7 +22,8 @@ class BPRedirect implements ObserverInterface
         \Magento\Framework\Registry $registry,
         \Magento\Framework\App\ActionFlag $actionFlag,
         \Magento\Framework\App\Response\RedirectInterface $redirect,
-        \Magento\Framework\App\ResponseInterface $response
+        \Magento\Framework\App\ResponseInterface $response,
+        \Magento\Sales\Model\OrderRepository $orderRepository
     ) {
         $this->coreRegistry = $registry;
         $this->_moduleList = $moduleList;
@@ -33,6 +35,7 @@ class BPRedirect implements ObserverInterface
         $this->_actionFlag = $actionFlag;
         $this->_redirect = $redirect;
         $this->_response = $response;
+        $this->orderRepository = $orderRepository;
 
     }
 
@@ -79,8 +82,16 @@ class BPRedirect implements ObserverInterface
         $order_id = $order_ids[0];
         $order = $this->getOrder($order_id);
         $order_id_long = $order->getIncrementId();
-        if ($order->getPayment()->getMethodInstance()->getCode() == 'bpcheckout') {
+       
 
+        
+       
+        if ($order->getPayment()->getMethodInstance()->getCode() == 'bpcheckout') {
+           #set to pending and override magento coding
+            $order->setState('new',true);
+            $order->setStatus('pending',true);
+   
+            $order->save();
             #get the environment
             $env = $this->getStoreConfig('payment/bpcheckout/bitpay_endpoint');
             $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_devtoken');
@@ -103,16 +114,19 @@ class BPRedirect implements ObserverInterface
             $params->currency = $order['base_currency_code']; //set as needed
 
             #buyer email
-            $bitpay_capture_email = $this->getStoreConfig('payment/bpcheckout/bitpay_capture_email');
             $customerSession = $objectManager->create('Magento\Customer\Model\Session');
+           
+            $buyerInfo = (new \stdClass());
             if ($customerSession->isLoggedIn()) {
-                if ($bitpay_capture_email == 1):
-                    $buyerInfo = (new \stdClass());
+                    
                     $buyerInfo->name = $customerSession->getCustomer()->getName();
                     $buyerInfo->email = $customerSession->getCustomer()->getEmail();
                     $params->buyer = $buyerInfo;
-                endif;
+            }else{
+                $buyerInfo->name = $order->getBillingAddress()->getFirstName(). ' '.$order->getBillingAddress()->getLastName();
+                $buyerInfo->email = $order->getCustomerEmail();
             }
+          ;
 
             $params->orderId = trim($order_id_long);
 
@@ -181,7 +195,7 @@ class BPRedirect implements ObserverInterface
     } //end execute function
     public function getExtensionVersion()
     {
-        return 'Bitpay_BPCheckout_Magento2_3.0.4.0';
+        return 'Bitpay_BPCheckout_Magento2_3.0.5.0';
 
     }
 

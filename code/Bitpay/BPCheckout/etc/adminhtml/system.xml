@@ -88,13 +88,7 @@
                     <comment><![CDATA[If this is set to <b>Redirect</b>, then the customer will be redirected to <b>BitPay</b> to checkout, and return to the checkout page once the payment is made.<br><br>If this is set to <b>Modal</b>, the user will stay on your e-commerce site and complete the transaction.]]></comment>
                     <source_model>Bitpay\BPCheckout\Model\Config\Source\Ux</source_model>
                 </field>
-
-                <field id="bitpay_capture_email" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Auto-Capture Email</label>
-                    <comment><![CDATA[Should BitPay try to auto-add the client's email address?<br>If <b>Yes</b>, the client will not be able to change the email address on the BitPay invoice.<br>If <b>No</b>, they will be able to add their own email address when paying the invoice.]]></comment>
-                    <source_model>Bitpay\BPCheckout\Model\Config\Source\Capture</source_model>
-                </field>
-
+ 
                 
                 <field id="specificcountry" translate="label" type="multiselect" sortOrder="41" showInDefault="1"
                     showInWebsite="1" showInStore="0">
