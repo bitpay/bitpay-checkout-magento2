@@ -68,29 +68,25 @@ class BPRedirect implements ObserverInterface
     {
         $controller = $observer->getControllerAction();
         $this->_actionFlag->set('', \Magento\Framework\App\Action\Action::FLAG_NO_DISPATCH, true);
-       
+
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of object manager
         $level = 1;
-       
-        include(dirname(__DIR__, $level)."/BitPayLib/BPC_Client.php");
-        include(dirname(__DIR__, $level)."/BitPayLib/BPC_Configuration.php");
-        include(dirname(__DIR__, $level)."/BitPayLib/BPC_Invoice.php");
-        include(dirname(__DIR__, $level)."/BitPayLib/BPC_Item.php");
 
-       
+        include dirname(__DIR__, $level) . "/BitPayLib/BPC_Client.php";
+        include dirname(__DIR__, $level) . "/BitPayLib/BPC_Configuration.php";
+        include dirname(__DIR__, $level) . "/BitPayLib/BPC_Invoice.php";
+        include dirname(__DIR__, $level) . "/BitPayLib/BPC_Item.php";
+
         $order_ids = $observer->getEvent()->getOrderIds();
         $order_id = $order_ids[0];
         $order = $this->getOrder($order_id);
         $order_id_long = $order->getIncrementId();
-       
 
-        
-       
         if ($order->getPayment()->getMethodInstance()->getCode() == 'bpcheckout') {
-           #set to pending and override magento coding
-            $order->setState('new',true);
-            $order->setStatus('pending',true);
-   
+            #set to pending and override magento coding
+            $order->setState('new', true);
+            $order->setStatus('pending', true);
+
             $order->save();
             #get the environment
             $env = $this->getStoreConfig('payment/bpcheckout/bitpay_endpoint');
@@ -115,39 +111,44 @@ class BPRedirect implements ObserverInterface
 
             #buyer email
             $customerSession = $objectManager->create('Magento\Customer\Model\Session');
-           
+
             $buyerInfo = (new \stdClass());
+            $guest_login = true;
             if ($customerSession->isLoggedIn()) {
-                    
-                    $buyerInfo->name = $customerSession->getCustomer()->getName();
-                    $buyerInfo->email = $customerSession->getCustomer()->getEmail();
-                    $params->buyer = $buyerInfo;
-            }else{
-                $buyerInfo->name = $order->getBillingAddress()->getFirstName(). ' '.$order->getBillingAddress()->getLastName();
+                $guest_login = false;
+                $buyerInfo->name = $customerSession->getCustomer()->getName();
+                $buyerInfo->email = $customerSession->getCustomer()->getEmail();
+
+            } else {
+                $buyerInfo->name = $order->getBillingAddress()->getFirstName() . ' ' . $order->getBillingAddress()->getLastName();
                 $buyerInfo->email = $order->getCustomerEmail();
             }
-          ;
+            $params->buyer = $buyerInfo;
 
             $params->orderId = trim($order_id_long);
 
             #ipn
 
-            if (!$customerSession->isLoggedIn()) {
-                #leave alone
-                $params->redirectURL = $this->getBaseUrl() . 'checkout/onepage/success/';
-                if ($modal == false):
-                    $params->redirectURL .= '?bp=1';
+            if ($guest_login) { #user is a guest
+            #leave alone
+            if ($modal == false):
+                    #this will send them back to the order/returns page to lookup
+                    $params->redirectURL = $this->getBaseUrl() . 'sales/guest/form';
+                    #set some info for guest checkout
+                    setcookie('oar_order_id', $order_id_long, time() + (86400 * 30), "/"); // 86400 = 1 day
+                    setcookie('oar_billing_lastname', $order->getBillingAddress()->getLastName(), time() + (86400 * 30), "/"); // 86400 = 1 day
+                    setcookie('oar_email', $order->getCustomerEmail(), time() + (86400 * 30), "/"); // 86400 = 1 day
+
+                else:
+                    $params->redirectURL = $this->getBaseUrl() . 'checkout/onepage/success/';
                 endif;
-            }
-            if ($customerSession->isLoggedIn()) {
+            } else {
                 $params->redirectURL = $this->getBaseUrl() . 'sales/order/view/order_id/' . $order_id . '/';
-                if ($modal == false):
-                endif;
             }
+
             $params->notificationURL = $this->getBaseUrl() . 'rest/V1/bitpay-bpcheckout/ipn';
             $params->extendedNotifications = true;
             $params->acceptanceWindow = 1200000;
-
 
             #cartfix for modal
             $params->cartFix = $this->getBaseUrl() . 'cartfix/cartfix?order_id=' . $order_id;
@@ -169,7 +170,6 @@ class BPRedirect implements ObserverInterface
             $table_name = $resource->getTableName('bitpay_transactions');
 
             $sql = "INSERT INTO $table_name (order_id,transaction_id,transaction_status) VALUES ('" . $order_id_long . "','" . $invoiceID . "','new')";
-            
 
             $connection->query($sql);
             switch ($modal) {
@@ -187,15 +187,15 @@ class BPRedirect implements ObserverInterface
                     break;
                 case false:
                 default:
-                
-                $this->_redirect->redirect($this->_response, $invoice->BPC_getInvoiceURL());;
-                break;
+
+                    $this->_redirect->redirect($this->_response, $invoice->BPC_getInvoiceURL());
+                    break;
             }
         }
     } //end execute function
     public function getExtensionVersion()
     {
-        return 'Bitpay_BPCheckout_Magento2_3.0.5.0';
+        return 'Bitpay_BPCheckout_Magento2_3.0.6.0';
 
     }
 

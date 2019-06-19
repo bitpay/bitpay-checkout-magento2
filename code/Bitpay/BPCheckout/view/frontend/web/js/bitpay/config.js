@@ -65,3 +65,18 @@ if (window.location.href.indexOf("checkout/onepage/success/") > -1 && getCookie(
     }, 750);
    
 }
+//guest checkout 
+//autofill the guest info
+if(window.location.pathname.indexOf('sales/guest/form') != -1){
+    //autofill form
+    setTimeout(function(){ 
+      jQuery("#oar-order-id").val(getCookie("oar_order_id"))
+      jQuery("#oar-billing-lastname").val(getCookie("oar_billing_lastname"))
+      jQuery("#oar_email").val(getCookie("oar_email"))
+      deleteCookie("oar_order_id")
+      deleteCookie("oar_billing_lastname")
+      deleteCookie("oar_email")
+
+    }, 
+      1500);  
+  }
