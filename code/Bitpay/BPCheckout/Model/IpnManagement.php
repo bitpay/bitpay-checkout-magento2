@@ -7,21 +7,27 @@ use Magento\Sales\Model\Order;
 class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
 {
 
-    /**
-     * {@inheritdoc}
-     */
+    protected $_invoiceService;
+    protected $_transaction;
+    public $orderRepository;
+
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Framework\App\ResponseFactory $responseFactory,
         \Magento\Framework\UrlInterface $url,
-        \Magento\Framework\Module\ModuleListInterface $moduleList
+        \Magento\Framework\Module\ModuleListInterface $moduleList,
+        \Magento\Sales\Model\OrderRepository $orderRepository,
+        \Magento\Sales\Model\Service\InvoiceService $invoiceService,
+        \Magento\Framework\DB\Transaction $transaction
     ) {
         $this->_moduleList = $moduleList;
 
         $this->_scopeConfig = $scopeConfig;
         $this->_responseFactory = $responseFactory;
         $this->_url = $url;
-
+        $this->orderRepository = $orderRepository;
+        $this->_invoiceService = $invoiceService;
+        $this->_transaction = $transaction;
     }
     public function getStoreConfig($_env)
     {
@@ -65,10 +71,10 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
 
             $level = 1;
 
-            include(dirname(__DIR__, $level)."/BitPayLib/BPC_Client.php");
-            include(dirname(__DIR__, $level)."/BitPayLib/BPC_Configuration.php");
-            include(dirname(__DIR__, $level)."/BitPayLib/BPC_Invoice.php");
-            include(dirname(__DIR__, $level)."/BitPayLib/BPC_Item.php");
+            include dirname(__DIR__, $level) . "/BitPayLib/BPC_Client.php";
+            include dirname(__DIR__, $level) . "/BitPayLib/BPC_Configuration.php";
+            include dirname(__DIR__, $level) . "/BitPayLib/BPC_Invoice.php";
+            include dirname(__DIR__, $level) . "/BitPayLib/BPC_Item.php";
 
             #verify the ipn
             $env = $this->getStoreConfig('payment/bpcheckout/bitpay_endpoint');
@@ -101,28 +107,34 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
                     $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> status has changed to Completed.');
                     $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
                     $order->save();
+
+                    $this->createMGInvoice($order);
+
                     return true;
                     break;
 
                 case 'invoice_confirmed':
                     #pending or processing from plugin settings
-                    
+
                     $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> processing has been completed.');
-                    if($bitpay_ipn_mapping != 'processing'):
-                        $order->setState(Order::STATE_NEW)->setStatus(Order::STATE_NEW);
+                    if ($bitpay_ipn_mapping != 'processing'):
+                        #$order->setState(Order::STATE_NEW)->setStatus(Order::STATE_NEW);
+                        $order->setState('new', true);
+                        $order->setStatus('pending', true);
                     else:
                         $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
+                        $this->createMGInvoice($order);
                     endif;
-                    
-                    
+
                     $order->save();
                     return true;
                     break;
 
                 case 'invoice_paidInFull':
-                       #STATE_PENDING
+                    #STATE_PENDING
                     $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> is processing.');
-                    $order->setState(Order::STATE_NEW)->setStatus(Order::STATE_NEW);
+                    $order->setState('new', true);
+                    $order->setStatus('pending', true);
                     $order->save();
                     return true;
 
@@ -155,8 +167,20 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
 
         endif;
     }
+    public function createMGInvoice($order)
+    {
+        $invoice = $this->_invoiceService->prepareInvoice($order);
+        $invoice->register();
+        $invoice->save();
+        $transactionSave = $this->_transaction->addObject(
+            $invoice
+        )->addObject(
+            $invoice->getOrder()
+        );
+        $transactionSave->save();
+    }
     public function getExtensionVersion()
     {
-        return 'Bitpay_BPCheckout_Magento2_3.0.6.0';
+        return 'Bitpay_BPCheckout_Magento2_3.0.7.0';
     }
 }

@@ -12,6 +12,8 @@ class BPRedirect implements ObserverInterface
     protected $_redirect;
     protected $_response;
     public $orderRepository;
+    protected $_invoiceService;
+    protected $_transaction;
 
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig, \Magento\Framework\App\ResponseFactory $responseFactory,
@@ -23,7 +25,9 @@ class BPRedirect implements ObserverInterface
         \Magento\Framework\App\ActionFlag $actionFlag,
         \Magento\Framework\App\Response\RedirectInterface $redirect,
         \Magento\Framework\App\ResponseInterface $response,
-        \Magento\Sales\Model\OrderRepository $orderRepository
+        \Magento\Sales\Model\OrderRepository $orderRepository,
+        \Magento\Sales\Model\Service\InvoiceService $invoiceService,
+        \Magento\Framework\DB\Transaction $transaction
     ) {
         $this->coreRegistry = $registry;
         $this->_moduleList = $moduleList;
@@ -36,7 +40,8 @@ class BPRedirect implements ObserverInterface
         $this->_redirect = $redirect;
         $this->_response = $response;
         $this->orderRepository = $orderRepository;
-
+        $this->_invoiceService = $invoiceService;
+        $this->_transaction = $transaction;
     }
 
     public function getStoreConfig($_env)
@@ -88,6 +93,9 @@ class BPRedirect implements ObserverInterface
             $order->setStatus('pending', true);
 
             $order->save();
+
+
+
             #get the environment
             $env = $this->getStoreConfig('payment/bpcheckout/bitpay_endpoint');
             $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_devtoken');
@@ -195,7 +203,7 @@ class BPRedirect implements ObserverInterface
     } //end execute function
     public function getExtensionVersion()
     {
-        return 'Bitpay_BPCheckout_Magento2_3.0.6.0';
+        return 'Bitpay_BPCheckout_Magento2_3.0.7.0';
 
     }
 

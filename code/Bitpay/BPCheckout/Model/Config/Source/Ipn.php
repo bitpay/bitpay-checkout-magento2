@@ -15,7 +15,7 @@ class Ipn implements \Magento\Framework\Option\ArrayInterface
     public function toOptionArray()
     {
         return [
-            'pending' => 'Pending Payment',
+            'pending' => 'Pending',
             'processing' => 'Processing',
         ];
 
