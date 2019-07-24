@@ -36,7 +36,7 @@ class BPPaymentMethodAvailable implements ObserverInterface
             if ($env == 'prod'):
                 $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_prodtoken');
             endif;
-            if($bitpay_token == '' || strlen($bitpay_token) != 44):
+            if($bitpay_token == ''):
                 #hide the payment method
                 $checkResult = $observer->getEvent()->getResult();
                 $checkResult->setData('is_available', false); //this is disabling the payment method at checkout page
