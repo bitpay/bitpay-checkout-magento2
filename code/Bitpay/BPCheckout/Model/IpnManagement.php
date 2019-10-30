@@ -62,11 +62,18 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         $orderid = $data['orderId'];
         $order_status = $data['status'];
         $order_invoice = $data['id'];
+        
 
         #is it in the lookup table
-        $sql = "SELECT * FROM $table_name WHERE order_id = '$orderid' AND transaction_id = '$order_invoice' ";
-        $result = $connection->query($sql);
-        $row = $result->fetch();
+       # $sql = "SELECT * FROM $table_name WHERE order_id = '$orderid' AND transaction_id = '$order_invoice' ";
+       $sql = $connection->select()
+                                        ->from($table_name)
+                                        ->where('order_id = ?', $orderid)
+                                        ->where('transaction_id = ?', $order_invoice);
+
+        $row = $connection->fetchAll($sql);
+        
+        #$row = $result->fetch();
         if ($row):
 
             $level = 1;
@@ -91,11 +98,14 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
             $params->extension_version = $this->getExtensionVersion();
             $item = (new \Bitpay\BPCheckout\BitPayLib\BPC_Item($config, $params));
             $invoice = (new \Bitpay\BPCheckout\BitPayLib\BPC_Invoice($item));
-
+          
             $orderStatus = json_decode($invoice->BPC_checkInvoiceStatus($order_invoice));
+           
             $invoice_status = $orderStatus->data->status;
+            
             $update_sql = "UPDATE $table_name SET transaction_status = '$invoice_status' WHERE order_id = '$orderid' AND transaction_id = '$order_invoice'";
-
+          
+            $connection->query($sql);
             $update_result = $connection->query($update_sql);
 
             $order = $this->getOrder($orderid);
