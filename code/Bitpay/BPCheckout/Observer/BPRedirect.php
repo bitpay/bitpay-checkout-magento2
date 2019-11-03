@@ -177,9 +177,12 @@ class BPRedirect implements ObserverInterface
             $connection = $resource->getConnection();
             $table_name = $resource->getTableName('bitpay_transactions');
 
-            $sql = "INSERT INTO $table_name (order_id,transaction_id,transaction_status) VALUES ('" . $order_id_long . "','" . $invoiceID . "','new')";
 
-            $connection->query($sql);
+            $connection->insertForce(
+                $table_name,
+                ['order_id' => $order_id_long, 'transaction_id' => $invoiceID,'transaction_status'=>'new']
+            );
+    
             switch ($modal) {
                 case true:
                 case 1:
@@ -203,7 +206,7 @@ class BPRedirect implements ObserverInterface
     } //end execute function
     public function getExtensionVersion()
     {
-        return 'Bitpay_BPCheckout_Magento2_3.0.9.0';
+        return 'Bitpay_BPCheckout_Magento2_3.1.1911.0';
 
     }
 
