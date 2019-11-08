@@ -3,6 +3,7 @@
 namespace Bitpay\BPCheckout\Model;
 
 use Magento\Sales\Model\Order;
+#use Bitpay\BPCheckout\BitPayLib\BPC_Configuration;
 
 class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
 {
@@ -10,6 +11,9 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
     protected $_invoiceService;
     protected $_transaction;
     public $orderRepository;
+
+    public $apiToken;
+    public $network;
 
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
@@ -28,6 +32,59 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         $this->orderRepository = $orderRepository;
         $this->_invoiceService = $invoiceService;
         $this->_transaction = $transaction;
+
+       
+       
+    }
+    function BPC_Configuration($token,$network){
+        $this->apiToken = $token;
+        if($network == 'test' || $network == null):
+            $this->network = $this->BPC_getApiHostDev();
+        else:
+            $this->network = $this->BPC_getApiHostProd();
+        endif;
+        $config = (new \stdClass());
+        $config->network = $network;
+        $config->token = $token;
+        return $config;
+       
+      
+
+        
+    }
+
+    function BPC_getAPIToken() {
+         #verify the ipn
+         $env = $this->getStoreConfig('payment/bpcheckout/bitpay_endpoint');
+         $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_devtoken');
+         if ($env == 'prod'):
+             $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_prodtoken');
+         endif;
+         $this->apiToken = $bitpay_token;
+        return $this->apiToken;
+    }
+    
+    function BPC_getNetwork() {
+        return $this->network;
+    }
+    
+    public function BPC_getApiHostDev()
+    {
+        return 'test.bitpay.com';
+    }
+    
+    public function BPC_getApiHostProd()
+    {
+        return 'bitpay.com';
+    }
+    
+    public function BPC_getApiPort()
+    {
+        return 443;
+    }
+    
+    public function BPC_getInvoiceURL(){
+        return $this->network.'/invoices';
     }
     public function getStoreConfig($_env)
     {
@@ -36,6 +93,93 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         return $_val;
 
     }
+    public function BPC_Item($config,$item_params){
+      
+        $_item = (new \stdClass());
+        $_item->token =$config->token;
+        $_item->endpoint =  $config->network;
+        $_item->item_params = $item_params;
+       
+        if($_item->endpoint == 'test'){
+            $_item->invoice_endpoint = 'test.bitpay.com';
+          
+        }else{
+            $_item->invoice_endpoint = 'bitpay.com';
+        }
+        
+        
+        return $_item;
+    }
+    function BPC_getItem(){
+        $this->invoice_endpoint = $this->endpoint.'/invoices';
+        $this->buyer_transaction_endpoint = $this->endpoint.'/invoiceData/setBuyerSelectedTransactionCurrency';
+        $this->item_params->token = $this->token;
+        return ($this->item_params);
+     }
+
+     public function BPC_Invoice($item){
+        $this->item = $item;
+        return $item;
+        
+       
+         
+     }
+
+     public function BPC_checkInvoiceStatus($orderID,$item)
+     {
+      
+          
+         $post_fields = ($item->item_params);
+           
+        
+        
+ 
+         $ch = curl_init();
+         curl_setopt($ch, CURLOPT_URL, 'https://' . $item->invoice_endpoint . '/invoices/' . $post_fields->invoiceID);
+         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+         $result = curl_exec($ch);
+         curl_close($ch);
+         
+         return $result;
+     }
+
+     public function BPC_createInvoice()
+    {
+       
+       
+        $post_fields = json_encode($this->item->item_params);
+
+        $pluginInfo = $this->item->item_params->extension_version;
+        $request_headers = array();
+        $request_headers[] = 'X-BitPay-Plugin-Info: ' . $pluginInfo;
+        $request_headers[] = 'Content-Type: application/json';
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, 'https://' . $this->item->invoice_endpoint);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $request_headers);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post_fields);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $result = curl_exec($ch);
+
+        $this->invoiceData = $result;
+
+        curl_close($ch);
+
+    }
+
+    public function BPC_getInvoiceData()
+    {
+        return $this->invoiceData;
+    }
+
+    public function BPC_getInvoiceDataURL()
+    {
+        $data = json_decode($this->invoiceData);
+        return $data->data->url;
+    }
+    
 
     public function getOrder($_order_id)
     {
@@ -46,6 +190,9 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         return $order;
 
     }
+
+    
+
     public function postIpn()
     {
 
@@ -78,30 +225,34 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
 
             $level = 1;
 
-            include dirname(__DIR__, $level) . "/BitPayLib/BPC_Client.php";
-            include dirname(__DIR__, $level) . "/BitPayLib/BPC_Configuration.php";
-            include dirname(__DIR__, $level) . "/BitPayLib/BPC_Invoice.php";
-            include dirname(__DIR__, $level) . "/BitPayLib/BPC_Item.php";
-
+       
             #verify the ipn
             $env = $this->getStoreConfig('payment/bpcheckout/bitpay_endpoint');
             $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_devtoken');
             if ($env == 'prod'):
                 $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_prodtoken');
             endif;
+            
             $bitpay_ipn_mapping = $this->getStoreConfig('payment/bpcheckout/bitpay_ipn_mapping');
-
-            $config = (new \Bitpay\BPCheckout\BitPayLib\BPC_Configuration($bitpay_token, $env));
+          
+            $config = $this->BPC_Configuration($bitpay_token,$env);
+            
+            
+           
             $params = (new \stdClass());
 
             $params->invoiceID = $order_invoice;
             $params->extension_version = $this->getExtensionVersion();
-            $item = (new \Bitpay\BPCheckout\BitPayLib\BPC_Item($config, $params));
-            $invoice = (new \Bitpay\BPCheckout\BitPayLib\BPC_Invoice($item));
-          
-            $orderStatus = json_decode($invoice->BPC_checkInvoiceStatus($order_invoice));
+            
+         
+            $item = $this->BPC_Item( $config,$params);
            
-            $invoice_status = $orderStatus->data->status;
+            
+          
+           $invoice = $this->BPC_Invoice($item);
+           $orderStatus = json_decode($this->BPC_checkInvoiceStatus($order_invoice,$item));
+           $invoice_status = $orderStatus->data->status;
+            
             
             $update_sql = "UPDATE $table_name SET transaction_status = '$invoice_status' WHERE order_id = '$orderid' AND transaction_id = '$order_invoice'";
           
