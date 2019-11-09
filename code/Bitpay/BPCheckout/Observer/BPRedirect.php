@@ -3,6 +3,7 @@ namespace Bitpay\BPCheckout\Observer;
 
 use Magento\Framework\Event\ObserverInterface;
 
+
 class BPRedirect implements ObserverInterface
 {
     protected $checkoutSession;
@@ -14,6 +15,9 @@ class BPRedirect implements ObserverInterface
     public $orderRepository;
     protected $_invoiceService;
     protected $_transaction;
+
+    public $apiToken;
+    public $network;
 
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig, \Magento\Framework\App\ResponseFactory $responseFactory,
@@ -44,6 +48,141 @@ class BPRedirect implements ObserverInterface
         $this->_transaction = $transaction;
     }
 
+    function BPC_Configuration($token,$network){
+        $this->apiToken = $token;
+        if($network == 'test' || $network == null):
+            $this->network = $this->BPC_getApiHostDev();
+        else:
+            $this->network = $this->BPC_getApiHostProd();
+        endif;
+        $config = (new \stdClass());
+        $config->network = $network;
+        $config->token = $token;
+        return $config;
+        
+    }
+
+    function BPC_getAPIToken() {
+         #verify the ipn
+         $env = $this->getStoreConfig('payment/bpcheckout/bitpay_endpoint');
+         $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_devtoken');
+         if ($env == 'prod'):
+             $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_prodtoken');
+         endif;
+         $this->apiToken = $bitpay_token;
+        return $this->apiToken;
+    }
+    
+    function BPC_getNetwork() {
+        return $this->network;
+    }
+    
+    public function BPC_getApiHostDev()
+    {
+        return 'test.bitpay.com';
+    }
+    
+    public function BPC_getApiHostProd()
+    {
+        return 'bitpay.com';
+    }
+    
+    public function BPC_getApiPort()
+    {
+        return 443;
+    }
+    
+    public function BPC_getInvoiceURL(){
+        return $this->network.'/invoices';
+    }
+    
+    public function BPC_Item($config,$item_params){
+      
+        $_item = (new \stdClass());
+        $_item->token =$config->token;
+        $_item->endpoint =  $config->network;
+        $_item->item_params = $item_params;
+       
+        if($_item->endpoint == 'test'){
+            $_item->invoice_endpoint = 'test.bitpay.com';
+          
+        }else{
+            $_item->invoice_endpoint = 'bitpay.com';
+        }
+        
+        
+        return $_item;
+    }
+    function BPC_getItem(){
+        $this->invoice_endpoint = $this->endpoint.'/invoices';
+        $this->buyer_transaction_endpoint = $this->endpoint.'/invoiceData/setBuyerSelectedTransactionCurrency';
+        $this->item_params->token = $this->token;
+        return ($this->item_params);
+     }
+
+     public function BPC_Invoice($item){
+        $this->item = $item;
+        return $item;
+        
+       
+         
+     }
+
+     public function BPC_checkInvoiceStatus($orderID,$item)
+     {
+      
+          
+         $post_fields = ($item->item_params);
+           
+        
+        
+ 
+         $ch = curl_init();
+         curl_setopt($ch, CURLOPT_URL, 'https://' . $item->invoice_endpoint . '/invoices/' . $post_fields->invoiceID);
+         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+         $result = curl_exec($ch);
+         curl_close($ch);
+         
+         return $result;
+     }
+
+     public function BPC_createInvoice($item)
+    {
+        $item->item_params->token = $item->token;
+        $post_fields = json_encode($item->item_params);
+
+        $pluginInfo = $item->item_params->extension_version;
+        $request_headers = array();
+        $request_headers[] = 'X-BitPay-Plugin-Info: ' . $pluginInfo;
+        $request_headers[] = 'Content-Type: application/json';
+      
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, 'https://' . $item->invoice_endpoint.'/invoices');
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $request_headers);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post_fields);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $result = curl_exec($ch);
+
+      
+
+        curl_close($ch);
+        return ($result);
+
+    }
+
+    public function BPC_getInvoiceData()
+    {
+        return $this->invoiceData;
+    }
+
+    public function BPC_getInvoiceDataURL()
+    {
+        $data = json_decode($this->invoiceData);
+        return $data->data->url;
+    }
+
     public function getStoreConfig($_env)
     {
         $_val = $this->_scopeConfig->getValue(
@@ -68,6 +207,7 @@ class BPRedirect implements ObserverInterface
         return $storeManager->getStore()->getBaseUrl();
 
     }
+    
 
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
@@ -76,11 +216,6 @@ class BPRedirect implements ObserverInterface
 
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of object manager
         $level = 1;
-
-        include dirname(__DIR__, $level) . "/BitPayLib/BPC_Client.php";
-        include dirname(__DIR__, $level) . "/BitPayLib/BPC_Configuration.php";
-        include dirname(__DIR__, $level) . "/BitPayLib/BPC_Invoice.php";
-        include dirname(__DIR__, $level) . "/BitPayLib/BPC_Item.php";
 
         $order_ids = $observer->getEvent()->getOrderIds();
         $order_id = $order_ids[0];
@@ -109,7 +244,7 @@ class BPRedirect implements ObserverInterface
                 $modal = true;
             endif;
 
-            $config = (new \Bitpay\BPCheckout\BitPayLib\BPC_Configuration($bitpay_token, $env));
+            $config = $this->BPC_Configuration($bitpay_token,$env);
 
             //create an item, should be passed as an object'
             $params = (new \stdClass());
@@ -160,12 +295,16 @@ class BPRedirect implements ObserverInterface
 
             #cartfix for modal
             $params->cartFix = $this->getBaseUrl() . 'cartfix/cartfix?order_id=' . $order_id;
-            $item = (new \Bitpay\BPCheckout\BitPayLib\BPC_Item($config, $params));
-            $invoice = (new \Bitpay\BPCheckout\BitPayLib\BPC_Invoice($item));
+            $item = $this->BPC_Item( $config,$params);
+           
+            
 
             //this creates the invoice with all of the config params from the item
-            $invoice->BPC_createInvoice();
-            $invoiceData = json_decode($invoice->BPC_getInvoiceData());
+            $invoice = $this->BPC_createInvoice($item);
+            $invoiceData = json_decode($invoice);
+            
+         
+            
 
             //now we have to append the invoice transaction id for the callback verification
             $invoiceID = $invoiceData->data->id;
@@ -199,7 +338,7 @@ class BPRedirect implements ObserverInterface
                 case false:
                 default:
 
-                    $this->_redirect->redirect($this->_response, $invoice->BPC_getInvoiceURL());
+                    $this->_redirect->redirect($this->_response, $invoiceData->data->url);
                     break;
             }
         }

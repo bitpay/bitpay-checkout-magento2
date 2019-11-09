@@ -3,7 +3,6 @@
 namespace Bitpay\BPCheckout\Model;
 
 use Magento\Sales\Model\Order;
-#use Bitpay\BPCheckout\BitPayLib\BPC_Configuration;
 
 class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
 {
@@ -47,9 +46,6 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         $config->network = $network;
         $config->token = $token;
         return $config;
-       
-      
-
         
     }
 
@@ -237,8 +233,6 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
           
             $config = $this->BPC_Configuration($bitpay_token,$env);
             
-            
-           
             $params = (new \stdClass());
 
             $params->invoiceID = $order_invoice;
@@ -247,8 +241,6 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
          
             $item = $this->BPC_Item( $config,$params);
            
-            
-          
            $invoice = $this->BPC_Invoice($item);
            $orderStatus = json_decode($this->BPC_checkInvoiceStatus($order_invoice,$item));
            $invoice_status = $orderStatus->data->status;
