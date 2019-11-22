@@ -1,6 +1,4 @@
 <?php
-
-#host/cartfix/cartfix?order_id = order_id
 namespace Bitpay\BPCheckout\Controller\Cartfix;
 
 class Index extends \Magento\Framework\App\Action\Action

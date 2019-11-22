@@ -6,10 +6,4 @@
 			<resource ref="anonymous"/>
 		</resources>
 	</route>
-	<route method="POST" url="/V1/bitpay-bpcheckout/modal">
-		<service class="Bitpay\BPCheckout\Api\ModalManagementInterface" method="postModal"/>
-		<resources>
-			<resource ref="anonymous"/>
-		</resources>
-	</route>
 </routes>
