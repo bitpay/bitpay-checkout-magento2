@@ -313,7 +313,7 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         endif;
 
     } catch (Exception $e) {
-        echo 'Caught exception: ',  $e->getMessage(), "\n";
+      
     }
     }
     public function createMGInvoice($order)
@@ -329,7 +329,7 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         );
         $transactionSave->save();
     } catch (Exception $e) {
-        echo 'Caught exception: ',  $e->getMessage(), "\n";
+      
     }
     }
     public function getExtensionVersion()
