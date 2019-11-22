@@ -293,8 +293,6 @@ class BPRedirect implements ObserverInterface
             $params->extendedNotifications = true;
             $params->acceptanceWindow = 1200000;
 
-            #cartfix for modal
-            $params->cartFix = $this->getBaseUrl() . 'cartfix/cartfix?order_id=' . $order_id;
             $item = $this->BPC_Item( $config,$params);
            
             
@@ -328,7 +326,6 @@ class BPRedirect implements ObserverInterface
                     $modal_obj = (new \stdClass());
                     $modal_obj->redirectURL = $params->redirectURL;
                     $modal_obj->notificationURL = $params->notificationURL;
-                    $modal_obj->cartFix = $params->cartFix;
                     $modal_obj->invoiceID = $invoiceID;
                     setcookie("env", $env, time() + (86400 * 30), "/");
                     setcookie("invoicedata", json_encode($modal_obj), time() + (86400 * 30), "/");
@@ -345,7 +342,7 @@ class BPRedirect implements ObserverInterface
     } //end execute function
     public function getExtensionVersion()
     {
-        return 'Bitpay_BPCheckout_Magento2_3.1.1911.0';
+        return 'Bitpay_BPCheckout_Magento2_3.2.1911';
 
     }
 

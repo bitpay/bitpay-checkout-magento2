@@ -28,7 +28,6 @@ function showModal(env, response) {
             deleteCookie('env')
             deleteCookie('invoicedata')
             deleteCookie('modal')
-            window.location.href = response.cartFix;
         } //endif
 
     });

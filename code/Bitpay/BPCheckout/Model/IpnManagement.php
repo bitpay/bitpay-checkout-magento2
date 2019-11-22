@@ -102,8 +102,6 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         }else{
             $_item->invoice_endpoint = 'bitpay.com';
         }
-        
-        
         return $_item;
     }
     function BPC_getItem(){
@@ -116,20 +114,12 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
      public function BPC_Invoice($item){
         $this->item = $item;
         return $item;
-        
-       
-         
      }
 
      public function BPC_checkInvoiceStatus($orderID,$item)
      {
-      
-          
          $post_fields = ($item->item_params);
-           
-        
-        
- 
+     
          $ch = curl_init();
          curl_setopt($ch, CURLOPT_URL, 'https://' . $item->invoice_endpoint . '/invoices/' . $post_fields->invoiceID);
          curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
@@ -175,23 +165,18 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         $data = json_decode($this->invoiceData);
         return $data->data->url;
     }
-    
 
     public function getOrder($_order_id)
     {
 
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $order = $objectManager->create('Magento\Sales\Api\Data\OrderInterface')->loadByIncrementId($_order_id);
-
         return $order;
-
-    }
-
-    
+    } 
 
     public function postIpn()
     {
-
+        try{
         #database
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of object manager
         $resource = $objectManager->get('Magento\Framework\App\ResourceConnection');
@@ -203,12 +188,12 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         $event = $all_data['event'];
 
         $orderid = $data['orderId'];
+        #$orderid .=" OR 1=1";
         $order_status = $data['status'];
         $order_invoice = $data['id'];
         
 
         #is it in the lookup table
-       # $sql = "SELECT * FROM $table_name WHERE order_id = '$orderid' AND transaction_id = '$order_invoice' ";
        $sql = $connection->select()
                                         ->from($table_name)
                                         ->where('order_id = ?', $orderid)
@@ -219,9 +204,6 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         #$row = $result->fetch();
         if ($row):
 
-            $level = 1;
-
-       
             #verify the ipn
             $env = $this->getStoreConfig('payment/bpcheckout/bitpay_endpoint');
             $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_devtoken');
@@ -246,11 +228,13 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
            $invoice_status = $orderStatus->data->status;
             
             
-            $update_sql = "UPDATE $table_name SET transaction_status = '$invoice_status' WHERE order_id = '$orderid' AND transaction_id = '$order_invoice'";
-          
-            $connection->query($sql);
-            $update_result = $connection->query($update_sql);
+            $update_data = array('transaction_status' =>$invoice_status);
+            $update_where = array(
+                'order_id = ?' => $orderid,
+                'transaction_id = ?' => $order_invoice
+            );
 
+            $connection->update($table_name,$update_data,$update_where);
             $order = $this->getOrder($orderid);
             #now update the order
             switch ($event['name']) {
@@ -327,9 +311,14 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
             }
 
         endif;
+
+    } catch (Exception $e) {
+        echo 'Caught exception: ',  $e->getMessage(), "\n";
+    }
     }
     public function createMGInvoice($order)
     {
+        try{
         $invoice = $this->_invoiceService->prepareInvoice($order);
         $invoice->register();
         $invoice->save();
@@ -339,9 +328,12 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
             $invoice->getOrder()
         );
         $transactionSave->save();
+    } catch (Exception $e) {
+        echo 'Caught exception: ',  $e->getMessage(), "\n";
+    }
     }
     public function getExtensionVersion()
     {
-        return 'Bitpay_BPCheckout_Magento2_3.1.1911.0';
+        return 'Bitpay_BPCheckout_Magento2_3.2.1911';
     }
 }
