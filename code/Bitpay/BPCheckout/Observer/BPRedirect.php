@@ -342,7 +342,7 @@ class BPRedirect implements ObserverInterface
     } //end execute function
     public function getExtensionVersion()
     {
-        return 'Bitpay_BPCheckout_Magento2_3.4.2002';
+        return 'Bitpay_BPCheckout_Magento2_3.14.2002';
 
     }
 
