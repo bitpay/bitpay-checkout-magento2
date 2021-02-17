@@ -82,6 +82,12 @@
                     <comment><![CDATA[Map the BitPay “confirmed” invoice status to the preferred Magento order status, based on the transaction speed you have selected in your BitPay <a target = "_blank" href = "https://bitpay.com/dashboard/settings/edit/order">dashboard</a>]]></comment>
                     <source_model>Bitpay\BPCheckout\Model\Config\Source\Ipn</source_model>
                 </field>
+
+                <field id="bitpay_refund_mapping" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Status mapping - BitPay invoice / Magento order on BitPay Refunds</label>
+                    <comment><![CDATA[If set to TRUE, Magento will set the Order State to Closed.  If set to FALSE, no changes will be made to the Magento order]]></comment>
+                    <source_model>Bitpay\BPCheckout\Model\Config\Source\Refundstatus</source_model>
+                </field>
                 
                 <field id="bitpay_ux" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Checkout Flow </label>

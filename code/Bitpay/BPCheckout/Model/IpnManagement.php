@@ -212,6 +212,7 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
             endif;
             
             $bitpay_ipn_mapping = $this->getStoreConfig('payment/bpcheckout/bitpay_ipn_mapping');
+            $bitpay_refund_mapping = $this->getStoreConfig('payment/bpcheckout/bitpay_refund_mapping');
           
             $config = $this->BPC_Configuration($bitpay_token,$env);
             
@@ -241,13 +242,10 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
 
                 case 'invoice_completed':
                     if ($invoice_status == 'complete'):
-
                         $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> status has changed to Completed.');
                         $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
                         $order->save();
-
                         $this->createMGInvoice($order);
-
                         return true;
                     endif;
                     break;
@@ -264,7 +262,6 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
                             $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
                             $this->createMGInvoice($order);
                         endif;
-
                         $order->save();
                         return true;
                     endif;
@@ -273,7 +270,6 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
                 case 'invoice_paidInFull':
                     #STATE_PENDING
                     if ($invoice_status == 'paid'):
-
                         $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> is processing.');
                         $order->setState('new', true);
                         $order->setStatus('pending', true);
@@ -294,7 +290,6 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
                     if ($invoice_status == 'expired'):
                        $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> has expired.');
                        $order->setState(Order::STATE_CANCELED)->setStatus(Order::STATE_CANCELED);
-
                        $order->save();
                        return true;
                     endif;
@@ -302,12 +297,11 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
 
                 case 'invoice_refundComplete':
                     #load the order to update
-
                     $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> has been refunded.');
-                    $order->setState(Order::STATE_CLOSED)->setStatus(Order::STATE_CLOSED);
-
+                    if($bitpay_refund_mapping == "closed"):
+                        $order->setState(Order::STATE_CLOSED)->setStatus(Order::STATE_CLOSED);
+                    endif;
                     $order->save();
-
                     return true;
                     break;
             }

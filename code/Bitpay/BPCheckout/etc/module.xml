@@ -5,5 +5,5 @@
 */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../lib/internal/Magento/Framework/Module/etc/module.xsd">
-  <module name="Bitpay_BPCheckout" setup_version="3.5.2001"></module>
+  <module name="Bitpay_BPCheckout" setup_version="3.6.2102"></module>
 </config>
