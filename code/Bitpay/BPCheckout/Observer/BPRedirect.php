@@ -244,6 +244,8 @@ class BPRedirect implements ObserverInterface
                 $modal = true;
             endif;
 
+            $bitpay_redirect_url = $this->getStoreConfig('payment/bpcheckout/bitpay_redirect_url');
+
             $config = $this->BPC_Configuration($bitpay_token,$env);
 
             //create an item, should be passed as an object'
@@ -276,32 +278,38 @@ class BPRedirect implements ObserverInterface
             #leave alone
             if ($modal == false):
                     #this will send them back to the order/returns page to lookup
-                    $params->redirectURL = $this->getBaseUrl() . 'sales/guest/form';
+                    if(isset($bitpay_redirect_url)):
+                        $params->redirectURL = $bitpay_redirect_url;
+                    else:
+                        $params->redirectURL = $this->getBaseUrl() . 'sales/guest/form';
+                    endif;
                     #set some info for guest checkout
                     setcookie('oar_order_id', $order_id_long, time() + (86400 * 30), "/"); // 86400 = 1 day
                     setcookie('oar_billing_lastname', $order->getBillingAddress()->getLastName(), time() + (86400 * 30), "/"); // 86400 = 1 day
                     setcookie('oar_email', $order->getCustomerEmail(), time() + (86400 * 30), "/"); // 86400 = 1 day
 
                 else:
-                    $params->redirectURL = $this->getBaseUrl() . 'checkout/onepage/success/';
+                    if(isset($bitpay_redirect_url)):
+                        $params->redirectURL = $bitpay_redirect_url;
+                    else:
+                        $params->redirectURL = $this->getBaseUrl() . 'checkout/onepage/success/';
+                    endif;
                 endif;
             } else {
+                if(isset($bitpay_redirect_url)):
+                    $params->redirectURL = $bitpay_redirect_url;
+                else:
                 $params->redirectURL = $this->getBaseUrl() . 'sales/order/view/order_id/' . $order_id . '/';
+                endif;
             }
 
             $params->notificationURL = $this->getBaseUrl() . 'rest/V1/bitpay-bpcheckout/ipn';
             $params->extendedNotifications = true;
-            $params->acceptanceWindow = 1200000;
-
             $item = $this->BPC_Item( $config,$params);
-           
-            
 
             //this creates the invoice with all of the config params from the item
             $invoice = $this->BPC_createInvoice($item);
             $invoiceData = json_decode($invoice);
-            
-         
             
 
             //now we have to append the invoice transaction id for the callback verification
@@ -342,7 +350,7 @@ class BPRedirect implements ObserverInterface
     } //end execute function
     public function getExtensionVersion()
     {
-        return 'Bitpay_BPCheckout_Magento2_4.09.2102';
+        return 'Bitpay_BPCheckout_Magento2_5.01.2102';
 
     }
 

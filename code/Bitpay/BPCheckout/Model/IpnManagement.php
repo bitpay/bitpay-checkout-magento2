@@ -213,6 +213,8 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
             
             $bitpay_ipn_mapping = $this->getStoreConfig('payment/bpcheckout/bitpay_ipn_mapping');
             $bitpay_refund_mapping = $this->getStoreConfig('payment/bpcheckout/bitpay_refund_mapping');
+            $bitpay_cancel_mapping = $this->getStoreConfig('payment/bpcheckout/bitpay_cancel_mapping');
+
           
             $config = $this->BPC_Configuration($bitpay_token,$env);
             
@@ -290,7 +292,9 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
                 case 'invoice_expired':
                     if ($invoice_status == 'expired'):
                        $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->invoice_endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> has expired.');
-                       $order->setState(Order::STATE_CANCELED)->setStatus(Order::STATE_CANCELED);
+                       if($bitpay_cancel_mapping == "cancel"):
+                            $order->setState(Order::STATE_CANCELED)->setStatus(Order::STATE_CANCELED);
+                        endif;
                        $order->save();
                        return true;
                     endif;
@@ -331,6 +335,6 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
     }
     public function getExtensionVersion()
     {
-        return 'Bitpay_BPCheckout_Magento2_4.09.2102';
+        return 'Bitpay_BPCheckout_Magento2_5.01.2102';
     }
 }
