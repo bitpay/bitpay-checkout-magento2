@@ -3,4 +3,7 @@
 <event name="payment_method_is_active">
         <observer name="disable_payment" instance="Bitpay\BPCheckout\Observer\BPPaymentMethodAvailable" />
 </event>
+ <event name="sales_order_place_after">
+          <observer name="bitpay_email_stopper" instance="Bitpay\BPCheckout\Observer\BPEmail" />
+      </event>
 </config>

@@ -225,8 +225,12 @@ class BPRedirect implements ObserverInterface
         if ($order->getPayment()->getMethodInstance()->getCode() == 'bpcheckout') {
             #set to pending and override magento coding
             $order->setState('new', true);
-            $order->setStatus('pending', true);
+            $order_status = $this->getStoreConfig('payment/bpcheckout/order_status');
 
+            if(!isset($order_status)):
+                $order_status = "pending";
+            endif;
+            $order->setStatus($order_status, true);
             $order->save();
 
 
@@ -304,6 +308,8 @@ class BPRedirect implements ObserverInterface
             }
 
             $params->notificationURL = $this->getBaseUrl() . 'rest/V1/bitpay-bpcheckout/ipn';
+            $params->closeURL = $this->getBaseUrl() . 'rest/V1/bitpay-bpcheckout/close?orderID='.$order_id;
+
             $params->extendedNotifications = true;
             $item = $this->BPC_Item( $config,$params);
 
@@ -327,10 +333,10 @@ class BPRedirect implements ObserverInterface
                 $table_name,
                 ['order_id' => $order_id_long, 'transaction_id' => $invoiceID,'transaction_status'=>'new']
             );
-    
             switch ($modal) {
                 case true:
                 case 1:
+                   
                     $modal_obj = (new \stdClass());
                     $modal_obj->redirectURL = $params->redirectURL;
                     $modal_obj->notificationURL = $params->notificationURL;

@@ -6,4 +6,10 @@
 			<resource ref="anonymous"/>
 		</resources>
 	</route>
+    	<route method="GET" url="/V1/bitpay-bpcheckout/close">
+		<service class="Bitpay\BPCheckout\Api\IpnManagementInterface" method="postClose"/>
+		<resources>
+			<resource ref="anonymous"/>
+		</resources>
+	</route>
 </routes>

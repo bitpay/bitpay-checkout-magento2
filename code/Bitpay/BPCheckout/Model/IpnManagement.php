@@ -2,6 +2,11 @@
 
 namespace Bitpay\BPCheckout\Model;
 
+use Magento\Catalog\Model\ProductFactory;
+use Magento\Checkout\Model\Cart;
+use Magento\Framework\App\Action\Context;
+use Magento\Framework\View\Result\PageFactory;
+use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Model\Order;
 
 class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
@@ -14,6 +19,14 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
     public $apiToken;
     public $network;
 
+    protected $_resultPageFactory;
+    public $quoteFactory;
+    protected $formKey;
+    protected $cart;
+    protected $product;
+    protected $_responseFactory;
+    protected $_url;
+
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Framework\App\ResponseFactory $responseFactory,
@@ -21,7 +34,12 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         \Magento\Framework\Module\ModuleListInterface $moduleList,
         \Magento\Sales\Model\OrderRepository $orderRepository,
         \Magento\Sales\Model\Service\InvoiceService $invoiceService,
-        \Magento\Framework\DB\Transaction $transaction
+        \Magento\Framework\DB\Transaction $transaction,
+        Context $context,
+        QuoteFactory $quoteFactory,
+        ProductFactory $product,
+        PageFactory $resultPageFactory,
+        Cart $cart
     ) {
         $this->_moduleList = $moduleList;
 
@@ -32,12 +50,16 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         $this->_invoiceService = $invoiceService;
         $this->_transaction = $transaction;
 
-       
-       
+        $this->quoteFactory = $quoteFactory;
+        $this->cart = $cart;
+        $this->product = $product;
+        $this->_resultPageFactory = $resultPageFactory;
+
     }
-    function BPC_Configuration($token,$network){
+    public function BPC_Configuration($token, $network)
+    {
         $this->apiToken = $token;
-        if($network == 'test' || $network == null):
+        if ($network == 'test' || $network == null):
             $this->network = $this->BPC_getApiHostDev();
         else:
             $this->network = $this->BPC_getApiHostProd();
@@ -46,41 +68,44 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         $config->network = $network;
         $config->token = $token;
         return $config;
-        
+
     }
 
-    function BPC_getAPIToken() {
-         #verify the ipn
-         $env = $this->getStoreConfig('payment/bpcheckout/bitpay_endpoint');
-         $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_devtoken');
-         if ($env == 'prod'):
-             $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_prodtoken');
-         endif;
-         $this->apiToken = $bitpay_token;
+    public function BPC_getAPIToken()
+    {
+        #verify the ipn
+        $env = $this->getStoreConfig('payment/bpcheckout/bitpay_endpoint');
+        $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_devtoken');
+        if ($env == 'prod'):
+            $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_prodtoken');
+        endif;
+        $this->apiToken = $bitpay_token;
         return $this->apiToken;
     }
-    
-    function BPC_getNetwork() {
+
+    public function BPC_getNetwork()
+    {
         return $this->network;
     }
-    
+
     public function BPC_getApiHostDev()
     {
         return 'test.bitpay.com';
     }
-    
+
     public function BPC_getApiHostProd()
     {
         return 'bitpay.com';
     }
-    
+
     public function BPC_getApiPort()
     {
         return 443;
     }
-    
-    public function BPC_getInvoiceURL(){
-        return $this->network.'/invoices';
+
+    public function BPC_getInvoiceURL()
+    {
+        return $this->network . '/invoices';
     }
     public function getStoreConfig($_env)
     {
@@ -89,51 +114,53 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         return $_val;
 
     }
-    public function BPC_Item($config,$item_params){
-      
+    public function BPC_Item($config, $item_params)
+    {
+
         $_item = (new \stdClass());
-        $_item->token =$config->token;
-        $_item->endpoint =  $config->network;
+        $_item->token = $config->token;
+        $_item->endpoint = $config->network;
         $_item->item_params = $item_params;
-       
-        if($_item->endpoint == 'test'){
+
+        if ($_item->endpoint == 'test') {
             $_item->invoice_endpoint = 'test.bitpay.com';
-          
-        }else{
+
+        } else {
             $_item->invoice_endpoint = 'bitpay.com';
         }
         return $_item;
     }
-    function BPC_getItem(){
-        $this->invoice_endpoint = $this->endpoint.'/invoices';
-        $this->buyer_transaction_endpoint = $this->endpoint.'/invoiceData/setBuyerSelectedTransactionCurrency';
+    public function BPC_getItem()
+    {
+        $this->invoice_endpoint = $this->endpoint . '/invoices';
+        $this->buyer_transaction_endpoint = $this->endpoint . '/invoiceData/setBuyerSelectedTransactionCurrency';
         $this->item_params->token = $this->token;
         return ($this->item_params);
-     }
+    }
 
-     public function BPC_Invoice($item){
+    public function BPC_Invoice($item)
+    {
         $this->item = $item;
         return $item;
-     }
+    }
 
-     public function BPC_checkInvoiceStatus($orderID,$item,$token)
-     {
-         $post_fields = ($item->item_params);
-     
-         $ch = curl_init();
-         curl_setopt($ch, CURLOPT_URL, 'https://' . $item->invoice_endpoint . '/invoices/' . $post_fields->invoiceID.'?token='.$token);
-         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-         $result = curl_exec($ch);
-         curl_close($ch);
-         
-         return $result;
-     }
-
-     public function BPC_createInvoice()
+    public function BPC_checkInvoiceStatus($orderID, $item, $token)
     {
-       
-       
+        $post_fields = ($item->item_params);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, 'https://' . $item->invoice_endpoint . '/invoices/' . $post_fields->invoiceID . '?token=' . $token);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $result = curl_exec($ch);
+        curl_close($ch);
+
+        return $result;
+    }
+
+    public function BPC_createInvoice()
+    {
+
         $post_fields = json_encode($this->item->item_params);
 
         $pluginInfo = $this->item->item_params->extension_version;
@@ -172,166 +199,203 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $order = $objectManager->create('Magento\Sales\Api\Data\OrderInterface')->loadByIncrementId($_order_id);
         return $order;
-    } 
+    }
 
+    public function postClose()
+    {
+        try {
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of object manager
+            $orderID = $_GET['orderID'];
+            $registry = $objectManager->get('Magento\Framework\Registry');
+
+            #this function is if the user clicks CLOSE on the BitPay page without paying, will restore the items to the cart
+            $orderObject = $objectManager->get('\Magento\Sales\Model\Order');
+            $order = $orderObject->load($orderID);
+            $orderData = $order->getData();
+
+            $quoteID = $orderData['quote_id'];
+            $quote = $this->quoteFactory->create()->load($quoteID);
+            $items = $quote->getAllVisibleItems();
+            foreach ($items as $item) {
+                $productId = $item->getProductId();
+                $_product = $this->product->create()->load($productId);
+
+                $options = $item->getProduct()->getTypeInstance(true)->getOrderOptions($item->getProduct());
+
+                $info = $options['info_buyRequest'];
+                $request1 = new \Magento\Framework\DataObject();
+                $request1->setData($info);
+
+                $this->cart->addProduct($_product, $request1);
+            }
+            $this->cart->save();
+            $registry->register('isSecureArea', 'true');
+            $order->delete();
+            $registry->unregister('isSecureArea');
+            $RedirectUrl = $this->_url->getUrl('checkout/cart');
+            $this->_responseFactory->create()->setRedirect($RedirectUrl)->sendResponse();
+            die();
+        } catch (Exception $e) {
+
+        }
+    }
     public function postIpn()
     {
-        try{
-        #database
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of object manager
-        $resource = $objectManager->get('Magento\Framework\App\ResourceConnection');
-        $connection = $resource->getConnection();
-        $table_name = $resource->getTableName('bitpay_transactions');
-        #json ipn
-        $all_data = json_decode(file_get_contents("php://input"), true);
-        $data = $all_data['data'];
-        $event = $all_data['event'];
+        try {
+            #database
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of object manager
+            $resource = $objectManager->get('Magento\Framework\App\ResourceConnection');
+            $connection = $resource->getConnection();
+            $table_name = $resource->getTableName('bitpay_transactions');
+            #json ipn
+            $all_data = json_decode(file_get_contents("php://input"), true);
+            $data = $all_data['data'];
+            $event = $all_data['event'];
 
-        $orderid = $data['orderId'];
-        #$orderid .=" OR 1=1";
-        $order_status = $data['status'];
-        $order_invoice = $data['id'];
-        
+            $orderid = $data['orderId'];
+            #$orderid .=" OR 1=1";
+            $order_status = $data['status'];
+            $order_invoice = $data['id'];
 
-        #is it in the lookup table
-       $sql = $connection->select()
-                                        ->from($table_name)
-                                        ->where('order_id = ?', $orderid)
-                                        ->where('transaction_id = ?', $order_invoice);
+            #is it in the lookup table
+            $sql = $connection->select()
+                ->from($table_name)
+                ->where('order_id = ?', $orderid)
+                ->where('transaction_id = ?', $order_invoice);
 
-        $row = $connection->fetchAll($sql);
-        
-        #$row = $result->fetch();
-        if ($row):
+            $row = $connection->fetchAll($sql);
 
-            #verify the ipn
-            $env = $this->getStoreConfig('payment/bpcheckout/bitpay_endpoint');
-            $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_devtoken');
-            if ($env == 'prod'):
-                $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_prodtoken');
-            endif;
-            
-            $bitpay_ipn_mapping = $this->getStoreConfig('payment/bpcheckout/bitpay_ipn_mapping');
-            $bitpay_refund_mapping = $this->getStoreConfig('payment/bpcheckout/bitpay_refund_mapping');
-            $bitpay_cancel_mapping = $this->getStoreConfig('payment/bpcheckout/bitpay_cancel_mapping');
+            #$row = $result->fetch();
+            if ($row):
 
-          
-            $config = $this->BPC_Configuration($bitpay_token,$env);
-            
-            $params = (new \stdClass());
+                #verify the ipn
+                $env = $this->getStoreConfig('payment/bpcheckout/bitpay_endpoint');
+                $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_devtoken');
+                if ($env == 'prod'):
+                    $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_prodtoken');
+                endif;
 
-            $params->invoiceID = $order_invoice;
-            $params->extension_version = $this->getExtensionVersion();
-            
-         
-            $item = $this->BPC_Item( $config,$params);
-           
-           $invoice = $this->BPC_Invoice($item);
-           $orderStatus = json_decode($this->BPC_checkInvoiceStatus($order_invoice,$item,$bitpay_token)); 
+                $bitpay_ipn_mapping = $this->getStoreConfig('payment/bpcheckout/bitpay_ipn_mapping');
+                $bitpay_refund_mapping = $this->getStoreConfig('payment/bpcheckout/bitpay_refund_mapping');
+                $bitpay_cancel_mapping = $this->getStoreConfig('payment/bpcheckout/bitpay_cancel_mapping');
 
-           $invoice_status = $orderStatus->data->status;
-            
-            
-            $update_data = array('transaction_status' =>$invoice_status);
-            $update_where = array(
-                'order_id = ?' => $orderid,
-                'transaction_id = ?' => $order_invoice
-            );
+                $config = $this->BPC_Configuration($bitpay_token, $env);
 
-            $connection->update($table_name,$update_data,$update_where);
-            $order = $this->getOrder($orderid);
-            #now update the order
-            switch ($event['name']) {
+                $params = (new \stdClass());
 
-                case 'invoice_completed':
-                    if ($invoice_status == 'complete'):
-                        $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->invoice_endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> status has changed to Completed.');
-                        $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
-                        $order->save();
-                        $this->createMGInvoice($order);
-                        return true;
-                    endif;
-                    break;
+                $params->invoiceID = $order_invoice;
+                $params->extension_version = $this->getExtensionVersion();
 
-                case 'invoice_confirmed':
-                    #pending or processing from plugin settings
-                    if ($invoice_status == 'confirmed'):
-                        $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->invoice_endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> processing has been completed.');
-                        if ($bitpay_ipn_mapping != 'processing'):
-                            #$order->setState(Order::STATE_NEW)->setStatus(Order::STATE_NEW);
+                $item = $this->BPC_Item($config, $params);
+
+                $invoice = $this->BPC_Invoice($item);
+                $orderStatus = json_decode($this->BPC_checkInvoiceStatus($order_invoice, $item, $bitpay_token));
+
+                $invoice_status = $orderStatus->data->status;
+
+                $update_data = array('transaction_status' => $invoice_status);
+                $update_where = array(
+                    'order_id = ?' => $orderid,
+                    'transaction_id = ?' => $order_invoice,
+                );
+
+                $connection->update($table_name, $update_data, $update_where);
+                $order = $this->getOrder($orderid);
+                #now update the order
+                switch ($event['name']) {
+
+                    case 'invoice_completed':
+                        if ($invoice_status == 'complete'):
+                            $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->invoice_endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> status has changed to Completed.');
+                            $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
+                            $order->save();
+                            $this->createMGInvoice($order);
+                            return true;
+                        endif;
+                        break;
+
+                    case 'invoice_confirmed':
+                        #pending or processing from plugin settings
+                        if ($invoice_status == 'confirmed'):
+                            $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->invoice_endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> processing has been completed.');
+                            if ($bitpay_ipn_mapping != 'processing'):
+                                #$order->setState(Order::STATE_NEW)->setStatus(Order::STATE_NEW);
+                                $order->setState('new', true);
+                                $order->setStatus('pending', true);
+                            else:
+                                $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
+                                $this->createMGInvoice($order);
+                            endif;
+                            $order->setCanSendNewEmailFlag(true);
+                            $this->_checkout_session->setForceOrderMailSentOnSuccess(true);
+                            $this->_orderSender->send($order, true);
+                            $order->save();
+                            return true;
+                        endif;
+                        break;
+
+                    case 'invoice_paidInFull':
+                        #STATE_PENDING
+                        if ($invoice_status == 'paid'):
+                            $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->invoice_endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> is processing.');
                             $order->setState('new', true);
                             $order->setStatus('pending', true);
-                        else:
-                            $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
-                            $this->createMGInvoice($order);
+                            $order->save();
+                            return true;
+                        endif;
+                        break;
+
+                    case 'invoice_failedToConfirm':
+                        if ($invoice_status == 'invalid'):
+                            $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->invoice_endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> has become invalid because of network congestion.  Order will automatically update when the status changes.');
+                            $order->save();
+                            return true;
+                        endif;
+                        break;
+
+                    case 'invoice_expired':
+                        if ($invoice_status == 'expired'):
+                            $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->invoice_endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> has expired.');
+                            if ($bitpay_cancel_mapping == "cancel"):
+                                $order->setState(Order::STATE_CANCELED)->setStatus(Order::STATE_CANCELED);
+                            endif;
+                            $order->save();
+                            return true;
+                        endif;
+                        break;
+
+                    case 'invoice_refundComplete':
+                        #load the order to update
+                        $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> has been refunded.');
+                        if ($bitpay_refund_mapping == "closed"):
+                            $order->setState(Order::STATE_CLOSED)->setStatus(Order::STATE_CLOSED);
                         endif;
                         $order->save();
                         return true;
-                    endif;
-                    break;
+                        break;
+                }
 
-                case 'invoice_paidInFull':
-                    #STATE_PENDING
-                    if ($invoice_status == 'paid'):
-                        $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->invoice_endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> is processing.');
-                        $order->setState('new', true);
-                        $order->setStatus('pending', true);
-                        $order->save();
-                        return true;
-                    endif;
-                    break;
+            endif;
 
-                case 'invoice_failedToConfirm':
-                    if ($invoice_status == 'invalid'):
-                        $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->invoice_endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> has become invalid because of network congestion.  Order will automatically update when the status changes.');
-                        $order->save();
-                        return true;
-                    endif;
-                    break;
+        } catch (Exception $e) {
 
-                case 'invoice_expired':
-                    if ($invoice_status == 'expired'):
-                       $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->invoice_endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> has expired.');
-                       if($bitpay_cancel_mapping == "cancel"):
-                            $order->setState(Order::STATE_CANCELED)->setStatus(Order::STATE_CANCELED);
-                        endif;
-                       $order->save();
-                       return true;
-                    endif;
-                    break;
-
-                case 'invoice_refundComplete':
-                    #load the order to update
-                    $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> has been refunded.');
-                    if($bitpay_refund_mapping == "closed"):
-                        $order->setState(Order::STATE_CLOSED)->setStatus(Order::STATE_CLOSED);
-                    endif;
-                    $order->save();
-                    return true;
-                    break;
-            }
-
-        endif;
-
-    } catch (Exception $e) {
-      
-    }
+        }
     }
     public function createMGInvoice($order)
     {
-        try{
-        $invoice = $this->_invoiceService->prepareInvoice($order);
-        $invoice->register();
-        $invoice->save();
-        $transactionSave = $this->_transaction->addObject(
-            $invoice
-        )->addObject(
-            $invoice->getOrder()
-        );
-        $transactionSave->save();
-    } catch (Exception $e) {
-      
-    }
+        try {
+            $invoice = $this->_invoiceService->prepareInvoice($order);
+            $invoice->register();
+            $invoice->save();
+            $transactionSave = $this->_transaction->addObject(
+                $invoice
+            )->addObject(
+                $invoice->getOrder()
+            );
+            $transactionSave->save();
+        } catch (Exception $e) {
+
+        }
     }
     public function getExtensionVersion()
     {

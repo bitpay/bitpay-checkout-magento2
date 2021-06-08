@@ -1,5 +1,8 @@
-function showModal(env, response) {
 
+    document.querySelector(".page-main").style.visibility = "hidden"
+
+function showModal(env, response) {
+    
     if (env == 'test') {
         bitpay.enableTestMode()
     }
@@ -33,7 +36,6 @@ function showModal(env, response) {
     });
     //show the modal
     bitpay.showInvoice(response.invoiceID);
-    document.querySelector(".page-main").style.visibility = "hidden"
 
 
 }
@@ -59,9 +61,9 @@ function getCookie(cname) {
     return "";
 }
 if (window.location.href.indexOf("checkout/onepage/success/") > -1 && getCookie('modal') == 1) {
-    setTimeout(function () {
+  // setTimeout(function () {
         showModal(getCookie('env'), getCookie('invoicedata'))
-    }, 750);
+    //}, 750);
 
 }
 //guest checkout 
