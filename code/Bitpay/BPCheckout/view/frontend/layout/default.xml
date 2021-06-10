@@ -2,13 +2,5 @@
 <page xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd" 
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <head>
-        <!-- Add js-->
-        <!--<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" src_type="url" />-->
-
-        <script src="Bitpay_BPCheckout::js/bitpay/config.js"/>
-    
-
-        <!-- Add external js -->
-        <script src="https://bitpay.com/bitpay.min.js" src_type="url" />
     </head>
 </page>

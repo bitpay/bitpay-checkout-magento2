@@ -201,6 +201,8 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         return $order;
     }
 
+    
+
     public function postClose()
     {
         try {

@@ -18,7 +18,7 @@ class BPEmail implements ObserverInterface
             #$logger = new \Zend\Log\Logger();
             #$logger->addWriter($writer);
             #$logger->info('Not sending email');
-            #$this->stopNewOrderEmail($order);
+            $this->stopNewOrderEmail($order);
         }
     }
     catch (\ErrorException $ee){

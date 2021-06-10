@@ -276,8 +276,9 @@ class BPRedirect implements ObserverInterface
 
             $params->orderId = trim($order_id_long);
 
-            #ipn
-
+            setcookie('oar_order_id', $order_id_long, time() + (86400 * 30), "/"); // 86400 = 1 day
+            setcookie('oar_billing_lastname', $order->getBillingAddress()->getLastName(), time() + (86400 * 30), "/"); // 86400 = 1 day
+            setcookie('oar_email', $order->getCustomerEmail(), time() + (86400 * 30), "/"); // 86400 = 1 day
             if ($guest_login) { #user is a guest
             #leave alone
             if ($modal == false):
@@ -288,9 +289,8 @@ class BPRedirect implements ObserverInterface
                         $params->redirectURL = $this->getBaseUrl() . 'sales/guest/form';
                     endif;
                     #set some info for guest checkout
-                    setcookie('oar_order_id', $order_id_long, time() + (86400 * 30), "/"); // 86400 = 1 day
-                    setcookie('oar_billing_lastname', $order->getBillingAddress()->getLastName(), time() + (86400 * 30), "/"); // 86400 = 1 day
-                    setcookie('oar_email', $order->getCustomerEmail(), time() + (86400 * 30), "/"); // 86400 = 1 day
+                   
+                   
 
                 else:
                     if(isset($bitpay_redirect_url)):
@@ -336,14 +336,23 @@ class BPRedirect implements ObserverInterface
             switch ($modal) {
                 case true:
                 case 1:
-                   
-                    $modal_obj = (new \stdClass());
-                    $modal_obj->redirectURL = $params->redirectURL;
-                    $modal_obj->notificationURL = $params->notificationURL;
-                    $modal_obj->invoiceID = $invoiceID;
+                
                     setcookie("env", $env, time() + (86400 * 30), "/");
-                    setcookie("invoicedata", json_encode($modal_obj), time() + (86400 * 30), "/");
                     setcookie("modal", 1, time() + (86400 * 30), "/");
+
+                     #set some info for guest checkout
+                     setcookie('oar_order_id', $order_id_long, time() + (86400 * 30), "/"); // 86400 = 1 day
+                     setcookie('oar_billing_lastname', $order->getBillingAddress()->getLastName(), time() + (86400 * 30), "/"); // 86400 = 1 day
+                     setcookie('oar_email', $order->getCustomerEmail(), time() + (86400 * 30), "/"); // 86400 = 1 day
+                    if($guest_login){
+                        setcookie('guest', '1', time() + (86400 * 30), "/"); // 86400 = 1 day
+                    }else{
+                        setcookie('guest', '0', time() + (86400 * 30), "/"); // 86400 = 1 day
+                    }
+                    #$RedirectUrl = $this->getBaseUrl() . 'rest/V1/bitpay-bpcheckout/order?invoiceID='.$invoiceID.'&order_id='.$order_id;
+                    $RedirectUrl = $this->getBaseUrl() . 'bitpay-invoice/?invoiceID='.$invoiceID.'&order_id='.$order_id;
+                    $this->_responseFactory->create()->setRedirect($RedirectUrl)->sendResponse();
+                    die();
 
                     break;
                 case false:
@@ -356,7 +365,7 @@ class BPRedirect implements ObserverInterface
     } //end execute function
     public function getExtensionVersion()
     {
-        return 'Bitpay_BPCheckout_Magento2_5.01.2102';
+        return 'Bitpay_BPCheckout_Magento2_6.10.2103';
 
     }
 
