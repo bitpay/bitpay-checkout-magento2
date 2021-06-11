@@ -15,6 +15,7 @@ class BPRedirect implements ObserverInterface
     public $orderRepository;
     protected $_invoiceService;
     protected $_transaction;
+    protected $_orderFactory;
 
     public $apiToken;
     public $network;
@@ -31,6 +32,7 @@ class BPRedirect implements ObserverInterface
         \Magento\Framework\App\ResponseInterface $response,
         \Magento\Sales\Model\OrderRepository $orderRepository,
         \Magento\Sales\Model\Service\InvoiceService $invoiceService,
+        \Magento\Sales\Model\OrderFactory $orderFactory,
         \Magento\Framework\DB\Transaction $transaction
     ) {
         $this->coreRegistry = $registry;
@@ -38,7 +40,7 @@ class BPRedirect implements ObserverInterface
         $this->_scopeConfig = $scopeConfig;
         $this->_responseFactory = $responseFactory;
         $this->_url = $url;
-        $this->checkoutSession = $checkoutSession;
+        $this->_checkoutSession = $checkoutSession;
         $this->resultRedirect = $result;
         $this->_actionFlag = $actionFlag;
         $this->_redirect = $redirect;
@@ -46,6 +48,8 @@ class BPRedirect implements ObserverInterface
         $this->orderRepository = $orderRepository;
         $this->_invoiceService = $invoiceService;
         $this->_transaction = $transaction;
+        $this->_orderFactory = $orderFactory;
+
     }
 
     function BPC_Configuration($token,$network){
@@ -208,7 +212,6 @@ class BPRedirect implements ObserverInterface
 
     }
     
-
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
         $controller = $observer->getControllerAction();
@@ -217,8 +220,7 @@ class BPRedirect implements ObserverInterface
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of object manager
         $level = 1;
 
-        $order_ids = $observer->getEvent()->getOrderIds();
-        $order_id = $order_ids[0];
+        $order_id = $this->_checkoutSession->getData('last_order_id');
         $order = $this->getOrder($order_id);
         $order_id_long = $order->getIncrementId();
 
@@ -272,6 +274,11 @@ class BPRedirect implements ObserverInterface
                 $buyerInfo->name = $order->getBillingAddress()->getFirstName() . ' ' . $order->getBillingAddress()->getLastName();
                 $buyerInfo->email = $order->getCustomerEmail();
             }
+            if($guest_login){
+                $g = 1;
+            }else{
+                $g = 0;
+            }
             $params->buyer = $buyerInfo;
 
             $params->orderId = trim($order_id_long);
@@ -289,9 +296,6 @@ class BPRedirect implements ObserverInterface
                         $params->redirectURL = $this->getBaseUrl() . 'sales/guest/form';
                     endif;
                     #set some info for guest checkout
-                   
-                   
-
                 else:
                     if(isset($bitpay_redirect_url)):
                         $params->redirectURL = $bitpay_redirect_url;
@@ -303,12 +307,12 @@ class BPRedirect implements ObserverInterface
                 if(isset($bitpay_redirect_url)):
                     $params->redirectURL = $bitpay_redirect_url;
                 else:
-                $params->redirectURL = $this->getBaseUrl() . 'sales/order/view/order_id/' . $order_id . '/';
+                $params->redirectURL = $this->getBaseUrl() . 'sales/order/view/order_id/' . $order_id_long . '/';
                 endif;
             }
 
             $params->notificationURL = $this->getBaseUrl() . 'rest/V1/bitpay-bpcheckout/ipn';
-            $params->closeURL = $this->getBaseUrl() . 'rest/V1/bitpay-bpcheckout/close?orderID='.$order_id;
+            $params->closeURL = $this->getBaseUrl() . 'rest/V1/bitpay-bpcheckout/close?orderID='.$order_id_long;
 
             $params->extendedNotifications = true;
             $item = $this->BPC_Item( $config,$params);
@@ -316,7 +320,6 @@ class BPRedirect implements ObserverInterface
             //this creates the invoice with all of the config params from the item
             $invoice = $this->BPC_createInvoice($item);
             $invoiceData = json_decode($invoice);
-            
 
             //now we have to append the invoice transaction id for the callback verification
             $invoiceID = $invoiceData->data->id;
@@ -344,13 +347,8 @@ class BPRedirect implements ObserverInterface
                      setcookie('oar_order_id', $order_id_long, time() + (86400 * 30), "/"); // 86400 = 1 day
                      setcookie('oar_billing_lastname', $order->getBillingAddress()->getLastName(), time() + (86400 * 30), "/"); // 86400 = 1 day
                      setcookie('oar_email', $order->getCustomerEmail(), time() + (86400 * 30), "/"); // 86400 = 1 day
-                    if($guest_login){
-                        setcookie('guest', '1', time() + (86400 * 30), "/"); // 86400 = 1 day
-                    }else{
-                        setcookie('guest', '0', time() + (86400 * 30), "/"); // 86400 = 1 day
-                    }
-                    #$RedirectUrl = $this->getBaseUrl() . 'rest/V1/bitpay-bpcheckout/order?invoiceID='.$invoiceID.'&order_id='.$order_id;
-                    $RedirectUrl = $this->getBaseUrl() . 'bitpay-invoice/?invoiceID='.$invoiceID.'&order_id='.$order_id;
+                    
+                    $RedirectUrl = $this->getBaseUrl() . 'bitpay-invoice/?invoiceID='.$invoiceID.'&order_id='.$order_id_long.'&g='.$g;
                     $this->_responseFactory->create()->setRedirect($RedirectUrl)->sendResponse();
                     die();
 
@@ -365,7 +363,7 @@ class BPRedirect implements ObserverInterface
     } //end execute function
     public function getExtensionVersion()
     {
-        return 'Bitpay_BPCheckout_Magento2_6.10.2103';
+        return 'Bitpay_BPCheckout_Magento2_6.11.2103';
 
     }
 

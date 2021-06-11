@@ -8,10 +8,14 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Model\Order;
+use Magento\Quote\Api\ChangeQuoteControlInterface;
+use Magento\Framework\Exception\StateException;
+use Magento\Quote\Api\CartRepositoryInterface;
+use Magento\Quote\Api\Data\CartInterface;
+use \Bitpay\BPCheckout\Model\AccessChangeQuoteControl;
 
-class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
+class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface  
 {
-
     protected $_invoiceService;
     protected $_transaction;
     public $orderRepository;
@@ -26,6 +30,11 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
     protected $product;
     protected $_responseFactory;
     protected $_url;
+    private $changeQuoteControl;
+    protected $orderSender;
+
+
+
 
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
@@ -35,11 +44,18 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         \Magento\Sales\Model\OrderRepository $orderRepository,
         \Magento\Sales\Model\Service\InvoiceService $invoiceService,
         \Magento\Framework\DB\Transaction $transaction,
+        \Magento\Customer\Model\Session $customerSession,
+        \Magento\Checkout\Model\Session $checkoutSession,
+        \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender,
+
+        \Magento\Customer\Api\CustomerRepositoryInterface $customerRepositoryInterface,
+
         Context $context,
         QuoteFactory $quoteFactory,
         ProductFactory $product,
         PageFactory $resultPageFactory,
-        Cart $cart
+        Cart $cart,
+        ChangeQuoteControlInterface $changeQuoteControl
     ) {
         $this->_moduleList = $moduleList;
 
@@ -54,6 +70,15 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         $this->cart = $cart;
         $this->product = $product;
         $this->_resultPageFactory = $resultPageFactory;
+        $this->customerSession = $customerSession;
+        $this->_checkoutSession = $checkoutSession;
+        $this->_customerRepositoryInterface = $customerRepositoryInterface;
+        $this->changeQuoteControl = $changeQuoteControl;
+        $this->_orderSender = $orderSender;
+
+
+
+
 
     }
     public function BPC_Configuration($token, $network)
@@ -201,8 +226,6 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         return $order;
     }
 
-    
-
     public function postClose()
     {
         try {
@@ -212,9 +235,8 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
 
             #this function is if the user clicks CLOSE on the BitPay page without paying, will restore the items to the cart
             $orderObject = $objectManager->get('\Magento\Sales\Model\Order');
-            $order = $orderObject->load($orderID);
+            $order = $this->getOrder($orderID);
             $orderData = $order->getData();
-
             $quoteID = $orderData['quote_id'];
             $quote = $this->quoteFactory->create()->load($quoteID);
             $items = $quote->getAllVisibleItems();
@@ -227,11 +249,10 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
                 $info = $options['info_buyRequest'];
                 $request1 = new \Magento\Framework\DataObject();
                 $request1->setData($info);
-
                 $this->cart->addProduct($_product, $request1);
             }
-            $this->cart->save();
             $registry->register('isSecureArea', 'true');
+            $this->cart->save();
             $order->delete();
             $registry->unregister('isSecureArea');
             $RedirectUrl = $this->_url->getUrl('checkout/cart');
@@ -264,9 +285,10 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
                 ->from($table_name)
                 ->where('order_id = ?', $orderid)
                 ->where('transaction_id = ?', $order_invoice);
+                $order = $this->getOrder($orderid);
 
             $row = $connection->fetchAll($sql);
-
+            
             #$row = $result->fetch();
             if ($row):
 
@@ -329,7 +351,7 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
                                 $this->createMGInvoice($order);
                             endif;
                             $order->setCanSendNewEmailFlag(true);
-                            $this->_checkout_session->setForceOrderMailSentOnSuccess(true);
+                            $this->_checkoutSession->setForceOrderMailSentOnSuccess(true);
                             $this->_orderSender->send($order, true);
                             $order->save();
                             return true;
@@ -401,6 +423,6 @@ class IpnManagement implements \Bitpay\BPCheckout\Api\IpnManagementInterface
     }
     public function getExtensionVersion()
     {
-        return 'Bitpay_BPCheckout_Magento2_5.01.2102';
+        return 'Bitpay_BPCheckout_Magento2_6.11.2103';
     }
 }

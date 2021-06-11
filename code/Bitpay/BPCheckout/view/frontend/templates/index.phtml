@@ -3,16 +3,12 @@ $config = $block->getLayout()->createBlock(\Magento\Config\Block\System\Config\F
 $configValue = $config->getConfigValue('web/secure/base_url');
 $env = $config->getConfigValue('payment/bpcheckout/bitpay_endpoint');
 extract($_GET);
-
-
 ?>
 <script src = "//bitpay.com/bitpay.min.js" type = "text/javascript"></script>
 <script type = "text/javascript">
        
         var $invoiceID = getParams()['invoiceID']
         var $order_id = getParams()['order_id']
-        console.log('$invoiceID',$invoiceID);
-        console.log('$order_id',$order_id);
          $env = '<?php echo $env;?>'
         if($env == "test"){
             bitpay.enableTestMode()
@@ -24,7 +20,7 @@ extract($_GET);
         if (payment_status == "paid") {
             is_paid = true
             //clear the cookies
-            $guest = getCookie("guest")
+            $guest = getParams()['g']
           
             deleteCookie('env')
             deleteCookie('invoicedata')
@@ -32,11 +28,8 @@ extract($_GET);
 
             if($guest ==1){
                 window.location.replace(window.location.origin+'/sales/guest/form')
-
-              
             }else{
                 window.location.replace(window.location.origin+'/sales/order/view/order_id/'+$order_id)
-
             }
             return;
         }
@@ -61,7 +54,7 @@ extract($_GET);
         setTimeout(function(){ 
             bitpay.showInvoice($invoiceID)
             }, 
-            100);
+            500);
 
             function getParams() {
                 var vars = {};
