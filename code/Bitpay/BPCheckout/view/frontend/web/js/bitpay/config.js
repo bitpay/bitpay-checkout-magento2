@@ -15,6 +15,36 @@ if (window.location.pathname.indexOf('sales/guest/form') != -1) {
             2000);
     }
 }
+if (window.location.hash.indexOf('#payment') != -1) {
+    
+   /*
+    var $checkC = gC("firstname")
+    if(typeof $checkC != "undefined"){
+        //set the fields
+        jQuery('input[name="firstname"]').val(gC("firstname"))
+        jQuery('input[name="lastname"]').val(gC("lastname"))
+        jQuery('input[name="company"]').val(gC("company"))
+        jQuery('input[name="street[0]"]').val(gC("street"))
+        jQuery('input[name="city"]').val(gC("city"))
+        jQuery('input[name="postcode"]').val(gC("postcode"))
+        jQuery('input[name="telephone"]').val(gC("telephone"))
+
+    }else{
+        //save the info
+       
+     
+        gcC("firstname") =  jQuery('input[name="firstname"]').val()
+        gcC("lastname") =  jQuery('input[name="lastname"]').val()
+        gcC("company") =  jQuery('input[name="company"]').val()
+        gcC("street") =  jQuery('input[name="street[0]"]').val()
+        gcC("city") =  jQuery('input[name="city"]').val()
+        gcC("postcode") =  jQuery('input[name="postcode"]').val()
+        gcC("telephone") =  jQuery('input[name="telephone"]').val()
+       
+    }
+     */
+
+}
 function gC(cname) {
     var name = cname + "=";
     var decodedCookie = decodeURIComponent(document.cookie);

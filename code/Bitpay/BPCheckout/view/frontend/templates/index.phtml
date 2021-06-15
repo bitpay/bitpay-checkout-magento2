@@ -25,12 +25,9 @@ extract($_GET);
             deleteCookie('env')
             deleteCookie('invoicedata')
             deleteCookie('modal')
+            jQuery("#bitpay-header").text('')
+           jQuery("#success-bitpay-page").show()
 
-            if($guest ==1){
-                window.location.replace(window.location.origin+'/sales/guest/form')
-            }else{
-                window.location.replace(window.location.origin+'/sales/order/view/order_id/'+$order_id)
-            }
             return;
         }
     }, false);
@@ -84,3 +81,21 @@ extract($_GET);
         </script>
 
 <h2 id = "bitpay-header">Loading BitPay Invoice...</h2>
+
+
+<div id = "success-bitpay-page" style = "display:none;">
+<?php /** @var $block \Magento\Checkout\Block\Onepage\Success */ ?>
+<div class="checkout-success">
+    <?php if (isset($order_id)) :?>
+            <p><?php echo  'Your order # is: <b>'.$order_id.'</b> '?></p>
+            <p><?php echo  'We\'ll email you an order confirmation with details and tracking info. '?></p>
+    <?php endif;?>
+
+
+    <div class="actions-toolbar">
+        <div class="primary">
+            <a class="action primary continue" href="/"><span><?= $block->escapeHtml(__('Continue Shopping')) ?></span></a>
+        </div>
+    </div>
+</div>
+</div>
