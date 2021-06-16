@@ -3,6 +3,7 @@ $config = $block->getLayout()->createBlock(\Magento\Config\Block\System\Config\F
 $configValue = $config->getConfigValue('web/secure/base_url');
 $env = $config->getConfigValue('payment/bpcheckout/bitpay_endpoint');
 extract($_GET);
+if($m==1):
 ?>
 <script src = "//bitpay.com/bitpay.min.js" type = "text/javascript"></script>
 <script type = "text/javascript">
@@ -20,13 +21,13 @@ extract($_GET);
         if (payment_status == "paid") {
             is_paid = true
             //clear the cookies
-            $guest = getParams()['g']
+            
           
             deleteCookie('env')
             deleteCookie('invoicedata')
             deleteCookie('modal')
-            jQuery("#bitpay-header").text('')
-           jQuery("#success-bitpay-page").show()
+            jQuery("#bitpay-header").text('Thank you for your purchase.')
+            jQuery("#success-bitpay-page").show()
 
             return;
         }
@@ -80,10 +81,31 @@ extract($_GET);
             }
         </script>
 
+<!--page to show with modal-->
 <h2 id = "bitpay-header">Loading BitPay Invoice...</h2>
-
-
 <div id = "success-bitpay-page" style = "display:none;">
+<?php /** @var $block \Magento\Checkout\Block\Onepage\Success */ ?>
+<div class="checkout-success">
+    <?php if (isset($order_id)) :?>
+            <p><?php echo  'Your order # is: <b>'.$order_id.'</b> '?></p>
+            <p><?php echo  'We\'ll email you an order confirmation with details and tracking info. '?></p>
+    <?php endif;?>
+    <div class="actions-toolbar">
+        <div class="primary">
+            <a class="action primary continue" href="/"><span><?= $block->escapeHtml(__('Continue Shopping')) ?></span></a>
+        </div>
+    </div>
+</div>
+</div>
+<!--end page to show with modal-->
+
+<!--page to show with redirect-->
+
+<?php else:?>
+    <h2 id = "bitpay-header">Thank you for your purchase.</h2>
+
+
+<div id = "success-bitpay-page">
 <?php /** @var $block \Magento\Checkout\Block\Onepage\Success */ ?>
 <div class="checkout-success">
     <?php if (isset($order_id)) :?>
@@ -99,3 +121,6 @@ extract($_GET);
     </div>
 </div>
 </div>
+
+<?php endif;?>
+<!--end page to show with redirect-->

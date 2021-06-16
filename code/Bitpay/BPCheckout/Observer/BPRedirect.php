@@ -250,7 +250,6 @@ class BPRedirect implements ObserverInterface
                 $modal = true;
             endif;
 
-            $bitpay_redirect_url = $this->getStoreConfig('payment/bpcheckout/bitpay_redirect_url');
 
             $config = $this->BPC_Configuration($bitpay_token,$env);
 
@@ -274,11 +273,7 @@ class BPRedirect implements ObserverInterface
                 $buyerInfo->name = $order->getBillingAddress()->getFirstName() . ' ' . $order->getBillingAddress()->getLastName();
                 $buyerInfo->email = $order->getCustomerEmail();
             }
-            if($guest_login){
-                $g = 1;
-            }else{
-                $g = 0;
-            }
+            
             $params->buyer = $buyerInfo;
 
             $params->orderId = trim($order_id_long);
@@ -286,30 +281,12 @@ class BPRedirect implements ObserverInterface
             setcookie('oar_order_id', $order_id_long, time() + (86400 * 30), "/"); // 86400 = 1 day
             setcookie('oar_billing_lastname', $order->getBillingAddress()->getLastName(), time() + (86400 * 30), "/"); // 86400 = 1 day
             setcookie('oar_email', $order->getCustomerEmail(), time() + (86400 * 30), "/"); // 86400 = 1 day
-            if ($guest_login) { #user is a guest
-            #leave alone
-            if ($modal == false):
-                    #this will send them back to the order/returns page to lookup
-                    if(isset($bitpay_redirect_url)):
-                        $params->redirectURL = $bitpay_redirect_url;
-                    else:
-                        $params->redirectURL = $this->getBaseUrl() . 'sales/guest/form';
-                    endif;
-                    #set some info for guest checkout
-                else:
-                    if(isset($bitpay_redirect_url)):
-                        $params->redirectURL = $bitpay_redirect_url;
-                    else:
-                        $params->redirectURL = $this->getBaseUrl() . 'checkout/onepage/success/';
-                    endif;
-                endif;
-            } else {
-                if(isset($bitpay_redirect_url)):
-                    $params->redirectURL = $bitpay_redirect_url;
-                else:
-                $params->redirectURL = $this->getBaseUrl() . 'sales/order/view/order_id/' . $order_id_long . '/';
-                endif;
-            }
+
+            $params->redirectURL = $this->getBaseUrl() .'bitpay-invoice/?order_id='.$order_id_long;
+           
+            if(!$modal):
+                $params->redirectURL.="&m=0";
+            endif;
 
             $params->notificationURL = $this->getBaseUrl() . 'rest/V1/bitpay-bpcheckout/ipn';
             $params->closeURL = $this->getBaseUrl() . 'rest/V1/bitpay-bpcheckout/close?orderID='.$order_id_long;
@@ -348,7 +325,7 @@ class BPRedirect implements ObserverInterface
                      setcookie('oar_billing_lastname', $order->getBillingAddress()->getLastName(), time() + (86400 * 30), "/"); // 86400 = 1 day
                      setcookie('oar_email', $order->getCustomerEmail(), time() + (86400 * 30), "/"); // 86400 = 1 day
                     
-                    $RedirectUrl = $this->getBaseUrl() . 'bitpay-invoice/?invoiceID='.$invoiceID.'&order_id='.$order_id_long.'&g='.$g;
+                    $RedirectUrl = $this->getBaseUrl() . 'bitpay-invoice/?invoiceID='.$invoiceID.'&order_id='.$order_id_long.'&m=1';
                     $this->_responseFactory->create()->setRedirect($RedirectUrl)->sendResponse();
                     die();
 
@@ -363,7 +340,7 @@ class BPRedirect implements ObserverInterface
     } //end execute function
     public function getExtensionVersion()
     {
-        return 'Bitpay_BPCheckout_Magento2_6.11.2103';
+        return 'Bitpay_BPCheckout_Magento2_6.12.1';
 
     }
 
