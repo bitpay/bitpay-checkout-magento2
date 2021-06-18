@@ -273,9 +273,19 @@ class BPRedirect implements ObserverInterface
                 $buyerInfo->name = $order->getBillingAddress()->getFirstName() . ' ' . $order->getBillingAddress()->getLastName();
                 $buyerInfo->email = $order->getCustomerEmail();
             }
+            #address info
+            $billingAddress = $order->getBillingAddress()->getData();
+            setcookie('buyer_email', $buyerInfo->email, time() + (86400 * 30), "/"); // 86400 = 1 day
+            setcookie('buyer_first_name', $order->getBillingAddress()->getFirstName() , time() + (86400 * 30), "/"); // 86400 = 1 day
+            setcookie('buyer_last_name', $order->getBillingAddress()->getLastName() , time() + (86400 * 30), "/"); // 86400 = 1 day
+            setcookie('buyer_street', $billingAddress['street'] , time() + (86400 * 30), "/"); // 86400 = 1 day
+            setcookie('buyer_city', $billingAddress['city'] , time() + (86400 * 30), "/"); // 86400 = 1 day
+            setcookie('buyer_postcode', $billingAddress['postcode'] , time() + (86400 * 30), "/"); // 86400 = 1 day
+            setcookie('tbuyer_elephone', $billingAddress['telephone'] , time() + (86400 * 30), "/"); // 86400 = 1 day
+
+
             
             $params->buyer = $buyerInfo;
-
             $params->orderId = trim($order_id_long);
 
             setcookie('oar_order_id', $order_id_long, time() + (86400 * 30), "/"); // 86400 = 1 day
@@ -340,7 +350,7 @@ class BPRedirect implements ObserverInterface
     } //end execute function
     public function getExtensionVersion()
     {
-        return 'Bitpay_BPCheckout_Magento2_6.12.1';
+        return 'Bitpay_BPCheckout_Magento2_6.12.2';
 
     }
 
