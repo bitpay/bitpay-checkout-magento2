@@ -26,9 +26,11 @@ if (window.location.pathname == "/checkout/") {
         jQuery('input[name="city"]').val(getCookie("buyer_city").replace(/\+/g, ' '))
         jQuery('input[name="postcode"]').val(getCookie("buyer_postcode").replace(/\+/g, ' '))
         jQuery('input[name="telephone"]').val(getCookie("buyer_telephone").replace(/\+/g, ' '))
+        jQuery('#customer-email').val(getCookie("buyer_email").replace(/\+/g, ' '))
+	
         }
  },
- 3000);
+ 3500);
 }
 
 

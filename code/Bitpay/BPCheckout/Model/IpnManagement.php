@@ -32,6 +32,8 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
     protected $_url;
     private $changeQuoteControl;
     protected $orderSender;
+    private $_objectManager;
+
 
 
 
@@ -47,7 +49,7 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         \Magento\Customer\Model\Session $customerSession,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender,
-
+        \Magento\Framework\ObjectManagerInterface $objectmanager,
         \Magento\Customer\Api\CustomerRepositoryInterface $customerRepositoryInterface,
 
         Context $context,
@@ -75,10 +77,7 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         $this->_customerRepositoryInterface = $customerRepositoryInterface;
         $this->changeQuoteControl = $changeQuoteControl;
         $this->_orderSender = $orderSender;
-
-
-
-
+        $this->_objectManager =$objectmanager;
 
     }
     public function BPC_Configuration($token, $network)
@@ -221,53 +220,41 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
     public function getOrder($_order_id)
     {
 
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $order = $objectManager->create('Magento\Sales\Api\Data\OrderInterface')->loadByIncrementId($_order_id);
+       
+        $order = $this->_objectManager->create('Magento\Sales\Api\Data\OrderInterface')->loadByIncrementId($_order_id);
         return $order;
     }
 
     public function postClose()
     {
-        try {
-            $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of object manager
-            $orderID = $_GET['orderID'];
-            $registry = $objectManager->get('Magento\Framework\Registry');
-
-            #this function is if the user clicks CLOSE on the BitPay page without paying, will restore the items to the cart
-            $orderObject = $objectManager->get('\Magento\Sales\Model\Order');
-            $order = $this->getOrder($orderID);
-            $orderData = $order->getData();
-            $quoteID = $orderData['quote_id'];
-            $quote = $this->quoteFactory->create()->load($quoteID);
-            $items = $quote->getAllVisibleItems();
-            foreach ($items as $item) {
-                $productId = $item->getProductId();
-                $_product = $this->product->create()->load($productId);
-
-                $options = $item->getProduct()->getTypeInstance(true)->getOrderOptions($item->getProduct());
-
-                $info = $options['info_buyRequest'];
-                $request1 = new \Magento\Framework\DataObject();
-                $request1->setData($info);
-                $this->cart->addProduct($_product, $request1);
-            }
+        $_checkoutSession = $this->_objectManager->create('\Magento\Checkout\Model\Session');
+        $_quoteFactory = $this->_objectManager->create('\Magento\Quote\Model\QuoteFactory');
+        $orderID = $_GET['orderID'];
+        $order = $this->getOrder($orderID);
+        $orderData = $order->getData();
+        $quoteID = $orderData['quote_id'];
+        
+        $quote = $_quoteFactory->create()->loadByIdWithoutStore($quoteID);
+        if ($quote->getId()) {
+            $registry = $this->_objectManager->get('Magento\Framework\Registry');
+            $quote->setIsActive(1)->setReservedOrderId(null)->save();
+            $_checkoutSession->replaceQuote($quote);
+            $RedirectUrl = $this->_url->getUrl('checkout/cart');
             $registry->register('isSecureArea', 'true');
-            $this->cart->save();
             $order->delete();
             $registry->unregister('isSecureArea');
-            $RedirectUrl = $this->_url->getUrl('checkout/cart');
             $this->_responseFactory->create()->setRedirect($RedirectUrl)->sendResponse();
             die();
-        } catch (Exception $e) {
+    }
 
-        }
     }
     public function postIpn()
     {
+        
+
         try {
             #database
-            $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of object manager
-            $resource = $objectManager->get('Magento\Framework\App\ResourceConnection');
+            $resource = $this->_objectManager->get('Magento\Framework\App\ResourceConnection');
             $connection = $resource->getConnection();
             $table_name = $resource->getTableName('bitpay_transactions');
             #json ipn
@@ -423,6 +410,6 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
     }
     public function getExtensionVersion()
     {
-        return 'Bitpay_BPCheckout_Magento2_6.12.2';
+        return 'Bitpay_BPCheckout_Magento2_6.12.3';
     }
 }

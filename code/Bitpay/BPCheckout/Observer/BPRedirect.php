@@ -19,6 +19,8 @@ class BPRedirect implements ObserverInterface
 
     public $apiToken;
     public $network;
+    private $_objectManager;
+
 
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig, \Magento\Framework\App\ResponseFactory $responseFactory,
@@ -33,6 +35,7 @@ class BPRedirect implements ObserverInterface
         \Magento\Sales\Model\OrderRepository $orderRepository,
         \Magento\Sales\Model\Service\InvoiceService $invoiceService,
         \Magento\Sales\Model\OrderFactory $orderFactory,
+        \Magento\Framework\ObjectManagerInterface $objectmanager,
         \Magento\Framework\DB\Transaction $transaction
     ) {
         $this->coreRegistry = $registry;
@@ -49,6 +52,8 @@ class BPRedirect implements ObserverInterface
         $this->_invoiceService = $invoiceService;
         $this->_transaction = $transaction;
         $this->_orderFactory = $orderFactory;
+        $this->_objectManager =$objectmanager;
+
 
     }
 
@@ -198,16 +203,14 @@ class BPRedirect implements ObserverInterface
     public function getOrder($_order_id)
     {
 
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $order = $objectManager->create('Magento\Sales\Api\Data\OrderInterface')->load($_order_id);
+        $order = $this->_objectManager->create('Magento\Sales\Api\Data\OrderInterface')->load($_order_id);
         return $order;
 
     }
 
     public function getBaseUrl()
     {
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
+        $storeManager = $this->_objectManager->get('\Magento\Store\Model\StoreManagerInterface');
         return $storeManager->getStore()->getBaseUrl();
 
     }
@@ -217,7 +220,6 @@ class BPRedirect implements ObserverInterface
         $controller = $observer->getControllerAction();
         $this->_actionFlag->set('', \Magento\Framework\App\Action\Action::FLAG_NO_DISPATCH, true);
 
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance(); // Instance of object manager
         $level = 1;
 
         $order_id = $this->_checkoutSession->getData('last_order_id');
@@ -260,7 +262,7 @@ class BPRedirect implements ObserverInterface
             $params->currency = $order['base_currency_code']; //set as needed
 
             #buyer email
-            $customerSession = $objectManager->create('Magento\Customer\Model\Session');
+            $customerSession = $this->_objectManager->create('Magento\Customer\Model\Session');
 
             $buyerInfo = (new \stdClass());
             $guest_login = true;
@@ -314,7 +316,7 @@ class BPRedirect implements ObserverInterface
             #insert into the database
             #database
 
-            $resource = $objectManager->get('Magento\Framework\App\ResourceConnection');
+            $resource = $this->_objectManager->get('Magento\Framework\App\ResourceConnection');
             $connection = $resource->getConnection();
             $table_name = $resource->getTableName('bitpay_transactions');
 
@@ -350,7 +352,7 @@ class BPRedirect implements ObserverInterface
     } //end execute function
     public function getExtensionVersion()
     {
-        return 'Bitpay_BPCheckout_Magento2_6.12.2';
+        return 'Bitpay_BPCheckout_Magento2_6.12.3';
 
     }
 
