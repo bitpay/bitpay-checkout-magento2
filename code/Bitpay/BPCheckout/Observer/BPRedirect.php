@@ -283,7 +283,7 @@ class BPRedirect implements ObserverInterface
             setcookie('buyer_street', $billingAddress['street'] , time() + (86400 * 30), "/"); // 86400 = 1 day
             setcookie('buyer_city', $billingAddress['city'] , time() + (86400 * 30), "/"); // 86400 = 1 day
             setcookie('buyer_postcode', $billingAddress['postcode'] , time() + (86400 * 30), "/"); // 86400 = 1 day
-            setcookie('tbuyer_elephone', $billingAddress['telephone'] , time() + (86400 * 30), "/"); // 86400 = 1 day
+            setcookie('buyer_telephone', $billingAddress['telephone'] , time() + (86400 * 30), "/"); // 86400 = 1 day
 
 
             
