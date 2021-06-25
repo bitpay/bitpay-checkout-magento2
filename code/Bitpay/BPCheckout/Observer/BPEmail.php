@@ -6,7 +6,6 @@ class BPEmail implements ObserverInterface
 {
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
-        $this->objectManager = \Magento\Framework\App\ObjectManager::getInstance();
     try{
         $order = $observer->getEvent()->getOrder();
         $this->_current_order = $order;

@@ -7,16 +7,8 @@ use Magento\Framework\Event\ObserverInterface;
 class BPRedirect implements ObserverInterface
 {
     protected $_checkoutSession;
-    protected $resultRedirect;
-    protected $url;
-    protected $coreRegistry;
     protected $_redirect;
     protected $_response;
-    public $orderRepository;
-    protected $_invoiceService;
-    protected $_transaction;
-    protected $_orderFactory;
-
     public $apiToken;
     public $network;
     private $_orderInterface;
@@ -24,41 +16,25 @@ class BPRedirect implements ObserverInterface
     private $_resourceConnection;
     private $_customerSession;
 
-
-
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig, \Magento\Framework\App\ResponseFactory $responseFactory,
-        \Magento\Framework\UrlInterface $url,
-        \Magento\Framework\Module\ModuleListInterface $moduleList,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Framework\Controller\ResultFactory $result,
-        \Magento\Framework\Registry $registry,
         \Magento\Framework\App\ActionFlag $actionFlag,
         \Magento\Framework\App\Response\RedirectInterface $redirect,
         \Magento\Framework\App\ResponseInterface $response,
-        \Magento\Sales\Model\OrderRepository $orderRepository,
-        \Magento\Sales\Model\Service\InvoiceService $invoiceService,
         \Magento\Sales\Model\OrderFactory $orderFactory,
         \Magento\Sales\Api\Data\OrderInterface $orderInterface,
         \Magento\Store\Model\StoreManagerInterface $storeManagerInterface,
         \Magento\Framework\App\ResourceConnection $resourceConnection,
-        \Magento\Customer\Model\SessionFactory $customerSession,
-        \Magento\Framework\DB\Transaction $transaction
-    ) {
-        $this->coreRegistry = $registry;
-        $this->_moduleList = $moduleList;
+        \Magento\Customer\Model\SessionFactory $customerSession
+            ) {
         $this->_scopeConfig = $scopeConfig;
         $this->_responseFactory = $responseFactory;
-        $this->_url = $url;
         $this->_checkoutSession = $checkoutSession;
-        $this->resultRedirect = $result;
         $this->_actionFlag = $actionFlag;
         $this->_redirect = $redirect;
         $this->_response = $response;
-        $this->orderRepository = $orderRepository;
-        $this->_invoiceService = $invoiceService;
-        $this->_transaction = $transaction;
-        $this->_orderFactory = $orderFactory;
         $this->_orderInterface = $orderInterface;
         $this->_storeManagerInterface = $storeManagerInterface;
         $this->_resourceConnection = $resourceConnection;

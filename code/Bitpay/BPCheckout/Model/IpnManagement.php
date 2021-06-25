@@ -18,19 +18,15 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
 {
     protected $_invoiceService;
     protected $_transaction;
-    public $orderRepository;
 
     public $apiToken;
     public $network;
 
-    protected $_resultPageFactory;
     public $quoteFactory;
     protected $formKey;
-    protected $cart;
     protected $product;
     protected $_responseFactory;
     protected $_url;
-    private $changeQuoteControl;
     protected $orderSender;
 
     protected $_checkoutSession;
@@ -44,44 +40,33 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Framework\App\ResponseFactory $responseFactory,
         \Magento\Framework\UrlInterface $url,
-        \Magento\Framework\Module\ModuleListInterface $moduleList,
-        \Magento\Sales\Model\OrderRepository $orderRepository,
         \Magento\Sales\Model\Service\InvoiceService $invoiceService,
         \Magento\Framework\DB\Transaction $transaction,
         \Magento\Framework\Registry $registry,
         \Magento\Customer\Model\SessionFactory $customerSession,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender,
-        \Magento\Customer\Api\CustomerRepositoryInterface $customerRepositoryInterface,
         \Magento\Sales\Api\Data\OrderInterface $orderInterface,
         \Magento\Framework\App\ResourceConnection $resourceConnection,
 
         Context $context,
         QuoteFactory $quoteFactory,
         ProductFactory $product,
-        PageFactory $resultPageFactory,
-        Cart $cart,
-        ChangeQuoteControlInterface $changeQuoteControl
-    ) {
-        $this->_moduleList = $moduleList;
+        PageFactory $resultPageFactory
+         ) {
         $this->coreRegistry = $registry;
 
         $this->_scopeConfig = $scopeConfig;
         $this->_responseFactory = $responseFactory;
         $this->_url = $url;
-        $this->orderRepository = $orderRepository;
         $this->_invoiceService = $invoiceService;
         $this->_transaction = $transaction;
 
         $this->_quoteFactory = $quoteFactory;
         $this->_orderInterface = $orderInterface;
-        $this->cart = $cart;
         $this->product = $product;
-        $this->_resultPageFactory = $resultPageFactory;
         $this->customerSession = $customerSession;
         $this->_checkoutSession = $checkoutSession;
-        $this->_customerRepositoryInterface = $customerRepositoryInterface;
-        $this->changeQuoteControl = $changeQuoteControl;
         $this->_orderSender = $orderSender;
         $this->_resourceConnection = $resourceConnection;
 
@@ -234,7 +219,7 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
     public function postClose()
     {
         $_checkoutSession = $this->_checkoutSession;
-        $_quoteFactory = $this->$_quoteFactory;
+        $_quoteFactory = $this->_quoteFactory;
         $orderID = $_GET['orderID'];
         $order = $this->getOrder($orderID);
         $orderData = $order->getData();
