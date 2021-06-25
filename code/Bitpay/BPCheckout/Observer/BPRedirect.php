@@ -6,7 +6,7 @@ use Magento\Framework\Event\ObserverInterface;
 
 class BPRedirect implements ObserverInterface
 {
-    protected $checkoutSession;
+    protected $_checkoutSession;
     protected $resultRedirect;
     protected $url;
     protected $coreRegistry;
@@ -19,7 +19,11 @@ class BPRedirect implements ObserverInterface
 
     public $apiToken;
     public $network;
-    private $_objectManager;
+    private $_orderInterface;
+    private $_storeManagerInterface;
+    private $_resourceConnection;
+    private $_customerSession;
+
 
 
     public function __construct(
@@ -35,7 +39,10 @@ class BPRedirect implements ObserverInterface
         \Magento\Sales\Model\OrderRepository $orderRepository,
         \Magento\Sales\Model\Service\InvoiceService $invoiceService,
         \Magento\Sales\Model\OrderFactory $orderFactory,
-        \Magento\Framework\ObjectManagerInterface $objectmanager,
+        \Magento\Sales\Api\Data\OrderInterface $orderInterface,
+        \Magento\Store\Model\StoreManagerInterface $storeManagerInterface,
+        \Magento\Framework\App\ResourceConnection $resourceConnection,
+        \Magento\Customer\Model\SessionFactory $customerSession,
         \Magento\Framework\DB\Transaction $transaction
     ) {
         $this->coreRegistry = $registry;
@@ -52,8 +59,10 @@ class BPRedirect implements ObserverInterface
         $this->_invoiceService = $invoiceService;
         $this->_transaction = $transaction;
         $this->_orderFactory = $orderFactory;
-        $this->_objectManager =$objectmanager;
-
+        $this->_orderInterface = $orderInterface;
+        $this->_storeManagerInterface = $storeManagerInterface;
+        $this->_resourceConnection = $resourceConnection;
+        $this->_customerSession = $customerSession;
 
     }
 
@@ -202,15 +211,14 @@ class BPRedirect implements ObserverInterface
 
     public function getOrder($_order_id)
     {
-
-        $order = $this->_objectManager->create('Magento\Sales\Api\Data\OrderInterface')->load($_order_id);
+        $order = $this->_orderInterface->load($_order_id);
         return $order;
 
     }
 
     public function getBaseUrl()
     {
-        $storeManager = $this->_objectManager->get('\Magento\Store\Model\StoreManagerInterface');
+        $storeManager = $this->_storeManagerInterface;
         return $storeManager->getStore()->getBaseUrl();
 
     }
@@ -262,19 +270,13 @@ class BPRedirect implements ObserverInterface
             $params->currency = $order['base_currency_code']; //set as needed
 
             #buyer email
-            $customerSession = $this->_objectManager->create('Magento\Customer\Model\Session');
+            $userSession = $this->_customerSession;
 
             $buyerInfo = (new \stdClass());
-            $guest_login = true;
-            if ($customerSession->isLoggedIn()) {
-                $guest_login = false;
-                $buyerInfo->name = $customerSession->getCustomer()->getName();
-                $buyerInfo->email = $customerSession->getCustomer()->getEmail();
-
-            } else {
+            
                 $buyerInfo->name = $order->getBillingAddress()->getFirstName() . ' ' . $order->getBillingAddress()->getLastName();
                 $buyerInfo->email = $order->getCustomerEmail();
-            }
+          
             #address info
             $billingAddress = $order->getBillingAddress()->getData();
             setcookie('buyer_email', $buyerInfo->email, time() + (86400 * 30), "/"); // 86400 = 1 day
@@ -315,11 +317,9 @@ class BPRedirect implements ObserverInterface
 
             #insert into the database
             #database
-
-            $resource = $this->_objectManager->get('Magento\Framework\App\ResourceConnection');
+            $resource = $this->_resourceConnection;
             $connection = $resource->getConnection();
             $table_name = $resource->getTableName('bitpay_transactions');
-
 
             $connection->insertForce(
                 $table_name,
@@ -352,7 +352,7 @@ class BPRedirect implements ObserverInterface
     } //end execute function
     public function getExtensionVersion()
     {
-        return 'Bitpay_BPCheckout_Magento2_6.12.3';
+        return 'Bitpay_BPCheckout_Magento2_6.12.4';
 
     }
 

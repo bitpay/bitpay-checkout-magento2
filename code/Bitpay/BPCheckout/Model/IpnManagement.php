@@ -32,11 +32,13 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
     protected $_url;
     private $changeQuoteControl;
     protected $orderSender;
-    private $_objectManager;
 
+    protected $_checkoutSession;
+    protected $_quoteFactory;
+    private $_orderInterface;
+    protected $coreRegistry;
 
-
-
+    private $_resourceConnection;
 
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
@@ -46,11 +48,13 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         \Magento\Sales\Model\OrderRepository $orderRepository,
         \Magento\Sales\Model\Service\InvoiceService $invoiceService,
         \Magento\Framework\DB\Transaction $transaction,
-        \Magento\Customer\Model\Session $customerSession,
+        \Magento\Framework\Registry $registry,
+        \Magento\Customer\Model\SessionFactory $customerSession,
         \Magento\Checkout\Model\Session $checkoutSession,
         \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender,
-        \Magento\Framework\ObjectManagerInterface $objectmanager,
         \Magento\Customer\Api\CustomerRepositoryInterface $customerRepositoryInterface,
+        \Magento\Sales\Api\Data\OrderInterface $orderInterface,
+        \Magento\Framework\App\ResourceConnection $resourceConnection,
 
         Context $context,
         QuoteFactory $quoteFactory,
@@ -60,6 +64,7 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         ChangeQuoteControlInterface $changeQuoteControl
     ) {
         $this->_moduleList = $moduleList;
+        $this->coreRegistry = $registry;
 
         $this->_scopeConfig = $scopeConfig;
         $this->_responseFactory = $responseFactory;
@@ -68,7 +73,8 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         $this->_invoiceService = $invoiceService;
         $this->_transaction = $transaction;
 
-        $this->quoteFactory = $quoteFactory;
+        $this->_quoteFactory = $quoteFactory;
+        $this->_orderInterface = $orderInterface;
         $this->cart = $cart;
         $this->product = $product;
         $this->_resultPageFactory = $resultPageFactory;
@@ -77,7 +83,8 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         $this->_customerRepositoryInterface = $customerRepositoryInterface;
         $this->changeQuoteControl = $changeQuoteControl;
         $this->_orderSender = $orderSender;
-        $this->_objectManager =$objectmanager;
+        $this->_resourceConnection = $resourceConnection;
+
 
     }
     public function BPC_Configuration($token, $network)
@@ -219,16 +226,15 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
 
     public function getOrder($_order_id)
     {
-
        
-        $order = $this->_objectManager->create('Magento\Sales\Api\Data\OrderInterface')->loadByIncrementId($_order_id);
+        $order = $this->_orderInterface->loadByIncrementId($_order_id);
         return $order;
     }
 
     public function postClose()
     {
-        $_checkoutSession = $this->_objectManager->create('\Magento\Checkout\Model\Session');
-        $_quoteFactory = $this->_objectManager->create('\Magento\Quote\Model\QuoteFactory');
+        $_checkoutSession = $this->_checkoutSession;
+        $_quoteFactory = $this->$_quoteFactory;
         $orderID = $_GET['orderID'];
         $order = $this->getOrder($orderID);
         $orderData = $order->getData();
@@ -236,7 +242,7 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         
         $quote = $_quoteFactory->create()->loadByIdWithoutStore($quoteID);
         if ($quote->getId()) {
-            $registry = $this->_objectManager->get('Magento\Framework\Registry');
+            $registry =$this->coreRegistry;
             $quote->setIsActive(1)->setReservedOrderId(null)->save();
             $_checkoutSession->replaceQuote($quote);
             $RedirectUrl = $this->_url->getUrl('checkout/cart');
@@ -254,7 +260,7 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
 
         try {
             #database
-            $resource = $this->_objectManager->get('Magento\Framework\App\ResourceConnection');
+            $resource = $this->_resourceConnection;
             $connection = $resource->getConnection();
             $table_name = $resource->getTableName('bitpay_transactions');
             #json ipn
@@ -410,6 +416,6 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
     }
     public function getExtensionVersion()
     {
-        return 'Bitpay_BPCheckout_Magento2_6.12.3';
+        return 'Bitpay_BPCheckout_Magento2_6.12.4';
     }
 }

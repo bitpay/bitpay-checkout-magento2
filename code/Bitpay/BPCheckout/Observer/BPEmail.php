@@ -14,10 +14,6 @@ class BPEmail implements ObserverInterface
         $payment = $order->getPayment()->getMethodInstance()->getCode();
 
         if($payment == "bpcheckout"){
-            #$writer = new \Zend\Log\Writer\Stream(BP . '/var/log/bitpay.log');
-            #$logger = new \Zend\Log\Logger();
-            #$logger->addWriter($writer);
-            #$logger->info('Not sending email');
             $this->stopNewOrderEmail($order);
         }
     }
