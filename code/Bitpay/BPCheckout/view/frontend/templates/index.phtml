@@ -42,7 +42,7 @@ if($m==1):
             deleteCookie('invoicedata')
             deleteCookie('modal')
            
-            window.location.replace(window.location.origin+"/rest/V1/bitpay-bpcheckout/close?orderID="+$order_id);
+            window.location.replace("<?= $configValue ?>"+"rest/V1/bitpay-bpcheckout/close?orderID="+$order_id);
 
         } //endif
 

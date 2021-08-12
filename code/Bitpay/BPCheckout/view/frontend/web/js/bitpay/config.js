@@ -19,7 +19,7 @@ if (window.location.pathname == "/checkout/") {
     //try and load info from cookie
     setTimeout(function () {
         var $checkC = getCookie("buyer_first_name")
-        if(typeof $checkC != undefined){
+        if(typeof $checkC != undefined && $checkC != ""){
         jQuery('input[name="firstname"]').val(getCookie("buyer_first_name").replace(/\+/g, ' '))
         jQuery('input[name="lastname"]').val(getCookie("buyer_last_name").replace(/\+/g, ' '))
         jQuery('input[name="street[0]"]').val(getCookie("buyer_street").replace(/\+/g, ' '))
