@@ -278,6 +278,7 @@ class BPRedirect implements ObserverInterface
                 $params->redirectURL.="&m=0";
             endif;
 
+            $params->autoRedirect = true;
             $params->notificationURL = $this->getBaseUrl() . 'rest/V1/bitpay-bpcheckout/ipn';
             $params->closeURL = $this->getBaseUrl() . 'rest/V1/bitpay-bpcheckout/close?orderID='.$order_id_long;
 
