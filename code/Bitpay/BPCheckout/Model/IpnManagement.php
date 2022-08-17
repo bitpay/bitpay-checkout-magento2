@@ -254,7 +254,6 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
             $event = $all_data['event'];
 
             $orderid = $data['orderId'];
-            #$orderid .=" OR 1=1";
             $order_status = $data['status'];
             $order_invoice = $data['id'];
 
@@ -266,8 +265,7 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
                 $order = $this->getOrder($orderid);
 
             $row = $connection->fetchAll($sql);
-            
-            #$row = $result->fetch();
+
             if ($row):
 
                 #verify the ipn
@@ -321,7 +319,6 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
                         if ($invoice_status == 'confirmed'):
                             $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->invoice_endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> processing has been completed.');
                             if ($bitpay_ipn_mapping != 'processing'):
-                                #$order->setState(Order::STATE_NEW)->setStatus(Order::STATE_NEW);
                                 $order->setState('new', true);
                                 $order->setStatus('pending', true);
                             else:

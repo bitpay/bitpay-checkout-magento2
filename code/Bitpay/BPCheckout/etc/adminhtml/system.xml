@@ -109,11 +109,6 @@
                     <source_model>Bitpay\BPCheckout\Model\Config\Source\Countries</source_model>
                     <can_be_empty>0</can_be_empty>
                 </field>
-                <!--
-                <field id="instructions" translate="label" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Instructions</label>
-                </field>
-                -->
                 <field id="sort_order" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1"
                     showInStore="0">
                     <label>Sort Order</label>
