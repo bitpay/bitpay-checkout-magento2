@@ -1,6 +1,7 @@
 define([
     'jquery',
-    'mage/mage'
+    'mage/mage',
+    'bitpay'
 ], function (jQuery) {
     'use strict';
 
