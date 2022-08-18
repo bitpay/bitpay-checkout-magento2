@@ -23,8 +23,8 @@ if($m==1):
         <?php /** @var $block \Magento\Checkout\Block\Onepage\Success */ ?>
         <div class="checkout-success">
             <?php if (isset($order_id)) : ?>
-                <p><?php echo 'Your order # is: <b>' . $order_id . '</b> ' ?></p>
-                <p><?php echo 'We\'ll email you an order confirmation with details and tracking info. ' ?></p>
+                <p><?= __('Your order # is: <b>' . $order_id . '</b> ') ?></p>
+                <p><?= __('We\'ll email you an order confirmation with details and tracking info. ') ?></p>
             <?php endif; ?>
             <div class="actions-toolbar">
                 <div class="primary">
@@ -43,8 +43,8 @@ if($m==1):
         <?php /** @var $block \Magento\Checkout\Block\Onepage\Success */ ?>
         <div class="checkout-success">
             <?php if (isset($order_id)) : ?>
-                <p><?php echo 'Your order # is: <b>' . $order_id . '</b> ' ?></p>
-                <p><?php echo 'We\'ll email you an order confirmation with details and tracking info. ' ?></p>
+                <p><?= __('Your order # is: <b>' . $order_id . '</b> ') ?></p>
+                <p><?= __('We\'ll email you an order confirmation with details and tracking info. ') ?></p>
             <?php endif; ?>
 
             <div class="actions-toolbar">
