@@ -1,8 +1,7 @@
 define([
-    'jquery',
     'mage/mage',
     'bitpay'
-], function (jQuery) {
+], function () {
     'use strict';
 
     return function (config) {
@@ -23,8 +22,8 @@ define([
                 deleteCookie('env')
                 deleteCookie('invoicedata')
                 deleteCookie('modal')
-                jQuery("#bitpay-header").text('Thank you for your purchase.')
-                jQuery("#success-bitpay-page").show()
+                document.getElementById("bitpay-header").innerHTML = 'Thank you for your purchase.';
+                document.getElementById("#success-bitpay-page").style.display = 'block';
 
                 return;
             }
@@ -33,7 +32,7 @@ define([
         //show the order info
         bitpay.onModalWillLeave(function () {
             if (!isPaid) {
-                jQuery("#bitpay-header").text('Redirecting to cart...')
+                document.getElementById("bitpay-header").innerHTML = 'Redirecting to cart...';
                 //clear the cookies and redirect back to the cart
                 deleteCookie('env')
                 deleteCookie('invoicedata')
