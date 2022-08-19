@@ -36,6 +36,8 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
 
     private $_resourceConnection;
 
+    const ORDER_STATUS_PENDING = 'pending';
+
     public function __construct(
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         \Magento\Framework\App\ResponseFactory $responseFactory,
@@ -254,7 +256,6 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
             $event = $all_data['event'];
 
             $orderid = $data['orderId'];
-            #$orderid .=" OR 1=1";
             $order_status = $data['status'];
             $order_invoice = $data['id'];
 
@@ -266,8 +267,7 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
                 $order = $this->getOrder($orderid);
 
             $row = $connection->fetchAll($sql);
-            
-            #$row = $result->fetch();
+
             if ($row):
 
                 #verify the ipn
@@ -321,9 +321,8 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
                         if ($invoice_status == 'confirmed'):
                             $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->invoice_endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> processing has been completed.');
                             if ($bitpay_ipn_mapping != 'processing'):
-                                #$order->setState(Order::STATE_NEW)->setStatus(Order::STATE_NEW);
-                                $order->setState('new', true);
-                                $order->setStatus('pending', true);
+                                $order->setState(Order::STATE_NEW, true);
+                                $order->setStatus(self::ORDER_STATUS_PENDING, true);
                             else:
                                 $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
                                 $this->createMGInvoice($order);
@@ -340,8 +339,8 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
                         #STATE_PENDING
                         if ($invoice_status == 'paid'):
                             $order->addStatusHistoryComment('BitPay Invoice <a href = "http://' . $item->invoice_endpoint . '/dashboard/payments/' . $order_invoice . '" target = "_blank">' . $order_invoice . '</a> is processing.');
-                            $order->setState('new', true);
-                            $order->setStatus('pending', true);
+                            $order->setState(Order::STATE_NEW, true);
+                            $order->setStatus(self::ORDER_STATUS_PENDING, true);
                             $order->save();
                             return true;
                         endif;
