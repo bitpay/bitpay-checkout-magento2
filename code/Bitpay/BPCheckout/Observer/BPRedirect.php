@@ -255,22 +255,10 @@ class BPRedirect implements ObserverInterface
           
             #address info
             $billingAddress = $order->getBillingAddress()->getData();
-            setcookie('buyer_email', $buyerInfo->email, time() + (86400 * 30), "/"); // 86400 = 1 day
-            setcookie('buyer_first_name', $order->getBillingAddress()->getFirstName() , time() + (86400 * 30), "/"); // 86400 = 1 day
-            setcookie('buyer_last_name', $order->getBillingAddress()->getLastName() , time() + (86400 * 30), "/"); // 86400 = 1 day
-            setcookie('buyer_street', $billingAddress['street'] , time() + (86400 * 30), "/"); // 86400 = 1 day
-            setcookie('buyer_city', $billingAddress['city'] , time() + (86400 * 30), "/"); // 86400 = 1 day
-            setcookie('buyer_postcode', $billingAddress['postcode'] , time() + (86400 * 30), "/"); // 86400 = 1 day
-            setcookie('buyer_telephone', $billingAddress['telephone'] , time() + (86400 * 30), "/"); // 86400 = 1 day
-
-
-            
             $params->buyer = $buyerInfo;
             $params->orderId = trim($order_id_long);
 
-            setcookie('oar_order_id', $order_id_long, time() + (86400 * 30), "/"); // 86400 = 1 day
-            setcookie('oar_billing_lastname', $order->getBillingAddress()->getLastName(), time() + (86400 * 30), "/"); // 86400 = 1 day
-            setcookie('oar_email', $order->getCustomerEmail(), time() + (86400 * 30), "/"); // 86400 = 1 day
+            $this->setSessionCustomerData($order->getBillingAddress()->getData(), $order->getCustomerEmail(), $order_id_long);
 
             $params->redirectURL = $this->getBaseUrl() .'bitpay-invoice/?order_id='.$order_id_long;
            
@@ -309,10 +297,7 @@ class BPRedirect implements ObserverInterface
                     setcookie("modal", 1, time() + (86400 * 30), "/");
 
                      #set some info for guest checkout
-                     setcookie('oar_order_id', $order_id_long, time() + (86400 * 30), "/"); // 86400 = 1 day
-                     setcookie('oar_billing_lastname', $order->getBillingAddress()->getLastName(), time() + (86400 * 30), "/"); // 86400 = 1 day
-                     setcookie('oar_email', $order->getCustomerEmail(), time() + (86400 * 30), "/"); // 86400 = 1 day
-                    
+                    $this->setSessionCustomerData($order->getBillingAddress()->getData(), $order->getCustomerEmail(), $order_id_long);
                     $RedirectUrl = $this->getBaseUrl() . 'bitpay-invoice/?invoiceID='.$invoiceID.'&order_id='.$order_id_long.'&m=1';
                     $this->_responseFactory->create()->setRedirect($RedirectUrl)->sendResponse();
                     die();
@@ -332,4 +317,16 @@ class BPRedirect implements ObserverInterface
 
     }
 
+    private function setSessionCustomerData(array $billingAddressData, string $email, string $incrementId): void
+    {
+        $this->_checkoutSession->setData(
+            [
+                'customerData' => [
+                    'billingAddress' => $billingAddressData,
+                    'email' => $email,
+                    'incrementId' => $incrementId
+                ]
+            ]
+        );
+    }
 }
