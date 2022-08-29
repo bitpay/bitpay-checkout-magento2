@@ -1,9 +1,17 @@
 <?php
 namespace Bitpay\BPCheckout\Observer;
+use Bitpay\BPCheckout\Logger\Logger;
 use Magento\Framework\Event\ObserverInterface;
 
 class BPEmail implements ObserverInterface
 {
+    private $logger;
+
+    public function __construct(Logger $logger)
+    {
+        $this->logger = $logger;
+    }
+
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
     try{
@@ -17,14 +25,14 @@ class BPEmail implements ObserverInterface
         }
     }
     catch (\ErrorException $ee){
-
+        $this->logger->error($ee->getMessage());
     }
     catch (\Exception $ex)
     {
-
+        $this->logger->error($ex->getMessage());
     }
     catch (\Error $error){
-
+        $this->logger->error($error->getMessage());
     }
 
 }
@@ -36,14 +44,14 @@ public function stopNewOrderEmail(\Magento\Sales\Model\Order $order){
         $order->save();
     }
     catch (\ErrorException $ee){
-
+        $this->logger->error($ee->getMessage());
     }
     catch (\Exception $ex)
     {
-
+        $this->logger->error($ex->getMessage());
     }
     catch (\Error $error){
-
+        $this->logger->error($error->getMessage());
     }
 }
 } 

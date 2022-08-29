@@ -13,6 +13,7 @@ use Magento\Framework\Exception\StateException;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Quote\Api\Data\CartInterface;
 use \Bitpay\BPCheckout\Model\AccessChangeQuoteControl;
+use Bitpay\BPCheckout\Logger\Logger;
 
 class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface  
 {
@@ -36,6 +37,8 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
 
     private $_resourceConnection;
 
+    private $logger;
+
     const ORDER_STATUS_PENDING = 'pending';
 
     public function __construct(
@@ -54,7 +57,8 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         Context $context,
         QuoteFactory $quoteFactory,
         ProductFactory $product,
-        PageFactory $resultPageFactory
+        PageFactory $resultPageFactory,
+        Logger $logger
          ) {
         $this->coreRegistry = $registry;
 
@@ -71,7 +75,7 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         $this->_checkoutSession = $checkoutSession;
         $this->_orderSender = $orderSender;
         $this->_resourceConnection = $resourceConnection;
-
+        $this->logger = $logger;
 
     }
     public function BPC_Configuration($token, $network)
@@ -380,7 +384,7 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
             endif;
 
         } catch (Exception $e) {
-
+            $this->logger->error($e->getMessage());
         }
     }
     public function createMGInvoice($order)
@@ -396,7 +400,7 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
             );
             $transactionSave->save();
         } catch (Exception $e) {
-
+            $this->logger->error($e->getMessage());
         }
     }
     public function getExtensionVersion()
