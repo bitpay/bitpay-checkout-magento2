@@ -18,10 +18,7 @@ class BPEmail implements ObserverInterface
     {
         try {
             $order = $observer->getEvent()->getOrder();
-            $this->_current_order = $order;
-
             $payment = $order->getPayment()->getMethodInstance()->getCode();
-
             if ($payment == "bpcheckout") {
                 $this->stopNewOrderEmail($order);
             }
