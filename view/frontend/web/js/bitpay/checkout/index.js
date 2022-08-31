@@ -23,7 +23,7 @@ define([
                 deleteCookie('invoicedata')
                 deleteCookie('modal')
                 document.getElementById("bitpay-header").innerHTML = 'Thank you for your purchase.';
-                document.getElementById("#success-bitpay-page").style.display = 'block';
+                document.getElementById("success-bitpay-page").style.display = 'block';
 
                 return;
             }
