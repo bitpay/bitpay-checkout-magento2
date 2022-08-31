@@ -1,6 +1,11 @@
 <?php
+declare(strict_types=1);
+
 namespace Bitpay\BPCheckout\Block;
-class Index extends \Magento\Framework\View\Element\Template
+
+use Magento\Framework\View\Element\Template;
+
+class Index extends Template
 {
 
 }

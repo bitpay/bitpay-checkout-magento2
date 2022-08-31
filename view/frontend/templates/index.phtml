@@ -10,21 +10,23 @@ if($m==1):
     {
         "*": {
             "Bitpay_BPCheckout/js/bitpay/checkout/index": {
-                "env": "<?= /* @escapeNotVerified */ $env ?>",
-                "baseUrl": "<?= /* @escapeNotVerified */ $configValue ?>"
+                "env": "<?= /* @noEscape */ $env ?>",
+                "baseUrl": "<?= /* @noEscape */ $configValue ?>"
             }
         }
     }
 
     </script>
     <!--page to show with modal-->
-    <h2 id="bitpay-header"><?= __('Loading BitPay Invoice...') ?></h2>
+    <h2 id="bitpay-header"><?= /* @noEscape */ __('Loading BitPay Invoice...') ?></h2>
     <div id="success-bitpay-page" style="display:none;">
         <?php /** @var $block \Magento\Checkout\Block\Onepage\Success */ ?>
         <div class="checkout-success">
-            <?php if (isset($order_id)) : ?>
-                <p><?= __('Your order # is: <b>' . $order_id . '</b> ') ?></p>
-                <p><?= __('We\'ll email you an order confirmation with details and tracking info. ') ?></p>
+            <?php if (isset($order_id)): ?>
+                <p><?= /* @noEscape */ __('Your order # is: <b>' . $order_id . '</b> ') ?></p>
+                <p>
+                    <?= /* @noEscape */ __('We\'ll email you an order confirmation with details and tracking info. ') ?>
+                </p>
             <?php endif; ?>
             <div class="actions-toolbar">
                 <div class="primary">
@@ -42,9 +44,11 @@ if($m==1):
     <div id="success-bitpay-page">
         <?php /** @var $block \Magento\Checkout\Block\Onepage\Success */ ?>
         <div class="checkout-success">
-            <?php if (isset($order_id)) : ?>
-                <p><?= __('Your order # is: <b>' . $order_id . '</b> ') ?></p>
-                <p><?= __('We\'ll email you an order confirmation with details and tracking info. ') ?></p>
+            <?php if (isset($order_id)): ?>
+                <p><?= /* @noEscape */ __('Your order # is: <b>' . $order_id . '</b> ') ?></p>
+                <p>
+                    <?= /* @noEscape */ __('We\'ll email you an order confirmation with details and tracking info. ') ?>
+                </p>
             <?php endif; ?>
 
             <div class="actions-toolbar">
