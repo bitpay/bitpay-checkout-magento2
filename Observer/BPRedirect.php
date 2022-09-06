@@ -13,10 +13,12 @@ use Magento\Framework\DataObject;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Bitpay\BPCheckout\Model\Ipn\BPCItem;
+use Magento\Framework\Message\Manager;
+use Magento\Framework\Registry;
 use Magento\Framework\Serialize\Serializer\Json;
+use Magento\Framework\UrlInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Framework\App\ResponseFactory;
-
 
 class BPRedirect implements ObserverInterface
 {
@@ -29,6 +31,9 @@ class BPRedirect implements ObserverInterface
     protected $actionFlag;
     protected $responseFactory;
     protected $invoice;
+    protected $messageManager;
+    protected $registry;
+    protected $url;
 
     public function __construct(
         Session $checkoutSession,
@@ -39,7 +44,10 @@ class BPRedirect implements ObserverInterface
         Config $config,
         TransactionRepository $transactionRepository,
         ResponseFactory $responseFactory,
-        Invoice $invoice
+        Invoice $invoice,
+        Manager $messageManager,
+        Registry $registry,
+        UrlInterface $url
     ) {
         $this->checkoutSession = $checkoutSession;
         $this->actionFlag = $actionFlag;
@@ -50,6 +58,9 @@ class BPRedirect implements ObserverInterface
         $this->transactionRepository = $transactionRepository;
         $this->responseFactory = $responseFactory;
         $this->invoice = $invoice;
+        $this->messageManager = $messageManager;
+        $this->registry = $registry;
+        $this->url = $url;
     }
 
     public function execute(Observer $observer)
@@ -58,30 +69,42 @@ class BPRedirect implements ObserverInterface
         $orderId = $this->checkoutSession->getData('last_order_id');
         $order = $this->orderInterface->load($orderId);
         $incrementId = $order->getIncrementId();
+        $baseUrl = $this->config->getBaseUrl();
         if ($order->getPayment()->getMethodInstance()->getCode() !== Config::BITPAY_PAYMENT_METHOD_NAME) {
             return;
         }
 
-        #set to pending and override magento coding
-        $this->setToPendingAndOverrideMagentoStatus($order);
-        #get the environment
-        $env = $this->config->getBitpayEnv();
-        $bitpayToken = $this->config->getToken();
-        $modal = $this->config->getBitpayUx() === 'modal';
-        //create an item, should be passed as an object'
-        $baseUrl = $this->config->getBaseUrl();
-        $redirectUrl = $baseUrl .'bitpay-invoice/?order_id='.$incrementId;
-        $params = $this->getParams($order, $incrementId, $modal, $redirectUrl, $baseUrl, $bitpayToken);
-        $billingAddressData = $order->getBillingAddress()->getData();
-        $this->setSessionCustomerData($billingAddressData, $order->getCustomerEmail(), $incrementId);
-        $item = new BPCItem($bitpayToken, $params, $env);
-        //this creates the invoice with all of the config params from the item
-        $invoice = $this->invoice->BPCCreateInvoice($item);
-        $invoiceData = json_decode($invoice);
-        //now we have to append the invoice transaction id for the callback verification
-        $invoiceID = $invoiceData->data->id;
-        #insert into the database
-        $this->transactionRepository->add($incrementId, $invoiceID, 'new');
+        try {
+            #set to pending and override magento coding
+            $this->setToPendingAndOverrideMagentoStatus($order);
+            #get the environment
+            $env = $this->config->getBitpayEnv();
+            $bitpayToken = $this->config->getToken();
+            $modal = $this->config->getBitpayUx() === 'modal';
+            //create an item, should be passed as an object'
+
+            $redirectUrl = $baseUrl .'bitpay-invoice/?order_id='. $incrementId;
+            $params = $this->getParams($order, $incrementId, $modal, $redirectUrl, $baseUrl, $bitpayToken);
+            $billingAddressData = $order->getBillingAddress()->getData();
+            $this->setSessionCustomerData($billingAddressData, $order->getCustomerEmail(), $incrementId);
+            $item = new BPCItem($bitpayToken, $params, $env);
+            //this creates the invoice with all of the config params from the item
+            $invoice = $this->invoice->BPCCreateInvoice($item);
+            $invoiceData = json_decode($invoice);
+            //now we have to append the invoice transaction id for the callback verification
+            $invoiceID = $invoiceData->data->id;
+            #insert into the database
+            $this->transactionRepository->add($incrementId, $invoiceID, 'new');
+        } catch (\Exception $exception) {
+            $this->registry->register('isSecureArea', 'true');
+            $order->delete();
+            $this->registry->unregister('isSecureArea');
+            $this->messageManager->addErrorMessage('We are unable to place your Order at this time');
+            $this->responseFactory->create()->setRedirect($this->url->getUrl('checkout/cart'))->sendResponse();
+
+            return;
+        }
+
         switch ($modal) {
             case true:
             case 1:
