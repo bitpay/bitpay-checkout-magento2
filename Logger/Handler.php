@@ -13,7 +13,6 @@ class Handler extends Base
     protected $loggerType = Logger::ERROR;
 
     /**
-     * File name
      * @var string
      */
     protected $fileName = '/var/log/bitpay.log';

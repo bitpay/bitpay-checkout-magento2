@@ -1,5 +1,7 @@
 <?php
+
 namespace Bitpay\BPCheckout\Observer;
+
 use Bitpay\BPCheckout\Logger\Logger;
 use Magento\Framework\Event\ObserverInterface;
 
@@ -14,44 +16,33 @@ class BPEmail implements ObserverInterface
 
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
-    try{
-        $order = $observer->getEvent()->getOrder();
-        $this->_current_order = $order;
-
-        $payment = $order->getPayment()->getMethodInstance()->getCode();
-
-        if($payment == "bpcheckout"){
-            $this->stopNewOrderEmail($order);
+        try {
+            $order = $observer->getEvent()->getOrder();
+            $payment = $order->getPayment()->getMethodInstance()->getCode();
+            if ($payment == "bpcheckout") {
+                $this->stopNewOrderEmail($order);
+            }
+        } catch (\ErrorException $ee) {
+            $this->logger->error($ee->getMessage());
+        } catch (\Exception $ex) {
+            $this->logger->error($ex->getMessage());
+        } catch (\Error $error) {
+            $this->logger->error($error->getMessage());
         }
     }
-    catch (\ErrorException $ee){
-        $this->logger->error($ee->getMessage());
-    }
-    catch (\Exception $ex)
-    {
-        $this->logger->error($ex->getMessage());
-    }
-    catch (\Error $error){
-        $this->logger->error($error->getMessage());
-    }
 
-}
-
-public function stopNewOrderEmail(\Magento\Sales\Model\Order $order){
-    $order->setCanSendNewEmailFlag(false);
-    $order->setSendEmail(false);
-    try{
-        $order->save();
-    }
-    catch (\ErrorException $ee){
-        $this->logger->error($ee->getMessage());
-    }
-    catch (\Exception $ex)
+    public function stopNewOrderEmail(\Magento\Sales\Model\Order $order)
     {
-        $this->logger->error($ex->getMessage());
+        $order->setCanSendNewEmailFlag(false);
+        $order->setSendEmail(false);
+        try {
+            $order->save();
+        } catch (\ErrorException $ee) {
+            $this->logger->error($ee->getMessage());
+        } catch (\Exception $ex) {
+            $this->logger->error($ex->getMessage());
+        } catch (\Error $error) {
+            $this->logger->error($error->getMessage());
+        }
     }
-    catch (\Error $error){
-        $this->logger->error($error->getMessage());
-    }
-}
 } 
