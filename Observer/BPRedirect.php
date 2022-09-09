@@ -101,8 +101,7 @@ class BPRedirect implements ObserverInterface
             $this->registry->unregister('isSecureArea');
             $this->messageManager->addErrorMessage('We are unable to place your Order at this time');
             $this->responseFactory->create()->setRedirect($this->url->getUrl('checkout/cart'))->sendResponse();
-
-            return;
+            exit;
         }
 
         switch ($modal) {
@@ -122,13 +121,11 @@ class BPRedirect implements ObserverInterface
 
     private function setSessionCustomerData(array $billingAddressData, string $email, string $incrementId): void
     {
-        $this->checkoutSession->setData(
+        $this->checkoutSession->setCustomerInfo(
             [
-                'customerData' => [
-                    'billingAddress' => $billingAddressData,
-                    'email' => $email,
-                    'incrementId' => $incrementId
-                ]
+                'billingAddress' => $billingAddressData,
+                'email' => $email,
+                'incrementId' => $incrementId
             ]
         );
     }

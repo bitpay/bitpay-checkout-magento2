@@ -30,7 +30,7 @@ class Data implements HttpGetActionInterface
     public function execute(): Json
     {
         $result = $this->jsonFactory->create();
-        $customerData = $this->checkoutSession->getData('customerData');
+        $customerData = $this->checkoutSession->getData('customer_info');
         if (!$customerData) {
             return $result->setData(null);
         }

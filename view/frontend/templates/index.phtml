@@ -1,7 +1,7 @@
 <?php
-$config = $block->getLayout()->createBlock(\Magento\Config\Block\System\Config\Form::class);
-$configValue = $config->getConfigValue('web/secure/base_url');
-$env = $config->getConfigValue('payment/bpcheckout/bitpay_endpoint');
+/** @var $block \Bitpay\BPCheckout\Block\Index */
+$configValue = $block->getBaseSecureUrl();
+$env = $block->getBitpayEnv();
 extract($_GET);
 if($m==1):
 ?>
