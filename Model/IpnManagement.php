@@ -19,55 +19,44 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
 {
     protected $_invoiceService;
     protected $_transaction;
-
     public $apiToken;
     public $network;
-
-    public $quoteFactory;
-    protected $formKey;
     protected $product;
     protected $_responseFactory;
     protected $_url;
-    protected $orderSender;
-
     protected $_checkoutSession;
     protected $_quoteFactory;
     private $_orderInterface;
     protected $coreRegistry;
-
     private $_resourceConnection;
-
     private $logger;
 
     const ORDER_STATUS_PENDING = 'pending';
 
     public function __construct(
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-        \Magento\Framework\App\ResponseFactory $responseFactory,
-        \Magento\Framework\UrlInterface $url,
-        \Magento\Sales\Model\Service\InvoiceService $invoiceService,
-        \Magento\Framework\DB\Transaction $transaction,
-        \Magento\Framework\Registry $registry,
-        \Magento\Customer\Model\SessionFactory $customerSession,
-        \Magento\Checkout\Model\Session $checkoutSession,
+        \Magento\Framework\App\Config\ScopeConfigInterface  $scopeConfig,
+        \Magento\Framework\App\ResponseFactory              $responseFactory,
+        \Magento\Framework\UrlInterface                     $url,
+        \Magento\Sales\Model\Service\InvoiceService         $invoiceService,
+        \Magento\Framework\DB\Transaction                   $transaction,
+        \Magento\Framework\Registry                         $registry,
+        \Magento\Customer\Model\SessionFactory              $customerSession,
+        \Magento\Checkout\Model\Session                     $checkoutSession,
         \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender,
-        \Magento\Sales\Api\Data\OrderInterface $orderInterface,
-        \Magento\Framework\App\ResourceConnection $resourceConnection,
-
-        Context $context,
-        QuoteFactory $quoteFactory,
-        ProductFactory $product,
-        PageFactory $resultPageFactory,
-        Logger $logger
-         ) {
+        \Magento\Sales\Api\Data\OrderInterface              $orderInterface,
+        \Magento\Framework\App\ResourceConnection           $resourceConnection,
+        Context                                             $context,
+        QuoteFactory                                        $quoteFactory,
+        ProductFactory                                      $product,
+        PageFactory                                         $resultPageFactory,
+        Logger                                              $logger
+    ) {
         $this->coreRegistry = $registry;
-
         $this->_scopeConfig = $scopeConfig;
         $this->_responseFactory = $responseFactory;
         $this->_url = $url;
         $this->_invoiceService = $invoiceService;
         $this->_transaction = $transaction;
-
         $this->_quoteFactory = $quoteFactory;
         $this->_orderInterface = $orderInterface;
         $this->product = $product;
@@ -76,8 +65,8 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         $this->_orderSender = $orderSender;
         $this->_resourceConnection = $resourceConnection;
         $this->logger = $logger;
-
     }
+
     public function BPC_Configuration($token, $network)
     {
         $this->apiToken = $token;
@@ -89,25 +78,8 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         $config = (new \stdClass());
         $config->network = $network;
         $config->token = $token;
+
         return $config;
-
-    }
-
-    public function BPC_getAPIToken()
-    {
-        #verify the ipn
-        $env = $this->getStoreConfig('payment/bpcheckout/bitpay_endpoint');
-        $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_devtoken');
-        if ($env == 'prod'):
-            $bitpay_token = $this->getStoreConfig('payment/bpcheckout/bitpay_prodtoken');
-        endif;
-        $this->apiToken = $bitpay_token;
-        return $this->apiToken;
-    }
-
-    public function BPC_getNetwork()
-    {
-        return $this->network;
     }
 
     public function BPC_getApiHostDev()
@@ -120,25 +92,15 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         return 'bitpay.com';
     }
 
-    public function BPC_getApiPort()
-    {
-        return 443;
-    }
-
-    public function BPC_getInvoiceURL()
-    {
-        return $this->network . '/invoices';
-    }
     public function getStoreConfig($_env)
     {
         $_val = $this->_scopeConfig->getValue(
             $_env, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
         return $_val;
-
     }
+
     public function BPC_Item($config, $item_params)
     {
-
         $_item = (new \stdClass());
         $_item->token = $config->token;
         $_item->endpoint = $config->network;
@@ -146,18 +108,11 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
 
         if ($_item->endpoint == 'test') {
             $_item->invoice_endpoint = 'test.bitpay.com';
-
         } else {
             $_item->invoice_endpoint = 'bitpay.com';
         }
+
         return $_item;
-    }
-    public function BPC_getItem()
-    {
-        $this->invoice_endpoint = $this->endpoint . '/invoices';
-        $this->buyer_transaction_endpoint = $this->endpoint . '/invoiceData/setBuyerSelectedTransactionCurrency';
-        $this->item_params->token = $this->token;
-        return ($this->item_params);
     }
 
     public function BPC_Invoice($item)
@@ -182,14 +137,11 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
 
     public function BPC_createInvoice()
     {
-
         $post_fields = json_encode($this->item->item_params);
-
         $pluginInfo = $this->item->item_params->extension_version;
         $request_headers = array();
         $request_headers[] = 'X-BitPay-Plugin-Info: ' . $pluginInfo;
         $request_headers[] = 'Content-Type: application/json';
-
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, 'https://' . $this->item->invoice_endpoint);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $request_headers);
@@ -197,28 +149,16 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         curl_setopt($ch, CURLOPT_POSTFIELDS, $post_fields);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $result = curl_exec($ch);
-
         $this->invoiceData = $result;
 
         curl_close($ch);
 
     }
 
-    public function BPC_getInvoiceData()
-    {
-        return $this->invoiceData;
-    }
-
-    public function BPC_getInvoiceDataURL()
-    {
-        $data = json_decode($this->invoiceData);
-        return $data->data->url;
-    }
-
     public function getOrder($_order_id)
     {
-       
         $order = $this->_orderInterface->loadByIncrementId($_order_id);
+
         return $order;
     }
 
@@ -230,10 +170,10 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
         $order = $this->getOrder($orderID);
         $orderData = $order->getData();
         $quoteID = $orderData['quote_id'];
-        
+
         $quote = $_quoteFactory->create()->loadByIdWithoutStore($quoteID);
         if ($quote->getId()) {
-            $registry =$this->coreRegistry;
+            $registry = $this->coreRegistry;
             $quote->setIsActive(1)->setReservedOrderId(null)->save();
             $_checkoutSession->replaceQuote($quote);
             $RedirectUrl = $this->_url->getUrl('checkout/cart');
@@ -242,13 +182,11 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
             $registry->unregister('isSecureArea');
             $this->_responseFactory->create()->setRedirect($RedirectUrl)->sendResponse();
             die();
-    }
+        }
 
     }
     public function postIpn()
     {
-        
-
         try {
             #database
             $resource = $this->_resourceConnection;
@@ -387,6 +325,7 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
             $this->logger->error($e->getMessage());
         }
     }
+
     public function createMGInvoice($order)
     {
         try {
@@ -403,6 +342,7 @@ class IpnManagement   implements \Bitpay\BPCheckout\Api\IpnManagementInterface
             $this->logger->error($e->getMessage());
         }
     }
+
     public function getExtensionVersion()
     {
         return 'Bitpay_BPCheckout_Magento2_6.13.0';
