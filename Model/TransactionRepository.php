@@ -18,4 +18,14 @@ class TransactionRepository
     {
         $this->resourceTransaction->add($incrementId, $invoiceID, $status);
     }
+
+    public function findBy(string $orderId, string $orderInvoiceId): ?array
+    {
+        return $this->resourceTransaction->findBy($orderId, $orderInvoiceId);
+    }
+
+    public function update(string $field, string $value, array $where): void
+    {
+        $this->resourceTransaction->update($field, $value, $where);
+    }
 }
