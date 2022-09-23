@@ -22,7 +22,7 @@ class Config
     const BITPAY_UX = 'payment/bpcheckout/bitpay_ux';
     const API_HOST_DEV = 'test.bitpay.com';
     const API_HOST_PROD = 'bitpay.com';
-    const EXTENSION_VERSION = 'Bitpay_BPCheckout_Magento2_6.13.0';
+    const EXTENSION_VERSION = 'Bitpay_BPCheckout_Magento2_7.0.0';
     const BITPAY_PAYMENT_METHOD_NAME = 'bpcheckout';
 
     /**
