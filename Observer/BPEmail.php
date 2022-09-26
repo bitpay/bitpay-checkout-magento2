@@ -45,4 +45,4 @@ class BPEmail implements ObserverInterface
             $this->logger->error($error->getMessage());
         }
     }
-} 
+}
