@@ -1,6 +1,7 @@
 <?php
 namespace Bitpay\BPCheckout\Observer;
 
+use Bitpay\BPCheckout\Logger\Logger;
 use Bitpay\BPCheckout\Model\Config;
 use Bitpay\BPCheckout\Model\Invoice;
 use Bitpay\BPCheckout\Model\TransactionRepository;
@@ -34,6 +35,7 @@ class BPRedirect implements ObserverInterface
     protected $messageManager;
     protected $registry;
     protected $url;
+    protected $logger;
 
     public function __construct(
         Session $checkoutSession,
@@ -47,7 +49,8 @@ class BPRedirect implements ObserverInterface
         Invoice $invoice,
         Manager $messageManager,
         Registry $registry,
-        UrlInterface $url
+        UrlInterface $url,
+        Logger $logger
     ) {
         $this->checkoutSession = $checkoutSession;
         $this->actionFlag = $actionFlag;
@@ -61,6 +64,7 @@ class BPRedirect implements ObserverInterface
         $this->messageManager = $messageManager;
         $this->registry = $registry;
         $this->url = $url;
+        $this->logger = $logger;
     }
 
     public function execute(Observer $observer)
@@ -96,6 +100,7 @@ class BPRedirect implements ObserverInterface
             #insert into the database
             $this->transactionRepository->add($incrementId, $invoiceID, 'new');
         } catch (\Exception $exception) {
+            $this->logger->error($exception->getMessage());
             $this->registry->register('isSecureArea', 'true');
             $order->delete();
             $this->registry->unregister('isSecureArea');
