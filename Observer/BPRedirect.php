@@ -94,9 +94,8 @@ class BPRedirect implements ObserverInterface
             $item = new BPCItem($bitpayToken, $params, $env);
             //this creates the invoice with all of the config params from the item
             $invoice = $this->invoice->BPCCreateInvoice($item);
-            $invoiceData = json_decode($invoice);
             //now we have to append the invoice transaction id for the callback verification
-            $invoiceID = $invoiceData->data->id;
+            $invoiceID = $invoice['data']['id'];
             #insert into the database
             $this->transactionRepository->add($incrementId, $invoiceID, 'new');
         } catch (\Exception $exception) {
@@ -119,7 +118,7 @@ class BPRedirect implements ObserverInterface
                 break;
             case false:
             default:
-                $this->redirect->redirect($this->response, $invoiceData->data->url);
+                $this->redirect->redirect($this->response, $invoice['data']['url']);
                 break;
         }
     } //end execute function
