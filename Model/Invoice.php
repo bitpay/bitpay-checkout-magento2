@@ -6,6 +6,8 @@ namespace Bitpay\BPCheckout\Model;
 use Bitpay\BPCheckout\Model\Ipn\BPCItem;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\DB\Transaction;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Phrase;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
 use Magento\Sales\Model\Service\InvoiceService;
@@ -152,7 +154,7 @@ class Invoice
     }
 
     /**
-     * @return bool|string
+     * @return bool|array
      */
     public function BPCCreateInvoice(BPCItem $item)
     {
@@ -172,7 +174,16 @@ class Invoice
         
         curl_close($ch);
 
-        return ($result);
+        $result = json_decode($result, true);
+        if (isset($result['error'])) {
+            throw new LocalizedException(new Phrase($result['error']));
+        }
+
+        if (!isset($result['data'])) {
+            throw new LocalizedException(new Phrase('Invalid data'));
+        }
+
+        return $result;
     }
 
     public function getBPCCheckInvoiceStatus(BPCItem $item)
