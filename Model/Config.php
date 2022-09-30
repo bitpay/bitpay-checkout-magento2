@@ -32,7 +32,7 @@ class Config
     public function __construct(
         ScopeConfigInterface $scopeConfig,
         StoreManagerInterface $storeManagerInterface
-    ){
+    ) {
         $this->scopeConfig = $scopeConfig;
         $this->storeManagerInterface = $storeManagerInterface;
     }

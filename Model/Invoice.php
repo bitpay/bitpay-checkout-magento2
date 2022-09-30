@@ -59,9 +59,13 @@ class Invoice
     {
         $params = $item->getItemParams();
         $order->addStatusHistoryComment(
-            'BitPay Invoice <a href = "http://' . $item->getInvoiceEndpoint() . '/dashboard/payments/'
-            . $params['invoiceID'] . '" target = "_blank">' . $params['invoiceID']
-            . '</a> status has changed to Completed.'
+            sprintf(
+                "BitPay Invoice <a href = \"http://%s/dashboard/payments/%s\" target = \"_blank\">%s</a>
+ status has changed to Completed.",
+                $item->getInvoiceEndpoint(),
+                $params['invoiceID'],
+                $params['invoiceID']
+            )
         );
         $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
         $order->save();
@@ -75,10 +79,15 @@ class Invoice
             return;
         }
         $order->addStatusHistoryComment(
-            'BitPay Invoice <a href = "http://' . $item->getInvoiceEndpoint() . '/dashboard/payments/' .
-            $params['invoiceID'] . '" target = "_blank">' . $params['invoiceID']
-            . '</a> processing has been completed.'
+            sprintf(
+                "BitPay Invoice <a href = \"http://%s/dashboard/payments/%s\" target = \"_blank\">%s</a>
+ processing has been completed.",
+                $item->getInvoiceEndpoint(),
+                $params['invoiceID'],
+                $params['invoiceID']
+            )
         );
+
         if ($this->config->getBitpayIpnMapping() != 'processing') {
             $order->setState(Order::STATE_NEW, true)->setStatus(IpnManagement::ORDER_STATUS_PENDING, true);
         } else {
@@ -99,9 +108,13 @@ class Invoice
         }
 
         $order->addStatusHistoryComment(
-            'BitPay Invoice <a href = "http://' . $item->getInvoiceEndpoint() . '/dashboard/payments/' .
-            $params['invoiceID'] . '" target = "_blank">' . $params['invoiceID'] .
-            '</a> is processing.'
+            sprintf(
+                "BitPay Invoice <a href = \"http://%s/dashboard/payments/%s\" target = \"_blank\">%s</a>
+ is processing.",
+                $item->getInvoiceEndpoint(),
+                $params['invoiceID'],
+                $params['invoiceID']
+            )
         );
         $order->setState(Order::STATE_NEW, true);
         $order->setStatus(IpnManagement::ORDER_STATUS_PENDING, true);
@@ -116,9 +129,13 @@ class Invoice
         }
 
         $order->addStatusHistoryComment(
-            'BitPay Invoice <a href = "http://' . $item->getInvoiceEndpoint() . '/dashboard/payments/' .
-            $params['invoiceID'] . '" target = "_blank">' . $params['invoiceID']
-            . '</a> has become invalid because of network congestion.  Order will automatically update when the status changes.'
+            sprintf(
+                "BitPay Invoice <a href = \"http://%s/dashboard/payments/%s\" target = \"_blank\">%s</a>
+ has become invalid because of network congestion.  Order will automatically update when the status changes.",
+                $item->getInvoiceEndpoint(),
+                $params['invoiceID'],
+                $params['invoiceID']
+            )
         );
         $order->save();
     }
@@ -128,9 +145,13 @@ class Invoice
         $params = $item->getItemParams();
         if ($invoiceStatus == 'expired' || $invoiceStatus == 'declined') {
             $order->addStatusHistoryComment(
-                'BitPay Invoice <a href = "http://' . $item->getInvoiceEndpoint() . '/dashboard/payments/' .
-                $params['invoiceID'] . '" target = "_blank">' . $params['invoiceID'] .
-                '</a> has been declined / expired.'
+                sprintf(
+                    "BitPay Invoice <a href = \"http://%s/dashboard/payments/%s\" target = \"_blank\">%s</a>
+ has been declined / expired.",
+                    $item->getInvoiceEndpoint(),
+                    $params['invoiceID'],
+                    $params['invoiceID']
+                )
             );
             if ($this->config->getBitpayCancelMapping() == "cancel") {
                 $order->setState(Order::STATE_CANCELED)->setStatus(Order::STATE_CANCELED);
@@ -144,8 +165,13 @@ class Invoice
         $params = $item->getItemParams();
         #load the order to update
         $order->addStatusHistoryComment(
-            'BitPay Invoice <a href = "http://' . $item->getInvoiceEndpoint() . '/dashboard/payments/' .
-            $params['invoiceID'] . '" target = "_blank">' . $params['invoiceID'] . '</a> has been refunded.'
+            sprintf(
+                "BitPay Invoice <a href = \"http://%s/dashboard/payments/%s\" target = \"_blank\">%s</a>
+ has been refunded.",
+                $item->getInvoiceEndpoint(),
+                $params['invoiceID'],
+                $params['invoiceID']
+            )
         );
         if ($this->config->getBitpayRefundMapping() == "closed") {
             $order->setState(Order::STATE_CLOSED)->setStatus(Order::STATE_CLOSED);
@@ -165,7 +191,7 @@ class Invoice
         $request_headers[] = 'Content-Type: application/json';
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'https://' . $item->getInvoiceEndpoint().'/invoices');
+        curl_setopt($ch, CURLOPT_URL, sprintf("https://%s/invoices", $item->getInvoiceEndpoint()));
         curl_setopt($ch, CURLOPT_HTTPHEADER, $request_headers);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $post_fields);
@@ -191,7 +217,12 @@ class Invoice
         $post_fields = $item->getItemParams();
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, 'https://' . $item->getInvoiceEndpoint() . '/invoices/' . $post_fields['invoiceID'] . '?token=' . $item->getToken());
+        curl_setopt($ch, CURLOPT_URL, sprintf(
+            "https://%s/invoices/%s?token=%s",
+            $item->getInvoiceEndpoint(),
+            $post_fields['invoiceID'],
+            $item->getToken()
+        ));
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $result = curl_exec($ch);
