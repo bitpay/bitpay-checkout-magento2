@@ -2,8 +2,8 @@
 /** @var $block \Bitpay\BPCheckout\Block\Index */
 $configValue = $block->getBaseSecureUrl();
 $env = $block->getBitpayEnv();
-extract($_GET);
-if($m==1):
+$order_id = $block->getOrderId();
+if ($block->getModalParam() === 1):
 ?>
 
     <script type="text/x-magento-init">
@@ -22,7 +22,7 @@ if($m==1):
     <div id="success-bitpay-page" style="display:none;">
         <?php /** @var $block \Magento\Checkout\Block\Onepage\Success */ ?>
         <div class="checkout-success">
-            <?php if (isset($order_id)): ?>
+            <?php if ($order_id): ?>
                 <p><?= /* @noEscape */ __('Your order # is: <b>' . $order_id . '</b> ') ?></p>
                 <p>
                     <?= /* @noEscape */ __('We\'ll email you an order confirmation with details and tracking info. ') ?>
@@ -44,7 +44,7 @@ if($m==1):
     <div id="success-bitpay-page">
         <?php /** @var $block \Magento\Checkout\Block\Onepage\Success */ ?>
         <div class="checkout-success">
-            <?php if (isset($order_id)): ?>
+            <?php if ($order_id): ?>
                 <p><?= /* @noEscape */ __('Your order # is: <b>' . $order_id . '</b> ') ?></p>
                 <p>
                     <?= /* @noEscape */ __('We\'ll email you an order confirmation with details and tracking info. ') ?>

@@ -1,5 +1,5 @@
 <?php
-namespace Bitpay\BPCheckout\Observer;
+namespace Bitpay\BPCheckout\Model;
 
 use Bitpay\BPCheckout\Logger\Logger;
 use Bitpay\BPCheckout\Model\Config;
@@ -21,7 +21,7 @@ use Magento\Framework\UrlInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Framework\App\ResponseFactory;
 
-class BPRedirect implements ObserverInterface
+class BPRedirect
 {
     protected $checkoutSession;
     protected $redirect;
@@ -67,9 +67,8 @@ class BPRedirect implements ObserverInterface
         $this->logger = $logger;
     }
 
-    public function execute(Observer $observer)
+    public function execute()
     {
-        $this->actionFlag->set('', Action::FLAG_NO_DISPATCH, true);
         $orderId = $this->checkoutSession->getData('last_order_id');
         $order = $this->orderInterface->load($orderId);
         $incrementId = $order->getIncrementId();
@@ -105,7 +104,8 @@ class BPRedirect implements ObserverInterface
             $this->registry->unregister('isSecureArea');
             $this->messageManager->addErrorMessage('We are unable to place your Order at this time');
             $this->responseFactory->create()->setRedirect($this->url->getUrl('checkout/cart'))->sendResponse();
-            exit;
+
+            return;
         }
 
         switch ($modal) {

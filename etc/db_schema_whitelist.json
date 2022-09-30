@@ -1,0 +1,14 @@
+{
+    "bitpay_transactions": {
+        "column": {
+            "id": true,
+            "order_id": true,
+            "transaction_id": true,
+            "transaction_status": true,
+            "date_added": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    }
+}
