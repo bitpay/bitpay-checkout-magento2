@@ -28,4 +28,14 @@ class Index extends Template
     {
         return $this->config->getBitpayEnv();
     }
+
+    public function getModalParam(): int
+    {
+        return (int) $this->getRequest()->getParam('m');
+    }
+
+    public function getOrderId(): string
+    {
+        return (string) $this->getRequest()->getParam('order_id');
+    }
 }
