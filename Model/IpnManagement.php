@@ -63,20 +63,30 @@ class IpnManagement implements IpnManagementInterface
 
     public function postClose()
     {
-        $orderID = $this->request->getParam('orderID', null);
-        $order = $this->orderInterface->loadByIncrementId($orderID);
-        $orderData = $order->getData();
-        $quoteID = $orderData['quote_id'];
+        $redirectUrl = $this->url->getUrl('checkout/cart');
+        /** @var \Magento\Framework\App\Response\Http $response */
+        $response = $this->responseFactory->create();
+        try {
+            $orderID = $this->request->getParam('orderID', null);
+            $order = $this->orderInterface->loadByIncrementId($orderID);
+            $orderData = $order->getData();
+            $quoteID = $orderData['quote_id'];
+            $quote = $this->quoteFactory->create()->loadByIdWithoutStore($quoteID);
+            if ($quote->getId()) {
+                $quote->setIsActive(1)->setReservedOrderId(null)->save();
+                $this->checkoutSession->replaceQuote($quote);
+                $this->coreRegistry->register('isSecureArea', 'true');
+                $order->delete();
+                $this->coreRegistry->unregister('isSecureArea');
+                $response->setRedirect($redirectUrl)->sendResponse();
 
-        $quote = $this->quoteFactory->create()->loadByIdWithoutStore($quoteID);
-        if ($quote->getId()) {
-            $quote->setIsActive(1)->setReservedOrderId(null)->save();
-            $this->checkoutSession->replaceQuote($quote);
-            $redirectUrl = $this->url->getUrl('checkout/cart');
-            $this->coreRegistry->register('isSecureArea', 'true');
-            $order->delete();
-            $this->coreRegistry->unregister('isSecureArea');
-            $this->responseFactory->create()->setRedirect($redirectUrl)->sendResponse();
+                return;
+            }
+
+            $response->setRedirect($redirectUrl)->sendResponse();
+        } catch (\Exception $exception) {
+            $this->logger->info($exception->getMessage());
+            $response->setRedirect($redirectUrl)->sendResponse();
         }
     }
 
