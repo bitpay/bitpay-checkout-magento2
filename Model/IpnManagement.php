@@ -63,7 +63,7 @@ class IpnManagement implements IpnManagementInterface
 
     public function postClose()
     {
-        $redirectUrl = $this->url->getUrl('checkout/cart');
+        $redirectUrl = $this->url->getUrl('checkout/cart', ['_query' => 'reload=1']);
         /** @var \Magento\Framework\App\Response\Http $response */
         $response = $this->responseFactory->create();
         try {
@@ -85,7 +85,7 @@ class IpnManagement implements IpnManagementInterface
 
             $response->setRedirect($redirectUrl)->sendResponse();
         } catch (\Exception $exception) {
-            $this->logger->info($exception->getMessage());
+            $this->logger->error($exception->getMessage());
             $response->setRedirect($redirectUrl)->sendResponse();
         }
     }
