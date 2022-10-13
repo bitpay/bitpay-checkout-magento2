@@ -17,8 +17,8 @@ require(['mage/storage', 'Magento_Checkout/js/checkout-data', 'uiRegistry'], fun
             var shippingAddressData = checkoutData.getShippingAddressFromData();
             if (!shippingAddressData && window.isCustomerLoggedIn === false) {
                 checkoutData.setShippingAddressFromData(addressFormData)
-                checkoutData.setInputFieldEmailValue(data.email)
             }
+            checkoutData.setInputFieldEmailValue(data.email)
         })
     });
 });
