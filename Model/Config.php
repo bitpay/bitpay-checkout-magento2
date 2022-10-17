@@ -24,6 +24,9 @@ class Config
     const API_HOST_PROD = 'bitpay.com';
     const EXTENSION_VERSION = 'Bitpay_BPCheckout_Magento2_7.2.0';
     const BITPAY_PAYMENT_METHOD_NAME = 'bpcheckout';
+    const BITPAY_PAYMENT_ICON = 'Pay-with-BitPay-CardGroup.svg';
+    const BITPAY_PAYMENT_DIR_IMAGES = 'images';
+    const BITPAY_MODULE_NAME = 'Bitpay_BPCheckout';
 
     /**
      * @param ScopeConfigInterface $scopeConfig
