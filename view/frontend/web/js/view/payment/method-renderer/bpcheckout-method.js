@@ -21,7 +21,9 @@ define(
                 return window.checkoutConfig.payment.checkmo.mailingAddress;
             },
 
-           
+            getLogo: function () {
+                return window.checkoutConfig.payment.bpcheckout.paymentIcon;
+            }
         });
     }
 );

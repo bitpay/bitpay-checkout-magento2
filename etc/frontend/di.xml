@@ -3,4 +3,11 @@
     <type name="Magento\Checkout\Controller\Onepage\Success">
         <plugin name="bpredirect" type="Bitpay\BPCheckout\Plugin\Onepage\SuccessPlugin"/>
     </type>
+    <type name="Magento\Checkout\Model\CompositeConfigProvider">
+        <arguments>
+            <argument name="configProviders" xsi:type="array">
+                <item name="bpcheckout_config_provider" xsi:type="object">Bitpay\BPCheckout\Model\Checkout\ConfigProvider</item>
+            </argument>
+        </arguments>
+    </type>
 </config>
