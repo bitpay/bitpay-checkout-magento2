@@ -11,8 +11,13 @@ This version requires the following
 
 # Installation
 
-1. Upload all files to your Magento installation root
-2. Login to your server, and in the root of your Magento2 install, run the following commands:
+This module is now installable via Composer using the following command:
+
+```
+composer require bitpay/module-bpcheckout
+```
+
+After installing via Composer, run the following commands:
 
 ```
 php bin/magento setup:upgrade
