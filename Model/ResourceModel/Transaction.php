@@ -14,7 +14,7 @@ class Transaction extends AbstractDb
      */
     public function _construct()
     {
-        $this->_init(self::TABLE_NAME, 'entity_id');
+        $this->_init(self::TABLE_NAME, 'id');
     }
 
     public function add(string $incrementId, string $invoiceID, string $status): void
