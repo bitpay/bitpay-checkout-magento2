@@ -19,5 +19,6 @@ class SuccessPlugin
         \Magento\Framework\View\Result\Page $page
     ) {
         $this->bpRedirect->execute();
+        return $page;
     }
 }
