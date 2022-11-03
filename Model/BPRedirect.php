@@ -20,6 +20,7 @@ use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\UrlInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Framework\App\ResponseFactory;
+use Magento\Framework\View\Result\Page;
 
 class BPRedirect
 {
@@ -67,14 +68,14 @@ class BPRedirect
         $this->logger = $logger;
     }
 
-    public function execute()
+    public function execute(Page $page)
     {
         $orderId = $this->checkoutSession->getData('last_order_id');
         $order = $this->orderInterface->load($orderId);
         $incrementId = $order->getIncrementId();
         $baseUrl = $this->config->getBaseUrl();
         if ($order->getPayment()->getMethodInstance()->getCode() !== Config::BITPAY_PAYMENT_METHOD_NAME) {
-            return;
+            return $page;
         }
 
         try {
