@@ -18,6 +18,6 @@ class SuccessPlugin
         \Magento\Checkout\Controller\Onepage\Success $subject,
         \Magento\Framework\View\Result\Page $page
     ) {
-        $this->bpRedirect->execute();
+        return $this->bpRedirect->execute($page);
     }
 }
