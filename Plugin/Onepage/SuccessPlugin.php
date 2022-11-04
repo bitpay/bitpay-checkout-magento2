@@ -16,8 +16,8 @@ class SuccessPlugin
 
     public function afterExecute(
         \Magento\Checkout\Controller\Onepage\Success $subject,
-        \Magento\Framework\View\Result\Page $page
+        \Magento\Framework\Controller\ResultInterface $result
     ) {
-        return $this->bpRedirect->execute($page);
+        return $this->bpRedirect->execute();
     }
 }
