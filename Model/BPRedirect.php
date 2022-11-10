@@ -14,10 +14,13 @@ use Magento\Framework\DataObject;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Bitpay\BPCheckout\Model\Ipn\BPCItem;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Message\Manager;
 use Magento\Framework\Registry;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\UrlInterface;
+use Magento\Framework\View\Result\Page;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Framework\App\ResponseFactory;
 use Magento\Framework\View\Result\PageFactory;
@@ -71,9 +74,19 @@ class BPRedirect
         $this->resultPageFactory = $resultPageFactory;
     }
 
+    /**
+     * @return Page|void
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     */
     public function execute()
     {
         $orderId = $this->checkoutSession->getData('last_order_id');
+        if (!$orderId) {
+            $this->response->setRedirect($this->url->getUrl('checkout/cart'))->sendResponse();
+            return;
+        }
+
         $order = $this->orderInterface->load($orderId);
         $incrementId = $order->getIncrementId();
         $baseUrl = $this->config->getBaseUrl();
