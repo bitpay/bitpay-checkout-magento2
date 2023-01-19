@@ -47,7 +47,7 @@ class Token implements HttpPostActionInterface
     {
         try {
             $tokenLabel = $this->request->getParam('token_label');
-            $privateKeyPath = $this->encryptor->decrypt($this->bitpayConfig->getPrivateKeyPath());
+            $privateKeyPath = $this->bitpayConfig->getPrivateKeyPath();
             $password = $this->encryptor->decrypt($this->bitpayConfig->getMerchantFacadePassword());
             if (!$privateKeyPath || !$password) {
                 throw new TokenCreationException('Please save password and private key path first');
