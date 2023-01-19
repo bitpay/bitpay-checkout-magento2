@@ -2,6 +2,7 @@
 /** @var $block \Bitpay\BPCheckout\Block\Adminhtml\System\Config\Form\Field\CreateToken  */
 ?>
 <input type="button" name="create_token" id="create_token" onclick="createToken()" value="Create Token">
+<p class="note"><span>Each time before creating token please save private key path and password</span></p>
 <input type="text" class="hidden" name="groups[merchant_facade][fields][token_data][value]" value="">
 
 <div id="tokenInfo" class="<?= !$block->getPairingCode() ? "hidden" : "" ?>">
