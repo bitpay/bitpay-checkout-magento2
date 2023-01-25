@@ -24,6 +24,8 @@ use Magento\Framework\View\Result\Page;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Framework\App\ResponseFactory;
 use Magento\Framework\View\Result\PageFactory;
+use Magento\Sales\Model\Order;
+use Magento\Sales\Model\OrderRepository;
 
 class BPRedirect
 {
@@ -33,7 +35,6 @@ class BPRedirect
     protected $orderInterface;
     protected $transactionRepository;
     protected $config;
-    protected $actionFlag;
     protected $responseFactory;
     protected $invoice;
     protected $messageManager;
@@ -41,10 +42,11 @@ class BPRedirect
     protected $url;
     protected $logger;
     protected $resultPageFactory;
+    protected $client;
+    protected $orderRepository;
 
     public function __construct(
         Session $checkoutSession,
-        ActionFlag $actionFlag,
         RedirectInterface $redirect,
         ResponseInterface $response,
         OrderInterface $orderInterface,
@@ -56,10 +58,11 @@ class BPRedirect
         Registry $registry,
         UrlInterface $url,
         Logger $logger,
-        PageFactory $resultPageFactory
+        PageFactory $resultPageFactory,
+        Client $client,
+        OrderRepository $orderRepository
     ) {
         $this->checkoutSession = $checkoutSession;
-        $this->actionFlag = $actionFlag;
         $this->redirect = $redirect;
         $this->response = $response;
         $this->orderInterface = $orderInterface;
@@ -72,12 +75,14 @@ class BPRedirect
         $this->url = $url;
         $this->logger = $logger;
         $this->resultPageFactory = $resultPageFactory;
+        $this->client = $client;
+        $this->orderRepository = $orderRepository;
     }
 
     /**
      * @return Page|void
      * @throws LocalizedException
-     * @throws NoSuchEntityException
+     * @throws NoSuchEntityException|\Exception
      */
     public function execute()
     {
@@ -95,32 +100,27 @@ class BPRedirect
         }
 
         try {
-            #set to pending and override magento coding
-            $this->setToPendingAndOverrideMagentoStatus($order);
-            #get the environment
-            $env = $this->config->getBitpayEnv();
-            $bitpayToken = $this->config->getToken();
+            $order = $this->setToPendingAndOverrideMagentoStatus($order);
             $modal = $this->config->getBitpayUx() === 'modal';
-            //create an item, should be passed as an object'
-
             $redirectUrl = $baseUrl .'bitpay-invoice/?order_id='. $incrementId;
-            $params = $this->getParams($order, $incrementId, $modal, $redirectUrl, $baseUrl, $bitpayToken);
+            $params = $this->getParams($order, $incrementId, $modal, $redirectUrl, $baseUrl);
             $billingAddressData = $order->getBillingAddress()->getData();
             $this->setSessionCustomerData($billingAddressData, $order->getCustomerEmail(), $incrementId);
-            $item = new BPCItem($bitpayToken, $params, $env);
-            //this creates the invoice with all of the config params from the item
-            $invoice = $this->invoice->BPCCreateInvoice($item);
-            //now we have to append the invoice transaction id for the callback verification
-            $invoiceID = $invoice['data']['id'];
-            #insert into the database
+            $client = $this->client->initialize();
+            $invoice = $this->invoice->BPCCreateInvoice($client, $params);
+            $invoiceID = $invoice->getId();
+            $order->setData('bitpay_invoice_id', $invoiceID);
+            $order->setData('expiration_time', $invoice->getExpirationTime());
+            $order->setData('acceptance_window', $invoice->getAcceptanceWindow());
+
+            $this->orderRepository->save($order);
             $this->transactionRepository->add($incrementId, $invoiceID, 'new');
         } catch (\Exception $exception) {
-            $this->logger->error($exception->getMessage());
-            $this->registry->register('isSecureArea', 'true');
-            $order->delete();
-            $this->registry->unregister('isSecureArea');
-            $this->messageManager->addErrorMessage('We are unable to place your Order at this time');
-            $this->responseFactory->create()->setRedirect($this->url->getUrl('checkout/cart'))->sendResponse();
+            $this->deleteOrderAndRedirectToCart($exception, $order);
+
+            return;
+        } catch (\Error $error) {
+            $this->deleteOrderAndRedirectToCart($error, $order);
 
             return;
         }
@@ -130,15 +130,15 @@ class BPRedirect
             case 1:
                 #set some info for guest checkout
                 $this->setSessionCustomerData($billingAddressData, $order->getCustomerEmail(), $incrementId);
-                $RedirectUrl = $baseUrl . 'bitpay-invoice/?invoiceID='.$invoiceID.'&order_id='.$incrementId.'&m=1';
+                $RedirectUrl = $baseUrl . 'bitpay-invoice/?invoiceID=' . $invoiceID . '&order_id='.$incrementId . '&m=1';
                 $this->responseFactory->create()->setRedirect($RedirectUrl)->sendResponse();
                 break;
             case false:
             default:
-                $this->redirect->redirect($this->response, $invoice['data']['url']);
+            $this->redirect->redirect($this->response, $invoice->getUrl());
                 break;
         }
-    } //end execute function
+    }
 
     private function setSessionCustomerData(array $billingAddressData, string $email, string $incrementId): void
     {
@@ -156,13 +156,14 @@ class BPRedirect
      * @return void
      * @throws \Exception
      */
-    private function setToPendingAndOverrideMagentoStatus(OrderInterface $order): void
+    private function setToPendingAndOverrideMagentoStatus(OrderInterface $order): Order
     {
         $order->setState('new', true);
         $order_status = $this->config->getBPCheckoutOrderStatus();
         $order_status = !isset($order_status) ? 'pending' : $order_status;
         $order->setStatus($order_status, true);
-        $order->save();
+
+        return $order;
     }
 
     /**
@@ -179,8 +180,7 @@ class BPRedirect
         ?string $incrementId,
         bool $modal,
         string $redirectUrl,
-        string $baseUrl,
-        ?string $bitpayToken
+        string $baseUrl
     ): DataObject {
         $buyerInfo = new DataObject([
             'name' => $order->getBillingAddress()->getFirstName() . ' ' . $order->getBillingAddress()->getLastName(),
@@ -195,8 +195,23 @@ class BPRedirect
             'redirectURL' => !$modal ? $redirectUrl . "&m=0" : $redirectUrl,
             'notificationURL' => $baseUrl . 'rest/V1/bitpay-bpcheckout/ipn',
             'closeURL' => $baseUrl . 'rest/V1/bitpay-bpcheckout/close?orderID=' . $incrementId,
-            'extendedNotifications' => true,
-            'token' => $bitpayToken
+            'extendedNotifications' => true
         ]);
+    }
+
+    /**
+     * @param \Exception $exception
+     * @param OrderInterface $order
+     * @return void
+     * @throws \Exception
+     */
+    private function deleteOrderAndRedirectToCart($exception, OrderInterface $order): void
+    {
+        $this->logger->error($exception->getMessage());
+        $this->registry->register('isSecureArea', 'true');
+        $order->delete();
+        $this->registry->unregister('isSecureArea');
+        $this->messageManager->addErrorMessage('We are unable to place your Order at this time');
+        $this->responseFactory->create()->setRedirect($this->url->getUrl('checkout/cart'))->sendResponse();
     }
 }

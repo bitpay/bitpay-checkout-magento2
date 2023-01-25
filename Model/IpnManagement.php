@@ -4,8 +4,10 @@ declare(strict_types=1);
 namespace Bitpay\BPCheckout\Model;
 
 use Bitpay\BPCheckout\Api\IpnManagementInterface;
+use Bitpay\BPCheckout\Exception\IPNValidationException;
 use Bitpay\BPCheckout\Logger\Logger;
 use Bitpay\BPCheckout\Model\Ipn\BPCItem;
+use Bitpay\BPCheckout\Model\Ipn\Validator;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\ResponseFactory;
 use Magento\Framework\DataObject;
@@ -13,6 +15,7 @@ use Magento\Framework\Registry;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\UrlInterface;
 use Magento\Framework\Webapi\Rest\Request;
+use Magento\Framework\Webapi\Rest\Response;
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Api\Data\OrderInterface;
 
@@ -30,6 +33,8 @@ class IpnManagement implements IpnManagementInterface
     protected $transactionRepository;
     protected $invoice;
     protected $request;
+    protected $client;
+    protected $response;
 
     const ORDER_STATUS_PENDING = 'pending';
 
@@ -45,7 +50,9 @@ class IpnManagement implements IpnManagementInterface
         Json $serializer,
         TransactionRepository $transactionRepository,
         Invoice $invoice,
-        Request $request
+        Request $request,
+        Client $client,
+        Response $response
     ) {
         $this->coreRegistry = $registry;
         $this->responseFactory = $responseFactory;
@@ -59,6 +66,8 @@ class IpnManagement implements IpnManagementInterface
         $this->transactionRepository = $transactionRepository;
         $this->invoice = $invoice;
         $this->request = $request;
+        $this->client = $client;
+        $this->response = $response;
     }
 
     public function postClose()
@@ -99,6 +108,13 @@ class IpnManagement implements IpnManagementInterface
             $orderId = $data['orderId'];
             $orderInvoiceId = $data['id'];
             $row = $this->transactionRepository->findBy($orderId, $orderInvoiceId);
+            $client = $this->client->initialize();
+            $invoice = $client->getInvoice($orderInvoiceId);
+            $ipnValidator = new Validator($invoice, $data);
+            if (!empty($ipnValidator->getErrors())) {
+                throw new IPNValidationException(implode(', ', $ipnValidator->getErrors()));
+            }
+
             if (!$row) {
                 return;
             }
@@ -110,7 +126,8 @@ class IpnManagement implements IpnManagementInterface
                 new DataObject(['invoiceID' => $orderInvoiceId, 'extension_version' => Config::EXTENSION_VERSION]),
                 $env
             );
-            $invoiceStatus = $this->invoice->getBPCCheckInvoiceStatus($item);
+
+            $invoiceStatus = $this->invoice->getBPCCheckInvoiceStatus($client, $orderInvoiceId);
             $updateWhere = ['order_id = ?' => $orderId, 'transaction_id = ?' => $orderInvoiceId,];
             $this->transactionRepository->update('transaction_status', $invoiceStatus, $updateWhere);
             $order = $this->orderInterface->loadByIncrementId($orderId);
@@ -118,7 +135,6 @@ class IpnManagement implements IpnManagementInterface
                 case Invoice::COMPLETED:
                     if ($invoiceStatus == 'complete') {
                         $this->invoice->complete($order, $item);
-                        return true;
                     }
                     break;
 
@@ -146,6 +162,7 @@ class IpnManagement implements IpnManagementInterface
                     break;
             }
         } catch (\Exception $e) {
+            $this->response->addMessage($e->getMessage(), 500);
             $this->logger->error($e->getMessage());
         }
     }

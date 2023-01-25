@@ -23,6 +23,7 @@ class Token implements HttpPostActionInterface
     protected $logger;
     protected $bitpayConfig;
     protected $configFactory;
+    protected $token;
 
     public function __construct(
         EncryptorInterface $encryptor,
@@ -30,7 +31,8 @@ class Token implements HttpPostActionInterface
         RequestInterface $request,
         Logger $logger,
         BitpayConfig $bitpayConfig,
-        Factory $configFactory
+        Factory $configFactory,
+        \Bitpay\BPCheckout\Model\Client\Token $token
     ) {
         $this->encryptor = $encryptor;
         $this->jsonFactory = $jsonFactory;
@@ -38,6 +40,7 @@ class Token implements HttpPostActionInterface
         $this->logger = $logger;
         $this->bitpayConfig = $bitpayConfig;
         $this->configFactory = $configFactory;
+        $this->token = $token;
     }
 
     /**
@@ -53,8 +56,7 @@ class Token implements HttpPostActionInterface
                 throw new TokenCreationException('Please save password and private key path first');
             }
 
-            $token = new \Bitpay\BPCheckout\Model\Client\Token();
-            $result = $token->create($privateKeyPath, $password, $tokenLabel);
+            $result = $this->token->create($privateKeyPath, $password, $tokenLabel);
             $pairingCode = $result['data'][0]['pairingCode'];
             $url = $this->bitpayConfig->getBitpayEnv() === 'test'
                 ? 'https://' . BitpayConfig::API_HOST_DEV . '/' . BitpayConfig::BITPAY_API_TOKEN_PATH

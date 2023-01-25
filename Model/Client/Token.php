@@ -3,12 +3,20 @@ declare(strict_types=1);
 
 namespace Bitpay\BPCheckout\Model\Client;
 
+use Bitpay\BPCheckout\Model\Config;
 use Bitpay\BPCheckout\Model\Config as BitpayConfig;
 use BitPayKeyUtils\KeyHelper\PrivateKey;
 use BitPayKeyUtils\Storage\EncryptedFilesystemStorage;
 
 class Token
 {
+    protected $config;
+
+    public function __construct(Config $config)
+    {
+        $this->config = $config;
+    }
+
     /**
      * @param string $privateKeyPath
      * @param string $password
@@ -34,7 +42,9 @@ class Token
     {
         $facade      = BitpayConfig::BITPAY_MERCHANT_FACADE;
         $publicKey   = $privateKey->getPublicKey();
-        $resourceUrl = BitpayConfig::BITPAY_TOKEN_URL;
+        $resourceUrl = $this->config->getBitpayEnv() === 'test'
+            ? BitpayConfig::BITPAY_DEV_TOKEN_URL
+            : BitpayConfig::BITPAY_PROD_TOKEN_URL;
         $sin         = $publicKey->getSin()->__toString();
 
         $postData = [
