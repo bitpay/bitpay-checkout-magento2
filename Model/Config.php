@@ -20,6 +20,10 @@ class Config
     const BITPAY_CANCEL_MAPPING = 'payment/bpcheckout/bitpay_cancel_mapping';
     const BPCHECKOUT_ORDER_STATUS = 'payment/bpcheckout/order_status';
     const BITPAY_UX = 'payment/bpcheckout/bitpay_ux';
+    const BITPAY_MERCHANT_TOKEN_DATA = 'bitpay_authenticate/merchant_facade/token_data';
+    const BITPAY_MERCHANT_PRIVATE_KEY_PATH = 'bitpay_authenticate/merchant_facade/private_key_path';
+    const BITPAY_MERCHANT_PASSWORD = 'bitpay_authenticate/merchant_facade/password';
+    const BITPAY_TOKEN_URL = 'https://test.bitpay.com/tokens';
     const API_HOST_DEV = 'test.bitpay.com';
     const API_HOST_PROD = 'bitpay.com';
     const EXTENSION_VERSION = 'Bitpay_BPCheckout_Magento2_8.1.0';
@@ -27,6 +31,8 @@ class Config
     const BITPAY_PAYMENT_ICON = 'Pay-with-BitPay-CardGroup.svg';
     const BITPAY_PAYMENT_DIR_IMAGES = 'images';
     const BITPAY_MODULE_NAME = 'Bitpay_BPCheckout';
+    const BITPAY_API_TOKEN_PATH = 'dashboard/merchant/api-tokens';
+    const BITPAY_MERCHANT_FACADE = 'merchant';
 
     /**
      * @param ScopeConfigInterface $scopeConfig
@@ -97,5 +103,29 @@ class Config
     public function getBaseUrl(): string
     {
         return $this->storeManagerInterface->getStore()->getBaseUrl();
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getMerchantTokenData(): ?string
+    {
+        return $this->scopeConfig->getValue(self::BITPAY_MERCHANT_TOKEN_DATA, ScopeInterface::SCOPE_STORE);
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPrivateKeyPath(): ?string
+    {
+        return $this->scopeConfig->getValue(self::BITPAY_MERCHANT_PRIVATE_KEY_PATH, ScopeInterface::SCOPE_STORE);
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getMerchantFacadePassword(): ?string
+    {
+        return $this->scopeConfig->getValue(self::BITPAY_MERCHANT_PASSWORD, ScopeInterface::SCOPE_STORE);
     }
 }
