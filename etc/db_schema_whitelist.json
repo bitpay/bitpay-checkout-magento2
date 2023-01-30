@@ -10,5 +10,12 @@
         "constraint": {
             "PRIMARY": true
         }
+    },
+    "sales_order": {
+        "column": {
+            "bitpay_invoice_id": true,
+            "expiration_time": true,
+            "acceptance_window": true
+        }
     }
 }

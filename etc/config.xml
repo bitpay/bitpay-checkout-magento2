@@ -16,6 +16,7 @@
                 <payment_action>true</payment_action>
                 <model>Bitpay\BPCheckout\Model\BPCheckout</model>
                 <group>offline</group>
+                <send_order_email>0</send_order_email>
             </bpcheckout>
             <!-- payment-config -->
         </payment>

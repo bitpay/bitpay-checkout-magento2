@@ -23,7 +23,9 @@ class Config
     const BITPAY_MERCHANT_TOKEN_DATA = 'bitpay_authenticate/merchant_facade/token_data';
     const BITPAY_MERCHANT_PRIVATE_KEY_PATH = 'bitpay_authenticate/merchant_facade/private_key_path';
     const BITPAY_MERCHANT_PASSWORD = 'bitpay_authenticate/merchant_facade/password';
-    const BITPAY_TOKEN_URL = 'https://test.bitpay.com/tokens';
+    const BITPAY_SEND_ORDER_EMAIL = 'payment/bpcheckout/send_order_email';
+    const BITPAY_DEV_TOKEN_URL = 'https://test.bitpay.com/tokens';
+    const BITPAY_PROD_TOKEN_URL = 'https://bitpay.com/tokens';
     const API_HOST_DEV = 'test.bitpay.com';
     const API_HOST_PROD = 'bitpay.com';
     const EXTENSION_VERSION = 'Bitpay_BPCheckout_Magento2_8.1.0';
@@ -127,5 +129,10 @@ class Config
     public function getMerchantFacadePassword(): ?string
     {
         return $this->scopeConfig->getValue(self::BITPAY_MERCHANT_PASSWORD, ScopeInterface::SCOPE_STORE);
+    }
+
+    public function getIsSendOrderEmail(): ?string
+    {
+        return $this->scopeConfig->getValue(self::BITPAY_SEND_ORDER_EMAIL, ScopeInterface::SCOPE_STORE);
     }
 }

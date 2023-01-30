@@ -3,15 +3,20 @@
 namespace Bitpay\BPCheckout\Observer;
 
 use Bitpay\BPCheckout\Logger\Logger;
+use Bitpay\BPCheckout\Model\Config;
 use Magento\Framework\Event\ObserverInterface;
 
 class BPEmail implements ObserverInterface
 {
-    private $logger;
+    protected $logger;
+    protected $config;
 
-    public function __construct(Logger $logger)
-    {
+    public function __construct(
+        Logger $logger,
+        Config $config
+    ) {
         $this->logger = $logger;
+        $this->config = $config;
     }
 
     public function execute(\Magento\Framework\Event\Observer $observer)
@@ -19,7 +24,8 @@ class BPEmail implements ObserverInterface
         try {
             $order = $observer->getEvent()->getOrder();
             $payment = $order->getPayment()->getMethodInstance()->getCode();
-            if ($payment == "bpcheckout") {
+            $isSendOrderEmail = (bool) $this->config->getIsSendOrderEmail();
+            if ($payment == "bpcheckout" && $isSendOrderEmail === false) {
                 $this->stopNewOrderEmail($order);
             }
         } catch (\ErrorException $ee) {
