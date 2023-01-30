@@ -13,9 +13,42 @@
             <column name="id"/>
         </constraint>
     </table>
-    <table name="sales_order" resource="default" engine="innodb">
-        <column xsi:type="varchar" name="bitpay_invoice_id" nullable="true" length="255" comment="Bitpay Invoice Id"/>
-        <column xsi:type="varchar" name="expiration_time" nullable="true" length="255" comment="Expiration time to pay invoice"/>
+
+    <table name="bitpay_invoice" resource="default" engine="innodb" comment="Bitpay Invoice">
+        <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" identity="true" comment="ID"/>
+        <column xsi:type="int" name="order_id" unsigned="true" nullable="false" identity="false"
+                comment="Order ID"/>
+        <column xsi:type="varchar" name="invoice_id" nullable="false" length="255" comment="Bitpay Invoice Id"/>
+        <column xsi:type="varchar" name="expiration_time" nullable="false" length="255" comment="Expiration time to pay invoice"/>
         <column xsi:type="int" name="acceptance_window" unsigned="false" nullable="true" comment="Miliseconds pay an invoice before it expires"/>
+
+        <constraint xsi:type="foreign" referenceId="BITPAY_INVOICE_ORDER_ID_SALES_ORDER_ENTITY_ID" table="bitpay_invoice"
+                    column="order_id" referenceTable="sales_order" referenceColumn="entity_id" onDelete="CASCADE"/>
+
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="id"/>
+        </constraint>
+        <index referenceId="BITPAY_INVOICE_ORDER_ID" indexType="btree">
+            <column name="order_id"/>
+        </index>
+    </table>
+
+    <table name="bitpay_refund" resource="default" engine="innodb" comment="Bitpay Refund">
+        <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" identity="true" comment="ID"/>
+        <column xsi:type="int" name="order_id" unsigned="true" nullable="false" identity="false"
+                comment="Order ID"/>
+        <column xsi:type="varchar" name="refund_id" nullable="false" length="255" comment="Bitpay Refund Id"/>
+        <column xsi:type="decimal" name="amount" scale="4" precision="12" unsigned="false" nullable="false"
+                comment="Amount"/>
+
+        <constraint xsi:type="foreign" referenceId="BITPAY_REFUND_ORDER_ID_SALES_ORDER_ENTITY_ID" table="bitpay_refund"
+                    column="order_id" referenceTable="sales_order" referenceColumn="entity_id" onDelete="CASCADE"/>
+
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="id"/>
+        </constraint>
+        <index referenceId="BITPAY_REFUND_ORDER_ID" indexType="btree">
+            <column name="order_id"/>
+        </index>
     </table>
 </schema>
