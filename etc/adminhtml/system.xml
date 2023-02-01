@@ -10,13 +10,13 @@
         <tab id="bitpay" translate="label" sortOrder="999999">
             <label>Bitpay</label>
         </tab>
-        <section id="bitpay_authenticate" translate="label" type="text" sortOrder="162000" showInDefault="1" showInWebsite="1" showInStore="1">
-            <resource>CrossBorder_Retail::config</resource>
+        <section id="bitpay_merchant_facade" translate="label" type="text" sortOrder="162000" showInDefault="1" showInWebsite="1" showInStore="1">
             <class>separator-top</class>
-            <label>Bitpay authenticate</label>
+            <resource>Bitpay_BPCheckout::config</resource>
+            <label>Merchant Facade</label>
             <tab>bitpay</tab>
-            <group id="merchant_facade" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Merchant Facade</label>
+            <group id="authenticate" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Authenticate</label>
                 <field id="token_label" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Token Label</label>
                 </field>
@@ -32,6 +32,35 @@
                     <frontend_model>Bitpay\BPCheckout\Block\Adminhtml\System\Config\Form\Field\CreateToken</frontend_model>
                 </field>
             </group>
+
+
+            <group id="refund" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Refund</label>
+                <field id="preview_mode" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1"
+                       showInStore="0">
+                    <label>Preview Mode</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="immediate_refund" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1"
+                       showInStore="0">
+                    <label>Immediate Refund</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="buyer_pays_refund_fee" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1"
+                       showInStore="0">
+                    <label>Buyer Pays Refund Fee</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="suppress_order_emails" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1"
+                       showInStore="0">
+                    <label>Suppress Order Emails</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+
+
         </section>
         <section id="payment">
             <group id="bpcheckout" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1"

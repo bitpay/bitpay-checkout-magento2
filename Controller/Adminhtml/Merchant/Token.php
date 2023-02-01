@@ -91,11 +91,11 @@ class Token implements HttpPostActionInterface
     protected function prepareConfigData(string $resultEncrypted, ?string $tokenLabel): array
     {
         return [
-            'section' => 'bitpay_authenticate',
+            'section' => 'bitpay_merchant_facade',
             'website' => null,
             'store'   => null,
             'groups'  => [
-                'merchant_facade' => [
+                'authenticate' => [
                     'fields' => [
                         'token_label' => [
                             'value' => $tokenLabel,

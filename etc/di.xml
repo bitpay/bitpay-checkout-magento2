@@ -18,4 +18,5 @@
             </argument>
         </arguments>
     </type>
+    <preference for="Magento\Sales\Controller\Adminhtml\Order\Creditmemo\Save" type="Bitpay\BPCheckout\Controller\Adminhtml\Order\Creditmemo\Save"/>
 </config>

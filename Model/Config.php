@@ -20,9 +20,9 @@ class Config
     const BITPAY_CANCEL_MAPPING = 'payment/bpcheckout/bitpay_cancel_mapping';
     const BPCHECKOUT_ORDER_STATUS = 'payment/bpcheckout/order_status';
     const BITPAY_UX = 'payment/bpcheckout/bitpay_ux';
-    const BITPAY_MERCHANT_TOKEN_DATA = 'bitpay_authenticate/merchant_facade/token_data';
-    const BITPAY_MERCHANT_PRIVATE_KEY_PATH = 'bitpay_authenticate/merchant_facade/private_key_path';
-    const BITPAY_MERCHANT_PASSWORD = 'bitpay_authenticate/merchant_facade/password';
+    const BITPAY_MERCHANT_TOKEN_DATA = 'bitpay_merchant_facade/authenticate/token_data';
+    const BITPAY_MERCHANT_PRIVATE_KEY_PATH = 'bitpay_merchant_facade/authenticate/private_key_path';
+    const BITPAY_MERCHANT_PASSWORD = 'bitpay_merchant_facade/authenticate/password';
     const BITPAY_SEND_ORDER_EMAIL = 'payment/bpcheckout/send_order_email';
     const BITPAY_DEV_TOKEN_URL = 'https://test.bitpay.com/tokens';
     const BITPAY_PROD_TOKEN_URL = 'https://bitpay.com/tokens';

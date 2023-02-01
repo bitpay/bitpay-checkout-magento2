@@ -44,6 +44,7 @@ class BPRedirect
     protected $resultPageFactory;
     protected $client;
     protected $orderRepository;
+    protected $bitpayInvoiceRepository;
 
     public function __construct(
         Session $checkoutSession,
@@ -60,7 +61,8 @@ class BPRedirect
         Logger $logger,
         PageFactory $resultPageFactory,
         Client $client,
-        OrderRepository $orderRepository
+        OrderRepository $orderRepository,
+        BitpayInvoiceRepository $bitpayInvoiceRepository
     ) {
         $this->checkoutSession = $checkoutSession;
         $this->redirect = $redirect;
@@ -77,6 +79,7 @@ class BPRedirect
         $this->resultPageFactory = $resultPageFactory;
         $this->client = $client;
         $this->orderRepository = $orderRepository;
+        $this->bitpayInvoiceRepository = $bitpayInvoiceRepository;
     }
 
     /**
@@ -109,11 +112,13 @@ class BPRedirect
             $client = $this->client->initialize();
             $invoice = $this->invoice->BPCCreateInvoice($client, $params);
             $invoiceID = $invoice->getId();
-            $order->setData('bitpay_invoice_id', $invoiceID);
-            $order->setData('expiration_time', $invoice->getExpirationTime());
-            $order->setData('acceptance_window', $invoice->getAcceptanceWindow());
-
-            $this->orderRepository->save($order);
+            $order = $this->orderRepository->save($order);
+            $this->bitpayInvoiceRepository->add(
+                $order->getId(),
+                $invoiceID,
+                $invoice->getExpirationTime(),
+                $invoice->getAcceptanceWindow()
+            );
             $this->transactionRepository->add($incrementId, $invoiceID, 'new');
         } catch (\Exception $exception) {
             $this->deleteOrderAndRedirectToCart($exception, $order);
