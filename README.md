@@ -60,14 +60,16 @@ Note: Each time before creating token please save private key path and password
 When you hit Create token button you will get pairing code that you use in <a href="https://test.bitpay.com/dashboard/merchant/api-tokens">Bitpay Token</a>
 
 <h3>Refund</h3>
-Refund setting are located in *Admin->Stores->Configuration->Bitpay->Merchant Facade->Refund.*
+* Refund setting are located in *Admin->Stores->Configuration->Bitpay->Merchant Facade->Refund.*
 There are following options to set:
-* Preview Mode
-* Immediate Refund
-* Buyer Pays Refund Fee
-* Suppress Order Emails
+	* Preview Mode
+    * Immediate Refund
+    * Buyer Pays Refund Fee
+    * Suppress Order Emails
 
-All options by default are set to false
+	All options by default are set to false.
+* Refund request is send when user attempts to create a Credit Memo against a BitPay Order. Refund amount is configured in the credit meno
+
 
 This plugin also includes an IPN (Instant Payment Notification) endpoint that will update your Magento 2 order status.
 
