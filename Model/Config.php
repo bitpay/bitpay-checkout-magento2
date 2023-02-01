@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Bitpay\BPCheckout\Model;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
@@ -11,6 +12,8 @@ class Config
 {
     private $scopeConfig;
     private $storeManagerInterface;
+
+    private $encryptor;
 
     const BITPAY_ENV = 'payment/bpcheckout/bitpay_endpoint';
     const BITPAY_DEV_TOKEN = 'payment/bpcheckout/bitpay_devtoken';
@@ -42,25 +45,17 @@ class Config
      */
     public function __construct(
         ScopeConfigInterface $scopeConfig,
-        StoreManagerInterface $storeManagerInterface
+        StoreManagerInterface $storeManagerInterface,
+        EncryptorInterface $encryptor
     ) {
         $this->scopeConfig = $scopeConfig;
         $this->storeManagerInterface = $storeManagerInterface;
+        $this->encryptor = $encryptor;
     }
 
     public function getBitpayEnv():? string
     {
         return $this->scopeConfig->getValue(self::BITPAY_ENV, ScopeInterface::SCOPE_STORE);
-    }
-
-    public function getBitpayDevToken():? string
-    {
-        return $this->scopeConfig->getValue(self::BITPAY_DEV_TOKEN, ScopeInterface::SCOPE_STORE);
-    }
-
-    public function getBitpayProdToken():? string
-    {
-        return $this->scopeConfig->getValue(self::BITPAY_PROD_TOKEN, ScopeInterface::SCOPE_STORE);
     }
 
     public function getBitpayIpnMapping():? string
@@ -88,14 +83,24 @@ class Config
         return $this->scopeConfig->getValue(self::BITPAY_UX, ScopeInterface::SCOPE_STORE);
     }
 
-    public function getToken(): string
+    public function getToken(): ?string
     {
-        $env = $this->getBitpayEnv();
-        if ($env === 'prod') {
-            return $this->getBitpayProdToken() !== null ? $this->getBitpayProdToken() : '';
+        $tokenData = $this->getMerchantTokenData();
+        if (!$tokenData) {
+            return null;
         }
 
-        return $this->getBitpayDevToken() !== null ? $this->getBitpayDevToken() : '';
+        $tokenData = $this->encryptor->decrypt($tokenData);
+        if (!$tokenData) {
+            return null;
+        }
+
+        $tokenData = json_decode($tokenData, true);
+        if (!isset($tokenData['data'])) {
+            return null;
+        }
+
+        return $tokenData['data'][0]['token'];
     }
 
     /**

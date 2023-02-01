@@ -40,34 +40,6 @@
                 <comment>
                     <![CDATA[
                         <div style="background-color:#002855;padding:5px;color:#ffffff"><img src="https://raw.githubusercontent.com/bitpay/bitpay-brand/master/bitpay-logo-primary.png" style = "vertical-align:middle;" alt="BitPay"  height="44" /><a style="color:#ffffff;font-family:\'Ubuntu\',sans-serif;text-decoration:none;margin:15px" href="https://support.bitpay.com/?ref=magento" target="_blank">Support</a><a style="color:#ffffff;font-family:\'Ubuntu\',sans-serif;text-decoration:none;margin:15px" href="https://bitpay.com/start?ref=magento" target="_blank">Sign Up</a><a style="color:#ffffff;font-family:\'Ubuntu\',sans-serif;text-decoration:none;margin:15px" href="https://bitpay.com/merchant-login?ref=magento" target="_blank">Login</a></div>
-
-                    <script type = "text/javascript">
-                    document.getElementById('save').onclick=function(){
-                        //we have to check all the values and enable/disable based on tokens
-                        var $enabled = document.getElementById('payment_us_bpcheckout_active').value;
-                        var $env_text = '';
-                            if($enabled == 1){
-                            //extension enabled, make sure values are set
-                            var $token = '';
-                            var $env = document.getElementById('payment_us_bpcheckout_bitpay_endpoint').value
-                            if($env == 'test'){
-                                $env_text = 'Test'
-                                $token = document.getElementById('payment_us_bpcheckout_bitpay_devtoken').value
-                            }else{
-                                $env_text = 'Production'
-                                $token = document.getElementById('payment_us_bpcheckout_bitpay_prodtoken').value
-                            }
-                            if($token == ''){
-                            //disable the extension befor the form is saved and alert the user
-                                document.getElementById('payment_us_bpcheckout_active').selectedIndex = 1
-                                    alert('You must set a token for the ' +$env_text+ ' environment, BitPay Checkout will be disabled until it is set')
-
-                            }
-                            }//end enabled check
-                        }
-
-                    </script>
-
                     ]]>
                 </comment>
                 <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1"
@@ -89,17 +61,6 @@
                        showInStore="0">
                     <label>Send emails for BitPay Orders</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
-
-                <field id="bitpay_devtoken" translate="label" type="text" sortOrder="10" showInDefault="1"
-                    showInWebsite="1" showInStore="1">
-                    <label>Developer Token</label>
-                    <comment><![CDATA[Your <b>development</b> merchant token.  <a href = "https://test.bitpay.com/dashboard/merchant/api-tokens" target = "_blank">Create one here</a> and <b>uncheck</b> `Require Authentication`.]]></comment>
-                </field>
-                <field id="bitpay_prodtoken" translate="label" type="text" sortOrder="10" showInDefault="1"
-                    showInWebsite="1" showInStore="1">
-                    <label>Production Token</label>
-                    <comment><![CDATA[Your <b>production</b> merchant token.  <a href = "https://www.bitpay.com/dashboard/merchant/api-tokens" target = "_blank">Create one here</a> and <b>uncheck</b> `Require Authentication`.]]></comment>
                 </field>
 
                 <field id="bitpay_endpoint" translate="label" type="select" sortOrder="10" showInDefault="1"
