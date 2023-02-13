@@ -10,7 +10,7 @@ use Magento\Framework\Event\ObserverInterface;
 class BPPaymentMethodAvailable implements ObserverInterface
 {
 
-    private $config;
+    protected $config;
 
     /**
      * payment_method_is_active event handler.
@@ -23,17 +23,17 @@ class BPPaymentMethodAvailable implements ObserverInterface
 
     public function execute(Observer $observer)
     {
-        if ($observer->getEvent()->getMethodInstance()->getCode() == "bpcheckout") {
-            $env = $this->config->getBitpayEnv();
-            $bitpay_token = $this->config->getBitpayDevToken();
-            if ($env == 'prod') {
-                $bitpay_token = $this->config->getBitpayProdToken();
-            }
-            if ($bitpay_token == '') {
-                #hide the payment method
-                $checkResult = $observer->getEvent()->getResult();
-                $checkResult->setData('is_available', false); //this is disabling the payment method at checkout page
-            }
+        if ($observer->getEvent()->getMethodInstance()->getCode() !== "bpcheckout") {
+            return;
+        }
+
+        $tokenData = $this->config->getMerchantTokenData();
+        if (!$tokenData = $this->config->getMerchantTokenData()) {
+            #hide the payment method
+            $checkResult = $observer->getEvent()->getResult();
+            $checkResult->setData('is_available', false); //this is disabling the payment method at checkout page
+
+            return;
         }
     }
 }
