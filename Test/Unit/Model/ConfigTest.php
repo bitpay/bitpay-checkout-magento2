@@ -5,6 +5,7 @@ namespace Bitpay\BPCheckout\Test\Unit\Model;
 
 use Bitpay\BPCheckout\Model\Config;
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
@@ -28,13 +29,20 @@ class ConfigTest extends TestCase
      */
     private $storeManagerInterface;
 
+    /**
+     * @var EncryptorInterface|MockObject $encryptor
+     */
+    private $encryptor;
+
     public function setUp(): void
     {
         $this->scopeConfig = $this->getMockBuilder(ScopeConfigInterface::class)->disableOriginalConstructor()->getMock();
         $this->storeManagerInterface = $this->getMockBuilder(StoreManagerInterface::class)->disableOriginalConstructor()->getMock();
+        $this->encryptor = $this->getMockBuilder(EncryptorInterface::class)->disableOriginalConstructor()->getMock();
         $this->config = new Config(
             $this->scopeConfig,
-            $this->storeManagerInterface
+            $this->storeManagerInterface,
+            $this->encryptor
         );
     }
 
@@ -56,41 +64,53 @@ class ConfigTest extends TestCase
         $this->assertEquals('pending', $this->config->getBitpayIpnMapping());
     }
 
-    public function testGetBitpayProdToken(): void
+    public function testGetToken(): void
+    {
+        $tokenEncryptData = ':3:zduacP+9hbAhK4XgHh/RCZhPTxVS44234324234232hgffd';
+        $tokenDecryptData = '{"data":{"0":{"token":"34GB93@jf234222","pairingCode":"12334"}}}';
+        $this->scopeConfig->expects($this->once())
+            ->method('getValue')
+            ->with(Config::BITPAY_MERCHANT_TOKEN_DATA, ScopeInterface::SCOPE_STORE)
+            ->willReturn($tokenEncryptData);
+
+        $this->encryptor->expects($this->once())->method('decrypt')->willReturn($tokenDecryptData);
+        $this->config->getToken();
+    }
+
+    public function testEncryptTokenMerchantDataEmpty(): void
+    {
+        $tokenEncryptData = ':3:zduacP+9hbAhK4XgHh/RCZhPTxVS44234324234232hgffd';
+        $tokenDecryptData = null;
+        $this->scopeConfig->expects($this->once())
+            ->method('getValue')
+            ->with(Config::BITPAY_MERCHANT_TOKEN_DATA, ScopeInterface::SCOPE_STORE)
+            ->willReturn($tokenEncryptData);
+
+        $this->config->getToken();
+    }
+
+    public function testTokenDataEmpty(): void
+    {
+        $tokenEncryptData = ':3:zduacP+9hbAhK4XgHh/RCZhPTxVS44234324234232hgffd';
+        $tokenDecryptData = '{"token":"34GB93@jf234222","pairingCode":"12334"}}';
+        $this->scopeConfig->expects($this->once())
+            ->method('getValue')
+            ->with(Config::BITPAY_MERCHANT_TOKEN_DATA, ScopeInterface::SCOPE_STORE)
+            ->willReturn($tokenEncryptData);
+
+        $this->encryptor->expects($this->once())->method('decrypt')->willReturn($tokenDecryptData);
+
+        $this->config->getToken();
+    }
+
+    public function testDecryptTokenMerchantEmpty(): void
     {
         $this->scopeConfig->expects($this->once())
             ->method('getValue')
-            ->with(Config::BITPAY_PROD_TOKEN, ScopeInterface::SCOPE_STORE)
-            ->willReturn('DFf3234dfsdfvssdt');
-        $this->assertEquals('DFf3234dfsdfvssdt', $this->config->getBitpayProdToken());
-    }
+            ->with(Config::BITPAY_MERCHANT_TOKEN_DATA, ScopeInterface::SCOPE_STORE)
+            ->willReturn(null);
 
-    public function testGetTokenDev(): void
-    {
-        $devToken = bin2hex(random_bytes(20));
-        $this->scopeConfig
-            ->expects($this->any())
-            ->method('getValue')
-            ->willReturnMap([
-                [Config::BITPAY_ENV, ScopeInterface::SCOPE_STORE, null, 'test'],
-                [Config::BITPAY_DEV_TOKEN, ScopeInterface::SCOPE_STORE, null, $devToken]
-            ]);
-
-        $this->assertEquals($devToken, $this->config->getToken());
-    }
-
-    public function testGetTokenProd(): void
-    {
-        $prodToken = bin2hex(random_bytes(20));
-        $this->scopeConfig
-            ->expects($this->any())
-            ->method('getValue')
-            ->willReturnMap([
-                [Config::BITPAY_ENV, ScopeInterface::SCOPE_STORE, null, 'prod'],
-                [Config::BITPAY_PROD_TOKEN, ScopeInterface::SCOPE_STORE, null, $prodToken]
-            ]);
-
-        $this->assertEquals($prodToken, $this->config->getToken());
+        $this->config->getToken();
     }
 
     public function testGetBitpayEnv(): void
@@ -139,13 +159,36 @@ class ConfigTest extends TestCase
         $this->assertEquals($baseUrl, $this->config->getBaseUrl());
     }
 
-    public function testGetBitpayDevToken(): void
+    public function testGetPrivateKeyPath(): void
     {
-        $devToken = bin2hex(random_bytes(20));
+        $path = 'var/www/html/test';
         $this->scopeConfig->expects($this->once())
             ->method('getValue')
-            ->with(Config::BITPAY_DEV_TOKEN, ScopeInterface::SCOPE_STORE)
-            ->willReturn($devToken);
-        $this->assertEquals($devToken, $this->config->getBitpayDevToken());
+            ->with(Config::BITPAY_MERCHANT_PRIVATE_KEY_PATH, ScopeInterface::SCOPE_STORE)
+            ->willReturn($path);
+
+        $this->assertEquals($path, $this->config->getPrivateKeyPath());
+    }
+
+    public function testGetMerchantFacadePassword(): void
+    {
+        $password = 'tefsfs342423sdfsst';
+        $this->scopeConfig->expects($this->once())
+            ->method('getValue')
+            ->with(Config::BITPAY_MERCHANT_PASSWORD, ScopeInterface::SCOPE_STORE)
+            ->willReturn($password);
+
+        $this->assertEquals($password, $this->config->getMerchantFacadePassword());
+    }
+
+    public function testGetIsSendOrderEmail(): void
+    {
+        $isSendOrderEmail = '1';
+        $this->scopeConfig->expects($this->once())
+            ->method('getValue')
+            ->with(Config::BITPAY_SEND_ORDER_EMAIL, ScopeInterface::SCOPE_STORE)
+            ->willReturn($isSendOrderEmail);
+
+        $this->assertEquals($isSendOrderEmail, $this->config->getIsSendOrderEmail());
     }
 }

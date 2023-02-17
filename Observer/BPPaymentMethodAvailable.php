@@ -28,7 +28,7 @@ class BPPaymentMethodAvailable implements ObserverInterface
         }
 
         $tokenData = $this->config->getMerchantTokenData();
-        if (!$tokenData = $this->config->getMerchantTokenData()) {
+        if (!$tokenData && !$this->config->isPaymentActive()) {
             #hide the payment method
             $checkResult = $observer->getEvent()->getResult();
             $checkResult->setData('is_available', false); //this is disabling the payment method at checkout page

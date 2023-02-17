@@ -128,7 +128,7 @@ class IpnManagement implements IpnManagementInterface
             );
 
             $invoiceStatus = $this->invoice->getBPCCheckInvoiceStatus($client, $orderInvoiceId);
-            $updateWhere = ['order_id = ?' => $orderId, 'transaction_id = ?' => $orderInvoiceId,];
+            $updateWhere = ['order_id = ?' => $orderId, 'transaction_id = ?' => $orderInvoiceId];
             $this->transactionRepository->update('transaction_status', $invoiceStatus, $updateWhere);
             $order = $this->orderInterface->loadByIncrementId($orderId);
             switch ($event['name']) {

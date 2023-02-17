@@ -21,6 +21,7 @@ class Config
     const BITPAY_IPN_MAPPING = 'payment/bpcheckout/bitpay_ipn_mapping';
     const BITPAY_REFUND_MAPPING = 'payment/bpcheckout/bitpay_refund_mapping';
     const BITPAY_CANCEL_MAPPING = 'payment/bpcheckout/bitpay_cancel_mapping';
+    const BITPAY_PAYMENT_ACTIVE = 'payment/bpcheckout/active';
     const BPCHECKOUT_ORDER_STATUS = 'payment/bpcheckout/order_status';
     const BITPAY_UX = 'payment/bpcheckout/bitpay_ux';
     const BITPAY_MERCHANT_TOKEN_DATA = 'bitpay_merchant_facade/authenticate/token_data';
@@ -139,5 +140,10 @@ class Config
     public function getIsSendOrderEmail(): ?string
     {
         return $this->scopeConfig->getValue(self::BITPAY_SEND_ORDER_EMAIL, ScopeInterface::SCOPE_STORE);
+    }
+
+    public function isPaymentActive(): bool
+    {
+        return (bool)$this->scopeConfig->getValue(self::BITPAY_PAYMENT_ACTIVE, ScopeInterface::SCOPE_STORE);
     }
 }
