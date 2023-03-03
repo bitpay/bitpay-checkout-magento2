@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Bitpay\BPCheckout\Test\Unit\Model;
 
+use Bitpay\BPCheckout\Exception\IPNValidationException;
+use Bitpay\BPCheckout\Model\Client;
 use Bitpay\BPCheckout\Model\Config;
 use Bitpay\BPCheckout\Model\Invoice;
 use Bitpay\BPCheckout\Model\IpnManagement;
@@ -10,6 +12,7 @@ use Bitpay\BPCheckout\Api\IpnManagementInterface;
 use Bitpay\BPCheckout\Logger\Logger;
 use Bitpay\BPCheckout\Model\Ipn\BPCItem;
 use Bitpay\BPCheckout\Model\TransactionRepository;
+use BitPaySDK\Model\Invoice\Buyer;
 use Hoa\Iterator\Mock;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\ResponseFactory;
@@ -93,6 +96,16 @@ class IpnManagementTest extends TestCase
      */
     private $ipnManagement;
 
+    /**
+     * @var Client $client
+     */
+    private $client;
+
+    /**
+     * @var \Magento\Framework\Webapi\Rest\Response $response
+     */
+    private $response;
+
     public function setUp(): void
     {
         $this->coreRegistry = $this->getMock(Registry::class);
@@ -107,6 +120,8 @@ class IpnManagementTest extends TestCase
         $this->transactionRepository = $this->getMock(TransactionRepository::class);
         $this->invoice = $this->getMock(Invoice::class);
         $this->request = $this->getMock(Request::class);
+        $this->client = $this->getMock(Client::class);
+        $this->response = $this->getMock(\Magento\Framework\Webapi\Rest\Response::class);
         $this->ipnManagement = $this->getClass();
     }
 
@@ -243,17 +258,53 @@ class IpnManagementTest extends TestCase
         $token = bin2hex(random_bytes(20));
         $eventName = 'ivoice_confirmed';
         $orderInvoiceId = '12';
+        $data = $this->prepareData($orderInvoiceId, $eventName);
+        $serializer = new Json();
+        $serializerData = $serializer->serialize($data);
+        $this->serializer->expects($this->once())->method('unserialize')->willReturn($data);
+        $this->request->expects($this->once())->method('getContent')->willReturn($serializerData);
+
+        $invoice = $this->prepareInvoice();
+        $client = $this->getMockBuilder(\BitPaySDK\Client::class)->disableOriginalConstructor()->getMock();
+        $client->expects($this->once())->method('getInvoice')->willReturn($invoice);
+        $this->client->expects($this->once())->method('initialize')->willReturn($client);
+        $this->transactionRepository->expects($this->once())->method('findBy')->willReturn([]);
+
+        $this->ipnManagement->postIpn();
+    }
+
+    public function testPostIpnValidatorError(): void
+    {
+        $token = bin2hex(random_bytes(20));
+        $eventName = 'ivoice_confirmed';
+        $orderInvoiceId = '12';
         $data = [
-            'data' => ['orderId' => '00000012', 'id' => $orderInvoiceId],
+            'data' => [
+                'orderId' => '00000012',
+                'id' => $orderInvoiceId,
+                'buyerFields' => [
+                    'buyerName' => 'test',
+                    'buyerEmail' => 'test1@example.com',
+                    'buyerAddress1' => '12 test road'
+                ],
+                'amountPaid' => 1232132
+            ],
             'event' => ['name' => $eventName]
         ];
         $serializer = new Json();
         $serializerData = $serializer->serialize($data);
         $this->serializer->expects($this->once())->method('unserialize')->willReturn($data);
         $this->request->expects($this->once())->method('getContent')->willReturn($serializerData);
+
+        $invoice = $this->prepareInvoice();
+        $client = $this->getMockBuilder(\BitPaySDK\Client::class)->disableOriginalConstructor()->getMock();
+        $client->expects($this->once())->method('getInvoice')->willReturn($invoice);
+        $this->client->expects($this->once())->method('initialize')->willReturn($client);
         $this->transactionRepository->expects($this->once())->method('findBy')->willReturn([]);
+        $this->throwException(new IPNValidationException('Email from IPN data (\'test@example.com\') does not match with email from invoice (\'test1@example.com\')'));
 
         $this->ipnManagement->postIpn();
+
     }
 
     public function testPostIpnCompleteInvalid(): void
@@ -267,10 +318,7 @@ class IpnManagementTest extends TestCase
     {
         $token = bin2hex(random_bytes(20));
         $orderInvoiceId = '12';
-        $data = [
-            'data' => ['orderId' => '00000012', 'id' => $orderInvoiceId],
-            'event' => ['name' => $eventName]
-        ];
+        $data = $this->prepareData($orderInvoiceId, $eventName);
         $serializer = new Json();
         $serializerData = $serializer->serialize($data);
         $this->serializer->expects($this->once())->method('unserialize')->willReturn($data);
@@ -281,6 +329,11 @@ class IpnManagementTest extends TestCase
             'transaction_id' => 'VjvZuvsWT6tzYX65ZXk4xq',
             'transaction_status' => 'new'
         ]);
+
+        $invoice = $this->prepareInvoice();
+        $client = $this->getMockBuilder(\BitPaySDK\Client::class)->disableOriginalConstructor()->getMock();
+        $client->expects($this->once())->method('getInvoice')->willReturn($invoice);
+        $this->client->expects($this->once())->method('initialize')->willReturn($client);
 
         $this->config->expects($this->once())->method('getBitpayEnv')->willReturn('test');
         $this->config->expects($this->once())->method('getToken')->willReturn('test');
@@ -309,7 +362,47 @@ class IpnManagementTest extends TestCase
             $this->serializer,
             $this->transactionRepository,
             $this->invoice,
-            $this->request
+            $this->request,
+            $this->client,
+            $this->response
         );
+    }
+
+    /**
+     * @return \BitPaySDK\Model\Invoice\Invoice
+     */
+    private function prepareInvoice(): \BitPaySDK\Model\Invoice\Invoice
+    {
+        $invoice = new \BitPaySDK\Model\Invoice\Invoice(12.00, 'USD');
+        $invoice->setAmountPaid(1232132);
+        $buyer = new Buyer();
+        $buyer->setName('test');
+        $buyer->setEmail('test@example.com');
+        $buyer->setAddress1('12 test road');
+        $invoice->setBuyer($buyer);
+        return $invoice;
+    }
+
+    /**
+     * @param string $orderInvoiceId
+     * @param string $eventName
+     * @return array
+     */
+    private function prepareData(string $orderInvoiceId, string $eventName): array
+    {
+        $data = [
+            'data' => [
+                'orderId' => '00000012',
+                'id' => $orderInvoiceId,
+                'buyerFields' => [
+                    'buyerName' => 'test',
+                    'buyerEmail' => 'test@example.com',
+                    'buyerAddress1' => '12 test road'
+                ],
+                'amountPaid' => 1232132
+            ],
+            'event' => ['name' => $eventName]
+        ];
+        return $data;
     }
 }

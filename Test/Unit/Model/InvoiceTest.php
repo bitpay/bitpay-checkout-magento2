@@ -11,6 +11,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Phrase;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
+use Magento\Sales\Model\OrderRepository;
 use Magento\Sales\Model\Service\InvoiceService;
 use Bitpay\BPCheckout\Logger\Logger;
 use Bitpay\BPCheckout\Model\Config;
@@ -59,6 +60,11 @@ class InvoiceTest extends TestCase
      */
     private $orderSender;
 
+    /**
+     * @var OrderRepository $orderRepository
+     */
+    private $orderRepository;
+
     public function setUp(): void
     {
         $this->invoiceService = $this->getMock(InvoiceService::class);
@@ -67,13 +73,15 @@ class InvoiceTest extends TestCase
         $this->config = $this->getMock(Config::class);
         $this->checkoutSession = $this->getMock(Session::class);
         $this->orderSender = $this->getMock(OrderSender::class);
+        $this->orderRepository = $this->getMock(OrderRepository::class);
         $this->invoice = new Invoice(
             $this->invoiceService,
             $this->logger,
             $this->transaction,
             $this->config,
             $this->checkoutSession,
-            $this->orderSender
+            $this->orderSender,
+            $this->orderRepository
         );
     }
 
@@ -255,6 +263,42 @@ class InvoiceTest extends TestCase
         $order->expects($this->once())->method('setStatus')->willReturnSelf();
 
         $this->invoice->refundComplete($order, $item);
+    }
+
+    public function testBPCCreateInvoice(): void
+    {
+        $client = $this->getMockBuilder(\BitPaySDK\Client::class)->disableOriginalConstructor()->getMock();
+        $params = new DataObject([
+            'extension_version' => Config::EXTENSION_VERSION,
+            'price' => 15,
+            'currency' => 'USD',
+            'buyer' => new DataObject(['name' => 'test1', 'email' => 'test1@example.com']),
+            'orderId' => '000000121211',
+            'redirectURL' => 'http://localhost/bitpay-invoice/?order_id=000000121211',
+            'notificationURL' => 'http://localhost/rest/V1/bitpay-bpcheckout/ipn',
+            'closeURL' => 'http://localhost/rest/V1/bitpay-bpcheckout/close?orderID=000000121211',
+            'extendedNotifications' => true,
+            'token' => '34234fdlffdslfksdldl'
+        ]);
+
+        $invoice = new \BitPaySDK\Model\Invoice\Invoice($params->getData('price'), $params->getData('currency'));
+        $client->expects($this->once())->method('createInvoice')->willReturn($invoice);
+        $invoice = $this->invoice->BPCCreateInvoice($client, $params);
+
+        $this->assertEquals(15, $invoice->getPrice());
+        $this->assertEquals('USD', $invoice->getCurrency());
+    }
+
+    public function testGetBPCheckInvoiceStatus(): void
+    {
+        $invoiceId = '3213123';
+        $invoice = new \BitPaySDK\Model\Invoice\Invoice(13.00, 'USD');
+        $invoice->setStatus('pending');
+        $client = $this->getMockBuilder(\BitPaySDK\Client::class)->disableOriginalConstructor()->getMock();
+        $client->expects($this->once())->method('getInvoice')->willReturn($invoice);
+
+        $status = $this->invoice->getBPCCheckInvoiceStatus($client, $invoiceId);
+        $this->assertEquals('pending', $status);
     }
 
     private function getMock(string $className): MockObject

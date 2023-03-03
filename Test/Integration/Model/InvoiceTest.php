@@ -13,6 +13,7 @@ use Magento\Checkout\Model\Session;
 use Magento\Framework\DB\Transaction;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Email\Sender\OrderSender;
+use Magento\Sales\Model\OrderRepository;
 use Magento\Sales\Model\Service\InvoiceService;
 use Bitpay\BPCheckout\Logger\Logger;
 use Bitpay\BPCheckout\Model\Config;
@@ -61,6 +62,11 @@ class InvoiceTest extends TestCase
      */
     private $invoice;
 
+    /**
+     * @var OrderRepository $orderRepository
+     */
+    private $orderRepository;
+
     public function setUp(): void
     {
         $this->objectManager = Bootstrap::getObjectManager();
@@ -70,13 +76,15 @@ class InvoiceTest extends TestCase
         $this->config = $this->objectManager->get(Config::class);
         $this->checkoutSession = $this->objectManager->get(Session::class);
         $this->orderSender = $this->objectManager->get(OrderSender::class);
+        $this->orderRepository = $this->objectManager->get(OrderRepository::class);
         $this->invoice = new Invoice(
             $this->invoiceService,
             $this->logger,
             $this->transaction,
             $this->config,
             $this->checkoutSession,
-            $this->orderSender
+            $this->orderSender,
+            $this->orderRepository
         );
     }
 
@@ -98,11 +106,12 @@ class InvoiceTest extends TestCase
         $comment = $latestHistoryComment->getComment();
         $endpoint = $item->getInvoiceEndpoint();
 
+        $message = sprintf('BitPay Invoice <a href = "http://%s/dashboard/payments/%s" target = "_blank">%s</a> is processing.', $item->getInvoiceEndpoint(), $params['invoiceID'], $params['invoiceID']);
+
         $this->assertEquals('new', $order->getState());
         $this->assertEquals(IpnManagement::ORDER_STATUS_PENDING, $order->getStatus());
         $this->assertEquals(IpnManagement::ORDER_STATUS_PENDING, $order->getStatus());
-        $this->assertEquals("BitPay Invoice <a href = \"http://{$endpoint}/dashboard/payments/RCYxvSq4djGwuWgcBDaGbT\" target = \"_blank\">RCYxvSq4djGwuWgcBDaGbT</a>
- is processing.", $comment);
+        $this->assertEquals($message, $comment);
     }
 
     /**
@@ -120,12 +129,13 @@ class InvoiceTest extends TestCase
 
         $this->invoice->refundComplete($order, $item);
 
+        $result = sprintf('BitPay Invoice <a href = "http://%s/dashboard/payments/%s" target = "_blank">%s</a> has been refunded.', $item->getInvoiceEndpoint(), $params['invoiceID'], $params['invoiceID']);
+
         $histories = $order->getStatusHistories();
         $latestHistoryComment = array_pop($histories);
         $comment = $latestHistoryComment->getComment();
 
-        $this->assertEquals("BitPay Invoice <a href = \"http://{$endpoint}/dashboard/payments/RCYxvSq4djGwuWgcBDaGbT\" target = \"_blank\">RCYxvSq4djGwuWgcBDaGbT</a>
- has been refunded.", $comment);
+        $this->assertEquals($result, $comment);
         $this->assertEquals(Order::STATE_CLOSED, $order->getState());
         $this->assertEquals(Order::STATE_CLOSED, $order->getStatus());
     }
@@ -148,8 +158,9 @@ class InvoiceTest extends TestCase
         $latestHistoryComment = array_pop($histories);
         $comment = $latestHistoryComment->getComment();
 
-        $this->assertEquals("BitPay Invoice <a href = \"http://{$endpoint}/dashboard/payments/RCYxvSq4djGwuWgcBDaGbT\" target = \"_blank\">RCYxvSq4djGwuWgcBDaGbT</a>
- has become invalid because of network congestion.  Order will automatically update when the status changes.", $comment);
+        $result = sprintf('BitPay Invoice <a href = "http://%s/dashboard/payments/%s" target = "_blank">%s</a> has become invalid because of network congestion. Order will automatically update when the status changes.', $item->getInvoiceEndpoint(), $params['invoiceID'], $params['invoiceID']);
+
+        $this->assertEquals($result, $comment);
     }
 
     /**
@@ -171,8 +182,9 @@ class InvoiceTest extends TestCase
         $latestHistoryComment = array_pop($histories);
         $comment = $latestHistoryComment->getComment();
 
-        $this->assertEquals("BitPay Invoice <a href = \"http://{$endpoint}/dashboard/payments/RCYxvSq4djGwuWgcBDaGbT\" target = \"_blank\">RCYxvSq4djGwuWgcBDaGbT</a>
- processing has been completed.", $comment);
+        $result = sprintf('BitPay Invoice <a href = "http://%s/dashboard/payments/%s" target = "_blank">%s</a> processing has been completed.', $item->getInvoiceEndpoint(), $params['invoiceID'], $params['invoiceID']);
+
+        $this->assertEquals($result, $comment);
         $this->assertEquals(Order::STATE_PROCESSING, $order->getState());
         $this->assertEquals(Order::STATE_PROCESSING, $order->getStatus());
     }
@@ -195,8 +207,9 @@ class InvoiceTest extends TestCase
         $latestHistoryComment = array_pop($histories);
         $comment = $latestHistoryComment->getComment();
 
-        $this->assertEquals("BitPay Invoice <a href = \"http://{$endpoint}/dashboard/payments/RCYxvSq4djGwuWgcBDaGbT\" target = \"_blank\">RCYxvSq4djGwuWgcBDaGbT</a>
- status has changed to Completed.", $comment);
+        $result = sprintf('BitPay Invoice <a href = "http://%s/dashboard/payments/%s" target = "_blank">%s</a> status has changed to Completed.', $item->getInvoiceEndpoint(), $params['invoiceID'], $params['invoiceID']);
+
+        $this->assertEquals($result, $comment);
         $this->assertEquals(Order::STATE_PROCESSING, $order->getState());
         $this->assertEquals(Order::STATE_PROCESSING, $order->getStatus());
     }
@@ -220,8 +233,9 @@ class InvoiceTest extends TestCase
         $latestHistoryComment = array_pop($histories);
         $comment = $latestHistoryComment->getComment();
 
-        $this->assertEquals("BitPay Invoice <a href = \"http://{$endpoint}/dashboard/payments/RCYxvSq4djGwuWgcBDaGbT\" target = \"_blank\">RCYxvSq4djGwuWgcBDaGbT</a>
- has been declined / expired.", $comment);
+        $result = sprintf('BitPay Invoice <a href = "http://%s/dashboard/payments/%s" target = "_blank">%s</a> has been declined / expired.', $item->getInvoiceEndpoint(), $params['invoiceID'], $params['invoiceID']);
+
+        $this->assertEquals($result, $comment);
         $this->assertEquals(Order::STATE_CANCELED, $order->getState());
         $this->assertEquals(Order::STATE_CANCELED, $order->getStatus());
     }

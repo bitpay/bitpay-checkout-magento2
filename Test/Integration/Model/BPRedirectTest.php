@@ -3,7 +3,9 @@ declare(strict_types=1);
 
 namespace Bitpay\BPCheckout\Test\Integration\Model;
 
+use Bitpay\BPCheckout\Model\BitpayInvoiceRepository;
 use Bitpay\BPCheckout\Model\BPRedirect;
+use Bitpay\BPCheckout\Model\Client;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Flag;
@@ -29,8 +31,8 @@ use Magento\Framework\UrlInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Framework\App\ResponseFactory;
 use Magento\Framework\View\Result\PageFactory;
+use Magento\Sales\Model\OrderRepository;
 use Magento\TestFramework\Helper\Bootstrap;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class BPRedirectTest extends TestCase
@@ -50,10 +52,6 @@ class BPRedirectTest extends TestCase
      */
     private $checkoutSession;
 
-    /**
-     * @var Flag $actionFlag
-     */
-    private $actionFlag;
 
     /**
      * @var RedirectInterface $redirect
@@ -114,12 +112,25 @@ class BPRedirectTest extends TestCase
      * @var PageFactory $resultPageFactory
      */
     private $resultPageFactory;
+    /**
+     * @var Client $client
+     */
+    private $client;
+
+    /**
+     * @var OrderRepository $orderRepository
+     */
+    private $orderRepository;
+
+    /**
+     * @var BitpayInvoiceRepository $bitpayInvoiceRepository
+     */
+    private $bitpayInvoiceRepository;
 
     public function setUp(): void
     {
         $this->objectManager =  Bootstrap::getObjectManager();
         $this->checkoutSession = $this->objectManager->get(Session::class);
-        $this->actionFlag = $this->objectManager->get(\Magento\Framework\App\ActionFlag::class);
         $this->redirect = $this->objectManager->get(RedirectInterface::class);
         $this->response = $this->objectManager->get(ResponseInterface::class);
         $this->orderInterface = $this->objectManager->get(OrderInterface::class);
@@ -132,10 +143,16 @@ class BPRedirectTest extends TestCase
         $this->url = $this->objectManager->get(UrlInterface::class);
         $this->logger = $this->objectManager->get(Logger::class);
         $this->resultPageFactory = $this->objectManager->get(PageFactory::class);
+        $this->client = $this->getMockBuilder(Client::class)->disableOriginalConstructor()->getMock();
+        $this->orderRepository = $this->objectManager->get(OrderRepository::class);
+        $this->bitpayInvoiceRepository = $this->objectManager->get(BitpayInvoiceRepository::class);
+
+        $a = $this->objectManager->get(\Magento\Config\Model\ResourceModel\Config::class);
+        $a->saveConfig(\Bitpay\BPCheckout\Model\Config::BITPAY_MERCHANT_PRIVATE_KEY_PATH, 'fsdfasd');
+
 
         $this->bpRedirect = new BPRedirect(
             $this->checkoutSession,
-            $this->actionFlag,
             $this->redirect,
             $this->response,
             $this->orderInterface,
@@ -147,16 +164,20 @@ class BPRedirectTest extends TestCase
             $this->registry,
             $this->url,
             $this->logger,
-            $this->resultPageFactory
+            $this->resultPageFactory,
+            $this->client,
+            $this->orderRepository,
+            $this->bitpayInvoiceRepository
         );
     }
+
 
     /**
      * @return void
      * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @magentoDataFixture Bitpay_BPCheckout::Test/Integration/_files/order.php
-     * @magentoConfigFixture current_store payment/bpcheckout/bitpay_devtoken AMLTTY9x9TGXFPcsnLLjem1CaDJL3mRMWupBrm9baacy
+     * @magentoDataFixture Bitpay_BPCheckout::Test/Integration/_files/transaction.php
      * @magentoConfigFixture current_store payment/bpcheckout/bitpay_endpoint test
      * @magentoConfigFixture current_store payment/bpcheckout/bitpay_ux redirect
      */
@@ -165,14 +186,26 @@ class BPRedirectTest extends TestCase
         /** @var Order $order */
         $order = $this->objectManager->get(Order::class);
         $session = $this->objectManager->get(Session::class);
+        $invoiceId = 'VjvZbvsW56tzYX65ZXk4xq';
         $baseUrl = $this->config->getBaseUrl();
         $order = $order->loadByIncrementId('100000001');
         $orderId = $order->getId();
         $session->setLastOrderId($orderId);
         $methodCode = $order->getPayment()->getMethodInstance()->getCode();
         $bitpayMethodCode = Config::BITPAY_PAYMENT_METHOD_NAME;
+
+        $invoice = new \BitPaySDK\Model\Invoice\Invoice(100.0000, 'USD');
+        $invoice->setId($invoiceId);
+        $invoice->setExpirationTime(12312321321);
+        $invoice->setAcceptanceWindow(12311);
+
+
+        $client = $this->getMockBuilder(\BitPaySDK\Client::class)->disableOriginalConstructor()->getMock();
+        $this->client->expects($this->once())->method('initialize')->willReturn($client);
+
         $this->invoice->expects($this->once())->method('BPCCreateInvoice')
-            ->willReturn(['data' => ['id' => 'VjvZbvsW56tzYX65ZXk4xq', 'url' => 'https://localhost/bpcheckout/index']]);
+            ->willReturn($invoice);
+
 
         $this->bpRedirect->execute();
 
@@ -183,8 +216,9 @@ class BPRedirectTest extends TestCase
         $this->assertEquals('firstname', $customerInfo['billingAddress']['firstname']);
         $this->assertEquals('lastname', $customerInfo['billingAddress']['lastname']);
 
-        $result = $this->transactionRepository->findBy('100000001', 'VjvZbvsW56tzYX65ZXk4xq');
-        $this->assertEquals('VjvZbvsW56tzYX65ZXk4xq', $result[0]['transaction_id']);
+        $result = $this->transactionRepository->findBy('100000001', $invoiceId);
+
+        $this->assertEquals($invoiceId, $result[0]['transaction_id']);
         $this->assertEquals('100000001', $result[0]['order_id']);
         $this->assertEquals('new', $result[0]['transaction_status']);
         $this->assertEquals('test', $this->config->getBitpayEnv());
@@ -209,6 +243,9 @@ class BPRedirectTest extends TestCase
         $order = $order->loadByIncrementId('100000001');
         $orderId = $order->getId();
         $session->setLastOrderId($orderId);
+
+        $client = $this->getMockBuilder(\BitPaySDK\Client::class)->disableOriginalConstructor()->getMock();
+        $this->client->expects($this->once())->method('initialize')->willReturn($client);
 
         $this->invoice->expects($this->once())->method('BPCCreateInvoice')
             ->willThrowException(new LocalizedException(new Phrase('Invalid token')));

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Bitpay\BPCheckout\Test\Unit\Observer;
 
+use Bitpay\BPCheckout\Model\Config;
 use Bitpay\BPCheckout\Observer\BPEmail;
 use PHPUnit\Framework\MockObject\MockObject;
 use Magento\Framework\Event\Observer;
@@ -24,10 +25,16 @@ class BPEmailTest extends TestCase
      */
     private $logger;
 
+    /**
+     * @var Config|MockObject $config
+     */
+    private $config;
+
     public function setUp(): void
     {
         $this->logger = $this->getMockBuilder(Logger::class)->disableOriginalConstructor()->getMock();
-        $this->bpEmail = new BPEmail($this->logger);
+        $this->config = $this->getMockBuilder(Config::class)->disableOriginalConstructor()->getMock();
+        $this->bpEmail = new BPEmail($this->logger, $this->config);
     }
 
     public function testExecute(): void
