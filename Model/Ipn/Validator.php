@@ -11,8 +11,8 @@ class Validator
     {
         $name = $ipnData['buyerFields']['buyerName'];
         $email = $ipnData['buyerFields']['buyerEmail'];
-        $address1 = $ipnData['buyerFields']['buyerAddress1'];
-        $address2 = $ipnData['buyerFields']['buyerAddress2'];
+        $address1 = $ipnData['buyerFields']['buyerAddress1'] ?? null;
+        $address2 = $ipnData['buyerFields']['buyerAddress2'] ?? null;
         $amountPaid = $ipnData['amountPaid'];
         $invoiceBuyer = $invoice->getBuyer();
 
