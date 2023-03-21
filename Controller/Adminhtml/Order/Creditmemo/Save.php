@@ -70,7 +70,7 @@ class Save extends CreditmemoSave
             $this->creditmemoLoader->setCreditmemo($this->getRequest()->getParam('creditmemo'));
             $this->creditmemoLoader->setInvoiceId($this->getRequest()->getParam('invoice_id'));
             $creditmemo = $this->creditmemoLoader->load();
-            $this->createBitpayRefund($creditmemo);
+            $this->createBitpayRefund($creditmemo, $data);
             if ($creditmemo) {
                 if (!$creditmemo->isValidGrandTotal()) {
                     throw new \Magento\Framework\Exception\LocalizedException(
@@ -134,8 +134,12 @@ class Save extends CreditmemoSave
      * @throws \BitPaySDK\Exceptions\BitPayException
      * @throws \BitPaySDK\Exceptions\RefundCreationException
      */
-    protected function createBitpayRefund($creditmemo): void
+    protected function createBitpayRefund($creditmemo, array $data): void
     {
+        $doOffline = isset($data['do_offline']) ? (bool)$data['do_offline'] : false;
+        if ($doOffline) {
+            return;
+        }
         if (!$creditmemo) {
             return;
         }
