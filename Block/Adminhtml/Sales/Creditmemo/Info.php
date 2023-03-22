@@ -43,7 +43,7 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\AbstractOrder
 
         $creditmemo = $this->getCreditmemo();
         $order = $creditmemo->getOrder();
-        if ($this->isBitpayPaymentMethod($order)) {
+        if (!$this->isBitpayPaymentMethod($order)) {
             return [];
         }
 
@@ -74,6 +74,6 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\AbstractOrder
      */
     protected function isBitpayPaymentMethod(\Magento\Sales\Model\Order $order): bool
     {
-        return $order->getPayment()->getMethod() !== Config::BITPAY_PAYMENT_METHOD_NAME;
+        return $order->getPayment()->getMethod() === Config::BITPAY_PAYMENT_METHOD_NAME;
     }
 }
