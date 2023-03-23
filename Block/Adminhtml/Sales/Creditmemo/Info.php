@@ -48,11 +48,11 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\AbstractOrder
         }
 
         $refundData = $this->bitpayRefundRepository->getByOrderId($order->getId());
-        $amount = $this->priceCurrency->format($refundData['amount']);
-
         if (!$refundData) {
             return [];
         }
+
+        $amount = $this->priceCurrency->format($refundData['amount']);
 
         return [
             'refund_id' => $refundData['refund_id'],
