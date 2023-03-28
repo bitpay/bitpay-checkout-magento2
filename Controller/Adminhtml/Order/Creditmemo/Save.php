@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Bitpay\BPCheckout\Controller\Adminhtml\Order\Creditmemo;
 
+use Bitpay\BPCheckout\Logger\Logger;
 use Bitpay\BPCheckout\Model\BitpayInvoiceRepository;
 use Bitpay\BPCheckout\Model\BitpayRefundRepository;
 use Bitpay\BPCheckout\Model\Client;
@@ -26,6 +27,8 @@ class Save extends CreditmemoSave
 
     protected $bitpayRefundRepository;
 
+    protected $logger;
+
     /**
      * @var SalesData
      */
@@ -40,6 +43,7 @@ class Save extends CreditmemoSave
         PriceCurrency $priceCurrency,
         BitpayInvoiceRepository $bitpayInvoiceRepository,
         BitpayRefundRepository $bitpayRefundRepository,
+        Logger $logger,
         SalesData $salesData = null
     ) {
         parent::__construct(
@@ -54,6 +58,7 @@ class Save extends CreditmemoSave
         $this->priceCurrency = $priceCurrency;
         $this->bitpayInvoiceRepository = $bitpayInvoiceRepository;
         $this->bitpayRefundRepository = $bitpayRefundRepository;
+        $this->logger = $logger;
     }
 
     public function execute()
@@ -117,6 +122,11 @@ class Save extends CreditmemoSave
                 $resultForward->forward('noroute');
                 return $resultForward;
             }
+        } catch (\BitPaySDK\Exceptions\RefundCreationException $refundCreationException) {
+            $this->handleRefundCreationException($refundCreationException);
+            $resultRedirect->setPath('sales/*/new', ['_current' => true]);
+
+            return $resultRedirect;
         } catch (\Magento\Framework\Exception\LocalizedException $e) {
             $this->messageManager->addErrorMessage($e->getMessage());
             $this->_getSession()->setFormData($data);
@@ -143,6 +153,7 @@ class Save extends CreditmemoSave
         if (!$creditmemo) {
             return;
         }
+
         $orderId = $this->getRequest()->getParam('order_id');
         $order = $creditmemo->getOrder();
         $paymentMethod = $order->getPayment()->getMethod();
@@ -159,6 +170,28 @@ class Save extends CreditmemoSave
                 $refund = $client->createRefund($invoiceId, $baseOrderRefund, $currency);
                 $this->bitpayRefundRepository->add($orderId, $refund->getId(), $refund->getAmount());
             }
+        }
+    }
+
+    /**
+     * @param \BitPaySDK\Exceptions\RefundCreationException $refundCreationException
+     * @return void
+     */
+    protected function handleRefundCreationException(\BitPaySDK\Exceptions\RefundCreationException $refundCreationException): void
+    {
+        $apiCode = $refundCreationException->getApiCode();
+        switch ($apiCode) {
+            case "010207":
+                $this->logger->error($refundCreationException->getMessage());
+                $this->messageManager->addErrorMessage(__('A Credit Memo cannot be created until Payment is Confirmed.'));
+                break;
+            case "010000":
+                $this->logger->error($refundCreationException->getMessage());
+                $this->messageManager->addErrorMessage(__('Only full refunds can be processed before the Payment is Completed'));
+                break;
+            default:
+                $this->logger->error($refundCreationException->getMessage());
+                $this->messageManager->addErrorMessage(__($refundCreationException->getMessage()));
         }
     }
 }
