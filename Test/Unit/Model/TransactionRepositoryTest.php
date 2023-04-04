@@ -22,7 +22,9 @@ class TransactionRepositoryTest extends TestCase
 
     public function setUp(): void
     {
-        $this->transactionResource = $this->getMockBuilder(TransactionResource::class)->disableOriginalConstructor()->getMock();
+        $this->transactionResource = $this->getMockBuilder(TransactionResource::class)
+            ->disableOriginalConstructor()
+            ->getMock();
         $this->transactionRepository = new TransactionRepository(
             $this->transactionResource
         );

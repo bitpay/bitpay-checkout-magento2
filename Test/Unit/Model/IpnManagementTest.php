@@ -247,7 +247,8 @@ class IpnManagementTest extends TestCase
         $serializer = new Json();
         $serializerData = $serializer->serialize($data);
 
-        $this->serializer->expects($this->once())->method('unserialize')->willThrowException(new \InvalidArgumentException());
+        $this->serializer->expects($this->once())->method('unserialize')
+            ->willThrowException(new \InvalidArgumentException());
         $this->request->expects($this->once())->method('getContent')->willReturn($serializerData);
 
         $this->ipnManagement->postIpn();
@@ -301,10 +302,10 @@ class IpnManagementTest extends TestCase
         $client->expects($this->once())->method('getInvoice')->willReturn($invoice);
         $this->client->expects($this->once())->method('initialize')->willReturn($client);
         $this->transactionRepository->expects($this->once())->method('findBy')->willReturn([]);
-        $this->throwException(new IPNValidationException('Email from IPN data (\'test@example.com\') does not match with email from invoice (\'test1@example.com\')'));
+        $this->throwException(new IPNValidationException('Email from IPN data (\'test@example.com\') does not' .
+            'match with email from invoice (\'test1@example.com\')'));
 
         $this->ipnManagement->postIpn();
-
     }
 
     public function testPostIpnCompleteInvalid(): void
@@ -337,7 +338,11 @@ class IpnManagementTest extends TestCase
 
         $this->config->expects($this->once())->method('getBitpayEnv')->willReturn('test');
         $this->config->expects($this->once())->method('getToken')->willReturn('test');
-        $item = new BPCItem($token, new DataObject(['invoiceID' => $orderInvoiceId, 'extension_version' => Config::EXTENSION_VERSION]), 'test');
+        $item = new BPCItem(
+            $token,
+            new DataObject(['invoiceID' => $orderInvoiceId, 'extension_version' => Config::EXTENSION_VERSION]),
+            'test'
+        );
         $this->invoice->expects($this->once())->method('getBPCCheckInvoiceStatus')->willReturn($invoiceStatus);
         $order = $this->getMock(Order::class);
         $this->orderInterface->expects($this->once())->method('loadByIncrementId')->willReturn($order);

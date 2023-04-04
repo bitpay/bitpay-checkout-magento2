@@ -38,6 +38,7 @@ class ConfigTest extends TestCase
     private $objectManager;
 
     private const DECODED_MERCHANT_DATA = '{"data":{"0":{"token":"34GB93@jf234222","pairingCode":"12334"}}}';
+    //phpcs:ignore
     private const ENCODED_MERCHANT_DATA = '0:3:uypNhzezLLyRrkExqXXhiCB595zsfnTrp/1hY5thRVYVMpkzgUYRPpTe802dM6NuHbyrYbIQUl6a6bFuINKhiN5yJNO9mJTnUc0OcCqdOwCgboS9kw+je9icSnE=';
 
     public function setUp(): void
@@ -84,7 +85,6 @@ class ConfigTest extends TestCase
     {
         $this->assertEquals('modal', $this->config->getBitpayUx());
     }
-
 
     /**
      * @magentoConfigFixture current_store payment/bpcheckout/bitpay_ipn_mapping pending
@@ -135,11 +135,15 @@ class ConfigTest extends TestCase
     }
 
     /**
+     * phpcs:ignore
      * @magentoConfigFixture current_store bitpay_merchant_facade/authenticate/password 0:3:qHccgp+LBPr1uzar1cQjTwQBwnH3A+GB3giLnEZMm+3mSezk
      */
     public function testGetMerchantFacadePassword(): void
     {
-        $this->assertEquals('0:3:qHccgp+LBPr1uzar1cQjTwQBwnH3A+GB3giLnEZMm+3mSezk', $this->config->getMerchantFacadePassword());
+        $this->assertEquals(
+            '0:3:qHccgp+LBPr1uzar1cQjTwQBwnH3A+GB3giLnEZMm+3mSezk',
+            $this->config->getMerchantFacadePassword()
+        );
     }
 
     /**

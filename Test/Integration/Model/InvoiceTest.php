@@ -106,7 +106,8 @@ class InvoiceTest extends TestCase
         $comment = $latestHistoryComment->getComment();
         $endpoint = $item->getInvoiceEndpoint();
 
-        $message = sprintf('BitPay Invoice <a href = "http://%s/dashboard/payments/%s" target = "_blank">%s</a> is processing.', $item->getInvoiceEndpoint(), $params['invoiceID'], $params['invoiceID']);
+        $message = sprintf('BitPay Invoice <a href = "http://%s/dashboard/payments/%s" target = "_blank">%s</a>
+ is processing.', $item->getInvoiceEndpoint(), $params['invoiceID'], $params['invoiceID']);
 
         $this->assertEquals('new', $order->getState());
         $this->assertEquals(IpnManagement::ORDER_STATUS_PENDING, $order->getStatus());
@@ -129,7 +130,8 @@ class InvoiceTest extends TestCase
 
         $this->invoice->refundComplete($order, $item);
 
-        $result = sprintf('BitPay Invoice <a href = "http://%s/dashboard/payments/%s" target = "_blank">%s</a> has been refunded.', $item->getInvoiceEndpoint(), $params['invoiceID'], $params['invoiceID']);
+        $result = sprintf('BitPay Invoice <a href = "http://%s/dashboard/payments/%s" target = "_blank">%s</a>
+ has been refunded.', $item->getInvoiceEndpoint(), $params['invoiceID'], $params['invoiceID']);
 
         $histories = $order->getStatusHistories();
         $latestHistoryComment = array_pop($histories);
@@ -158,7 +160,13 @@ class InvoiceTest extends TestCase
         $latestHistoryComment = array_pop($histories);
         $comment = $latestHistoryComment->getComment();
 
-        $result = sprintf('BitPay Invoice <a href = "http://%s/dashboard/payments/%s" target = "_blank">%s</a> has become invalid because of network congestion. Order will automatically update when the status changes.', $item->getInvoiceEndpoint(), $params['invoiceID'], $params['invoiceID']);
+        $result = sprintf(
+            'BitPay Invoice <a href = "http://%s/dashboard/payments/%s" target = "_blank">%s</a>
+ has become invalid because of network congestion. Order will automatically update when the status changes.',
+            $item->getInvoiceEndpoint(),
+            $params['invoiceID'],
+            $params['invoiceID']
+        );
 
         $this->assertEquals($result, $comment);
     }
@@ -182,7 +190,8 @@ class InvoiceTest extends TestCase
         $latestHistoryComment = array_pop($histories);
         $comment = $latestHistoryComment->getComment();
 
-        $result = sprintf('BitPay Invoice <a href = "http://%s/dashboard/payments/%s" target = "_blank">%s</a> processing has been completed.', $item->getInvoiceEndpoint(), $params['invoiceID'], $params['invoiceID']);
+        $result = sprintf('BitPay Invoice <a href = "http://%s/dashboard/payments/%s" target = "_blank">%s</a>
+ processing has been completed.', $item->getInvoiceEndpoint(), $params['invoiceID'], $params['invoiceID']);
 
         $this->assertEquals($result, $comment);
         $this->assertEquals(Order::STATE_PROCESSING, $order->getState());
@@ -207,7 +216,8 @@ class InvoiceTest extends TestCase
         $latestHistoryComment = array_pop($histories);
         $comment = $latestHistoryComment->getComment();
 
-        $result = sprintf('BitPay Invoice <a href = "http://%s/dashboard/payments/%s" target = "_blank">%s</a> status has changed to Completed.', $item->getInvoiceEndpoint(), $params['invoiceID'], $params['invoiceID']);
+        $result = sprintf('BitPay Invoice <a href = "http://%s/dashboard/payments/%s" target = "_blank">%s</a>
+ status has changed to Completed.', $item->getInvoiceEndpoint(), $params['invoiceID'], $params['invoiceID']);
 
         $this->assertEquals($result, $comment);
         $this->assertEquals(Order::STATE_PROCESSING, $order->getState());
@@ -233,7 +243,8 @@ class InvoiceTest extends TestCase
         $latestHistoryComment = array_pop($histories);
         $comment = $latestHistoryComment->getComment();
 
-        $result = sprintf('BitPay Invoice <a href = "http://%s/dashboard/payments/%s" target = "_blank">%s</a> has been declined / expired.', $item->getInvoiceEndpoint(), $params['invoiceID'], $params['invoiceID']);
+        $result = sprintf('BitPay Invoice <a href = "http://%s/dashboard/payments/%s" target = "_blank">%s</a>
+ has been declined / expired.', $item->getInvoiceEndpoint(), $params['invoiceID'], $params['invoiceID']);
 
         $this->assertEquals($result, $comment);
         $this->assertEquals(Order::STATE_CANCELED, $order->getState());

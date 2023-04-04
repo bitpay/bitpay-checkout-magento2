@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="admin-2columns-left" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="admin-2columns-left"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
         <referenceBlock name="order_tab_info">
             <action method="setTemplate">
@@ -7,7 +8,8 @@
             </action>
         </referenceBlock>
         <referenceBlock name="order_tab_info">
-            <block class="Bitpay\BPCheckout\Block\Adminhtml\Sales\Info" name="sales_bitpay_additional_info" template="Bitpay_BPCheckout::order/view/tab/bitpay_info.phtml"/>
+            <block class="Bitpay\BPCheckout\Block\Adminhtml\Sales\Info" name="sales_bitpay_additional_info"
+                   template="Bitpay_BPCheckout::order/view/tab/bitpay_info.phtml"/>
         </referenceBlock>
     </body>
 </page>

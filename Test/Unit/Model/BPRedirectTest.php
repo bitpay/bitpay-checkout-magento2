@@ -172,7 +172,6 @@ class BPRedirectTest extends TestCase
         $payment->expects($this->once())->method('getMethodInstance')->willReturn($method);
         $this->order->expects($this->once())->method('load')->with($lastOrderId)->willReturn($order);
 
-
         $invoice = $this->prepareInvoice($params);
 
         $bitpayClient = new \BitPaySDK\Client();

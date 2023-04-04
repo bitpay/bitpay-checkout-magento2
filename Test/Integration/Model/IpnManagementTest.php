@@ -170,18 +170,27 @@ class IpnManagementTest extends TestCase
         $orderId = '100000001';
         $orderInvoiceId = 'VjvZuvsWT36tzYX65ZXk4xq';
         $data = [
-            'data' => ['orderId' => $orderId, 'id' => $orderInvoiceId, 'amountPaid' => 12312321, 'buyerFields' => ['buyerName' => 'test', 'buyerEmail' => 'test@example.com']],
-            'event' => ['name' => 'invoice_completed']
+            'data' => [
+                'orderId' => $orderId,
+                'id' => $orderInvoiceId,
+                'amountPaid' => 12312321,
+                'buyerFields' => ['buyerName' => 'test', 'buyerEmail' => 'test@example.com']],
+            'event' => [
+                'name' => 'invoice_completed'
+            ]
         ];
         $content = $this->serializer->serialize($data);
         $this->request->setContent($content);
         $params = new DataObject($this->getParams());
         $invoice = $this->prepareInvoice($params);
-        $bitpayClient = $this->getMockBuilder(\BitPaySDK\Client::class)->disableOriginalConstructor()->getMock();
+        $bitpayClient = $this->getMockBuilder(\BitPaySDK\Client::class)
+            ->disableOriginalConstructor()
+            ->getMock();
         $this->client->expects($this->once())->method('initialize')->willReturn($bitpayClient);
-
         $bitpayClient->expects($this->once())->method('getInvoice')->willReturn($invoice);
-        $this->invoice->expects($this->once())->method('getBPCCheckInvoiceStatus')->willReturn('complete');
+        $this->invoice->expects($this->once())
+            ->method('getBPCCheckInvoiceStatus')
+            ->willReturn('complete');
 
         $this->ipnManagement->postIpn();
 
@@ -200,7 +209,10 @@ class IpnManagementTest extends TestCase
      */
     private function prepareInvoice(DataObject $params): \BitPaySDK\Model\Invoice\Invoice
     {
-        $invoice = new \BitPaySDK\Model\Invoice\Invoice($params->getData('price'), $params->getData('currency'));
+        $invoice = new \BitPaySDK\Model\Invoice\Invoice(
+            $params->getData('price'),
+            $params->getData('currency')
+        );
         $buyer = new Buyer();
         $buyer->setName($params->getData('buyer')['name']);
         $buyer->setEmail($params->getData('buyer')['email']);

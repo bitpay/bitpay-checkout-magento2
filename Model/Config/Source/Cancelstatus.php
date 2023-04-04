@@ -14,6 +14,11 @@ use Magento\Framework\Option\ArrayInterface;
  */
 class Cancelstatus implements ArrayInterface
 {
+    /**
+     * Return array of Cancel statuses
+     *
+     * @return array[]
+     */
     public function toOptionArray(): array
     {
         return [

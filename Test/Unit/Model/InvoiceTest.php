@@ -161,7 +161,6 @@ class InvoiceTest extends TestCase
             ->method('prepareInvoice')
             ->willThrowException(new LocalizedException(new Phrase('Something went wrong')));
 
-
         $this->invoice->complete($order, $item);
     }
 

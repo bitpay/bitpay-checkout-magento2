@@ -52,7 +52,6 @@ class BPRedirectTest extends TestCase
      */
     private $checkoutSession;
 
-
     /**
      * @var RedirectInterface $redirect
      */
@@ -147,10 +146,6 @@ class BPRedirectTest extends TestCase
         $this->orderRepository = $this->objectManager->get(OrderRepository::class);
         $this->bitpayInvoiceRepository = $this->objectManager->get(BitpayInvoiceRepository::class);
 
-        $a = $this->objectManager->get(\Magento\Config\Model\ResourceModel\Config::class);
-        $a->saveConfig(\Bitpay\BPCheckout\Model\Config::BITPAY_MERCHANT_PRIVATE_KEY_PATH, 'fsdfasd');
-
-
         $this->bpRedirect = new BPRedirect(
             $this->checkoutSession,
             $this->redirect,
@@ -170,7 +165,6 @@ class BPRedirectTest extends TestCase
             $this->bitpayInvoiceRepository
         );
     }
-
 
     /**
      * @return void
@@ -199,16 +193,13 @@ class BPRedirectTest extends TestCase
         $invoice->setExpirationTime(12312321321);
         $invoice->setAcceptanceWindow(12311);
 
-
         $client = $this->getMockBuilder(\BitPaySDK\Client::class)->disableOriginalConstructor()->getMock();
         $this->client->expects($this->once())->method('initialize')->willReturn($client);
 
         $this->invoice->expects($this->once())->method('BPCCreateInvoice')
             ->willReturn($invoice);
 
-
         $this->bpRedirect->execute();
-
         $customerInfo = $this->checkoutSession->getCustomerInfo();
 
         $this->assertEquals('customer@example.com', $customerInfo['email']);
@@ -231,7 +222,7 @@ class BPRedirectTest extends TestCase
      * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @magentoDataFixture Bitpay_BPCheckout::Test/Integration/_files/order.php
-     * @magentoConfigFixture current_store payment/bpcheckout/bitpay_devtoken AMLTTY9x9TGXFPcsnLLjem1CaDJL3mRMWupBrm9baacy
+     * @magentoConfigFixture current_store payment/bpcheckout/bitpay_devtoken AMLTTY9x9TGXFPcsnLLjem1CaDJL3mRMWupBrm9ba
      * @magentoConfigFixture current_store payment/bpcheckout/bitpay_endpoint test
      * @magentoConfigFixture current_store payment/bpcheckout/bitpay_ux redirect
      */

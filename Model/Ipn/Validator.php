@@ -5,8 +5,13 @@ namespace Bitpay\BPCheckout\Model\Ipn;
 
 class Validator
 {
+    /** @var array $errors */
     protected $errors = [];
 
+    /**
+     * @param \BitPaySDK\Model\Invoice\Invoice $invoice
+     * @param array $ipnData
+     */
     public function __construct(\BitPaySDK\Model\Invoice\Invoice $invoice, array $ipnData)
     {
         $name = $ipnData['buyerFields']['buyerName'];
@@ -42,6 +47,11 @@ class Validator
         }
     }
 
+    /**
+     * Get errors
+     *
+     * @return array
+     */
     public function getErrors(): array
     {
         return $this->errors;

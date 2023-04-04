@@ -16,15 +16,36 @@ use Magento\Config\Model\Config\Factory;
 
 class Token implements HttpPostActionInterface
 {
+    /** @var EncryptorInterface $encryptor */
     protected $encryptor;
+
+    /** @var JsonFactory $jsonFactory */
     protected $jsonFactory;
+
+    /** @var RequestInterface $request */
     protected $request;
 
+    /** @var Logger $logger */
     protected $logger;
+
+    /** @var BitpayConfig $bitpayConfig */
     protected $bitpayConfig;
+
+    /** @var Factory $configFactory */
     protected $configFactory;
+
+    /** @var \Bitpay\BPCheckout\Model\Client\Token $token */
     protected $token;
 
+    /**
+     * @param EncryptorInterface $encryptor
+     * @param JsonFactory $jsonFactory
+     * @param RequestInterface $request
+     * @param Logger $logger
+     * @param BitpayConfig $bitpayConfig
+     * @param Factory $configFactory
+     * @param \Bitpay\BPCheckout\Model\Client\Token $token
+     */
     public function __construct(
         EncryptorInterface $encryptor,
         JsonFactory $jsonFactory,
@@ -44,6 +65,8 @@ class Token implements HttpPostActionInterface
     }
 
     /**
+     * Generate bitpay token action
+     *
      * @return \Magento\Framework\Controller\ResultInterface
      */
     public function execute()
@@ -70,20 +93,24 @@ class Token implements HttpPostActionInterface
             $configModel->save();
 
             return $this->jsonFactory->create()->setData(['pairingCode' => $pairingCode, 'url' => $url]);
+            //phpcs:ignore
         } catch (TokenCreationException $creationException) {
             $this->logger->error('Error during generating token: ' . $creationException->getMessage());
 
-            return $this->jsonFactory->create()->setData(['error' => true, 'message' => $creationException->getMessage()]);
+            return $this->jsonFactory->create()->setData(
+                ['error' => true, 'message' => $creationException->getMessage()]
+            );
 
         } catch (\Exception $exception) {
             $this->logger->error('Error during generating token: ' . $exception->getMessage());
 
             return $this->jsonFactory->create()->setData(['error' => true, 'message' => $exception->getMessage()]);
         }
-
     }
 
     /**
+     * Prepare core config bitpay token data
+     *
      * @param string $resultEncrypted
      * @param string|null $tokenLabel
      * @return array

@@ -21,23 +21,66 @@ use Magento\Sales\Api\Data\OrderInterface;
 
 class IpnManagement implements IpnManagementInterface
 {
+    /** @var ResponseFactory $responseFactory */
     protected $responseFactory;
+
+    /** @var UrlInterface $url */
     protected $url;
+
+    /** @var Session $checkoutSession */
     protected $checkoutSession;
+
+    /** @var QuoteFactory $quoteFactory */
     protected $quoteFactory;
+
+    /** @var OrderInterface $orderInterface */
     protected $orderInterface;
+
+    /** @var Registry $coreRegistry */
     protected $coreRegistry;
+
+    /** @var Logger $logger */
     protected $logger;
+
+    /** @var Config $config */
     protected $config;
+
+    /** @var Json $serializer */
     protected $serializer;
+
+    /** @var TransactionRepository $transactionRepository */
     protected $transactionRepository;
+
+    /** @var Invoice $invoice */
     protected $invoice;
+
+    /** @var Request $request */
     protected $request;
+
+    /** @var Client $client */
     protected $client;
+
+    /** @var Response $response */
     protected $response;
 
-    const ORDER_STATUS_PENDING = 'pending';
+    public const ORDER_STATUS_PENDING = 'pending';
 
+    /**
+     * @param ResponseFactory $responseFactory
+     * @param UrlInterface $url
+     * @param Registry $registry
+     * @param Session $checkoutSession
+     * @param OrderInterface $orderInterface
+     * @param QuoteFactory $quoteFactory
+     * @param Logger $logger
+     * @param Config $config
+     * @param Json $serializer
+     * @param TransactionRepository $transactionRepository
+     * @param Invoice $invoice
+     * @param Request $request
+     * @param Client $client
+     * @param Response $response
+     */
     public function __construct(
         ResponseFactory $responseFactory,
         UrlInterface $url,
@@ -70,6 +113,11 @@ class IpnManagement implements IpnManagementInterface
         $this->response = $response;
     }
 
+    /**
+     * Handle close invoice and redirect to cart
+     *
+     * @return string|void
+     */
     public function postClose()
     {
         $redirectUrl = $this->url->getUrl('checkout/cart', ['_query' => 'reload=1']);
@@ -99,6 +147,11 @@ class IpnManagement implements IpnManagementInterface
         }
     }
 
+    /**
+     * Handle Instant Payment Notification
+     *
+     * @return string|void
+     */
     public function postIpn()
     {
         try {

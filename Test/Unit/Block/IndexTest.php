@@ -37,9 +37,9 @@ class IndexTest extends TestCase
      */
     private $request;
 
-    const SECURE_URL = 'https://localhost';
-    const ENV = 'test';
-    const ORDER_ID = '0000001212';
+    public const SECURE_URL = 'https://localhost';
+    public const ENV = 'test';
+    public const ORDER_ID = '0000001212';
 
     public function setUp(): void
     {

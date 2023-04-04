@@ -113,6 +113,8 @@ class ConfigProviderTest extends TestCase
 
     private function getFileId(): string
     {
-        return Config::BITPAY_MODULE_NAME . "::" . Config::BITPAY_PAYMENT_DIR_IMAGES . DIRECTORY_SEPARATOR . Config::BITPAY_PAYMENT_ICON;
+        return Config::BITPAY_MODULE_NAME . "::" . Config::BITPAY_PAYMENT_DIR_IMAGES
+            . DIRECTORY_SEPARATOR
+            . Config::BITPAY_PAYMENT_ICON;
     }
 }

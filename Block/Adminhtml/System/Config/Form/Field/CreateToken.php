@@ -12,7 +12,10 @@ use Magento\Store\Model\ScopeInterface;
 
 class CreateToken extends Field
 {
+    /** @var Config $config */
     protected $config;
+
+    /** @var EncryptorInterface $encryptor */
     protected $encryptor;
 
     /**
@@ -33,6 +36,8 @@ class CreateToken extends Field
     }
 
     /**
+     * Get pairing code from token data
+     *
      * @return string|null
      */
     public function getPairingCode(): ?string
@@ -48,6 +53,8 @@ class CreateToken extends Field
     }
 
     /**
+     * Get url to generate token
+     *
      * @return string
      */
     public function getTokenUrl(): string
@@ -56,6 +63,8 @@ class CreateToken extends Field
     }
 
     /**
+     * Get message after token creation
+     *
      * @return string|null
      */
     public function getMessage(): ?string
@@ -68,6 +77,8 @@ class CreateToken extends Field
     }
 
     /**
+     * Prepare layout
+     *
      * @return $this
      */
     protected function _prepareLayout()
@@ -81,6 +92,8 @@ class CreateToken extends Field
     }
 
     /**
+     * Get the Html for the element
+     *
      * @param \Magento\Framework\Data\Form\Element\AbstractElement $element
      * @return mixed
      */

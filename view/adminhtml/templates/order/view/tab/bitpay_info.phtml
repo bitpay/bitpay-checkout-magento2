@@ -4,7 +4,7 @@
 ?>
 
 <table class="data-table admin__table-secondary">
-    <?php foreach ($block->getBitpayAdditionalInfo() as $info) : ?>
+    <?php foreach ($block->getBitpayAdditionalInfo() as $info): ?>
         <tr>
             <th><?= $block->escapeHtml($info['label']) ?>:</th>
             <td>

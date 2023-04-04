@@ -36,14 +36,15 @@ class BPPaymentMethodAvailableTest extends TestCase
         $tokenData = '{"data":{"0":{"token":"34GB93@jf234222","pairingCode":"12334"}}}';
         $observer = $this->getMockBuilder(Observer::class)->disableOriginalConstructor()->getMock();
         $order = $this->getMockBuilder(Order::class)->disableOriginalConstructor()->getMock();
-        $event = $this->getMockBuilder(Event::class)->addMethods(['getMethodInstance', 'getResult'])->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder(Event::class)
+            ->addMethods(['getMethodInstance', 'getResult'])
+            ->disableOriginalConstructor()
+            ->getMock();
         $method = $this->getMockBuilder(MethodInterface::class)->disableOriginalConstructor()->getMock();
-
 
         $event->expects($this->once())->method('getMethodInstance')->willReturn($method);
         $observer->expects($this->once())->method('getEvent')->willReturn($event);
         $method->expects($this->once())->method('getCode')->willReturn('bpcheckout');
-
         $this->config->expects($this->any())->method('getMerchantTokenData')->willReturn($tokenData);
 
         $this->bpPaymentMethodAvailable->execute($observer);
@@ -53,10 +54,11 @@ class BPPaymentMethodAvailableTest extends TestCase
     {
         $observer = $this->getMockBuilder(Observer::class)->disableOriginalConstructor()->getMock();
         $order = $this->getMockBuilder(Order::class)->disableOriginalConstructor()->getMock();
-        $event = $this->getMockBuilder(Event::class)->addMethods(['getMethodInstance', 'getResult'])->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder(Event::class)
+            ->addMethods(['getMethodInstance', 'getResult'])
+            ->disableOriginalConstructor()
+            ->getMock();
         $method = $this->getMockBuilder(MethodInterface::class)->disableOriginalConstructor()->getMock();
-
-
         $event->expects($this->once())->method('getMethodInstance')->willReturn($method);
         $observer->expects($this->once())->method('getEvent')->willReturn($event);
         $method->expects($this->once())->method('getCode')->willReturn('checmo');
@@ -69,14 +71,16 @@ class BPPaymentMethodAvailableTest extends TestCase
         $tokenData = '';
         $observer = $this->getMockBuilder(Observer::class)->disableOriginalConstructor()->getMock();
         $order = $this->getMockBuilder(Order::class)->disableOriginalConstructor()->getMock();
-        $event = $this->getMockBuilder(Event::class)->addMethods(['getMethodInstance', 'getResult'])->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder(Event::class)
+            ->addMethods(['getMethodInstance', 'getResult'])
+            ->disableOriginalConstructor()
+            ->getMock();
         $method = $this->getMockBuilder(MethodInterface::class)->disableOriginalConstructor()->getMock();
 
         $event->expects($this->once())->method('getMethodInstance')->willReturn($method);
         $event->expects($this->once())->method('getResult')->willReturn(new DataObject(['is_available' => true]));
         $observer->expects($this->any())->method('getEvent')->willReturn($event);
         $method->expects($this->once())->method('getCode')->willReturn('bpcheckout');
-
 
         $this->bpPaymentMethodAvailable->execute($observer);
     }

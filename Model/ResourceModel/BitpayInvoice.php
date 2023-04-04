@@ -10,6 +10,8 @@ class BitpayInvoice extends AbstractDb
     private const TABLE_NAME = 'bitpay_invoice';
 
     /**
+     * Resource initialization
+     *
      * @codeCoverageIgnore
      */
     public function _construct()
@@ -17,6 +19,15 @@ class BitpayInvoice extends AbstractDb
         $this->_init(self::TABLE_NAME, 'id');
     }
 
+    /**
+     * Add BitPay Invoice data
+     *
+     * @param string $orderId
+     * @param string $invoiceID
+     * @param string $expirationTime
+     * @param int|null $acceptanceWindow
+     * @return void
+     */
     public function add(string $orderId, string $invoiceID, string $expirationTime, ?int $acceptanceWindow)
     {
         $connection = $this->getConnection();
@@ -32,6 +43,12 @@ class BitpayInvoice extends AbstractDb
         );
     }
 
+    /**
+     * Get invoice by order id
+     *
+     * @param string $orderId
+     * @return array|null
+     */
     public function getByOrderId(string $orderId): ?array
     {
         $connection = $this->getConnection();

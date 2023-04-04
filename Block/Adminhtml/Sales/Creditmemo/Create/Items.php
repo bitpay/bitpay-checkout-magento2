@@ -8,8 +8,18 @@ use Bitpay\BPCheckout\Model\TransactionRepository;
 
 class Items extends \Magento\Sales\Block\Adminhtml\Order\Creditmemo\Create\Items
 {
+    /** @var TransactionRepository $bitpayTransactionRepository */
     protected $bitpayTransactionRepository;
 
+    /**
+     * @param \Magento\Backend\Block\Template\Context $context
+     * @param \Magento\CatalogInventory\Api\StockRegistryInterface $stockRegistry
+     * @param \Magento\CatalogInventory\Api\StockConfigurationInterface $stockConfiguration
+     * @param \Magento\Framework\Registry $registry
+     * @param \Magento\Sales\Helper\Data $salesData
+     * @param TransactionRepository $bitpayTransactionRepository
+     * @param array $data
+     */
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
         \Magento\CatalogInventory\Api\StockRegistryInterface $stockRegistry,
@@ -23,11 +33,21 @@ class Items extends \Magento\Sales\Block\Adminhtml\Order\Creditmemo\Create\Items
         parent::__construct($context, $stockRegistry, $stockConfiguration, $registry, $salesData, $data);
     }
 
+    /**
+     * Check if bitpay payment method
+     *
+     * @return bool
+     */
     public function isBitpayPaymentMethod(): bool
     {
         return $this->getOrder()->getPayment()->getMethod() === Config::BITPAY_PAYMENT_METHOD_NAME;
     }
 
+    /**
+     * Prepare layout
+     *
+     * @return $this|Items
+     */
     protected function _prepareLayout()
     {
         if ($this->isBitpayPaymentMethod()) {
@@ -50,10 +70,10 @@ class Items extends \Magento\Sales\Block\Adminhtml\Order\Creditmemo\Create\Items
                     'onclick' => 'disableElements(\'submit-button\');submitCreditMemoOffline()'
                 ]
             );
-            
+
             return $this;
         }
+
         return parent::_prepareLayout();
     }
-
 }

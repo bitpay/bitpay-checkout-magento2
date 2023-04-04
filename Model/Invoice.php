@@ -18,20 +18,60 @@ use Bitpay\BPCheckout\Logger\Logger;
 
 class Invoice
 {
+    /** @var InvoiceService $invoiceService */
     protected $invoiceService;
+
+    /** @var Logger $logger */
     protected $logger;
+
+    /** @var Transaction $transaction */
     protected $transaction;
+
+    /** @var \Bitpay\BPCheckout\Model\Config $config */
     protected $config;
+
+    /** @var Session $checkoutSession */
     protected $checkoutSession;
+
+    /** @var OrderSender $orderSender */
     protected $orderSender;
+
+    /** @var OrderRepository $orderRepository */
     protected $orderRepository;
 
+    /**
+     * IPN code for invoice completed
+     */
     public const COMPLETED = 'invoice_completed';
+
+    /**
+     * IPN code for invoice confirmed
+     */
     public const CONFIRMED = 'invoice_confirmed';
+
+    /**
+     * IPN code for invoice pain in full
+     */
     public const PAID_IN_FULL = 'invoice_paidInFull';
+
+    /**
+     * IPN code for failed invoice to confirm
+     */
     public const FAILED_TO_CONFIRM = 'invoice_failedToConfirm';
+
+    /**
+     * IPN code for expired invoice
+     */
     public const EXPIRED = 'invoice_expired';
+
+    /**
+     * IPN code for declined invoice
+     */
     public const DECLINED = 'invoice_declined';
+
+    /**
+     * IPN code for invoice refunded
+     */
     public const REFUND_COMPLETE = 'invoice_refundComplete';
 
     /**
@@ -61,6 +101,13 @@ class Invoice
         $this->orderRepository = $orderRepository;
     }
 
+    /**
+     * Handle complete invoice status
+     *
+     * @param Order $order
+     * @param BPCItem $item
+     * @return void
+     */
     public function complete(Order $order, BPCItem $item): void
     {
         $msg = $this->prepareMessage("status has changed to Completed");
@@ -74,6 +121,14 @@ class Invoice
         $this->createMGInvoice($order);
     }
 
+    /**
+     * Handle confirmed invoice status
+     *
+     * @param Order $order
+     * @param string $invoiceStatus
+     * @param BPCItem $item
+     * @return void
+     */
     public function confirmed(Order $order, string $invoiceStatus, BPCItem $item): void
     {
         $msg = $this->prepareMessage("processing has been completed");
@@ -98,6 +153,14 @@ class Invoice
         $this->orderRepository->save($order);
     }
 
+    /**
+     * Handle paidInFull invoice status
+     *
+     * @param Order $order
+     * @param string $invoiceStatus
+     * @param BPCItem $item
+     * @return void
+     */
     public function paidInFull(Order $order, string $invoiceStatus, BPCItem $item): void
     {
         $msg = $this->prepareMessage("is processing");
@@ -115,6 +178,14 @@ class Invoice
         $this->orderRepository->save($order);
     }
 
+    /**
+     * Handle failedToConfirm invoice status
+     *
+     * @param Order $order
+     * @param string $invoiceStatus
+     * @param BPCItem $item
+     * @return void
+     */
     public function failedToConfirm(Order $order, string $invoiceStatus, BPCItem $item): void
     {
         $msg = $this->prepareMessage("has become invalid because of network congestion."
@@ -131,6 +202,14 @@ class Invoice
         $this->orderRepository->save($order);
     }
 
+    /**
+     * Handle declined invoice status
+     *
+     * @param Order $order
+     * @param string $invoiceStatus
+     * @param BPCItem $item
+     * @return void
+     */
     public function declined(Order $order, string $invoiceStatus, BPCItem $item): void
     {
         $msg = $this->prepareMessage("has been declined / expired");
@@ -146,6 +225,13 @@ class Invoice
         }
     }
 
+    /**
+     * Handle refundComplete invoice status
+     *
+     * @param Order $order
+     * @param BPCItem $item
+     * @return void
+     */
     public function refundComplete(Order $order, BPCItem $item): void
     {
         $msg = $this->prepareMessage("has been refunded");
@@ -161,6 +247,10 @@ class Invoice
     }
 
     /**
+     * Create invoice in Bitpay
+     *
+     * @param \BitPaySDK\Client $client
+     * @param \Magento\Framework\DataObject $params
      * @return bool|array
      */
     public function BPCCreateInvoice(
@@ -183,6 +273,13 @@ class Invoice
         return $client->createInvoice($invoice);
     }
 
+    /**
+     * Check invoice status
+     *
+     * @param \BitPaySDK\Client $client
+     * @param string $invoiceId
+     * @return mixed
+     */
     public function getBPCCheckInvoiceStatus(\BitPaySDK\Client $client, string $invoiceId)
     {
         $invoice = $client->getInvoice($invoiceId);
@@ -190,11 +287,23 @@ class Invoice
         return $invoice->getStatus();
     }
 
+    /**
+     * Prepare message for order history comments section
+     *
+     * @param string $msg
+     * @return string
+     */
     protected function prepareMessage(string $msg): string
     {
         return "BitPay Invoice <a href = \"http://%s/dashboard/payments/%s\" target = \"_blank\">%s</a> $msg.";
     }
 
+    /**
+     * Create magento invoice
+     *
+     * @param \Magento\Sales\Model\Order $order
+     * @return void
+     */
     private function createMGInvoice($order): void
     {
         try {

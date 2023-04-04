@@ -14,6 +14,11 @@ use Magento\Framework\Option\ArrayInterface;
  */
 class Countries implements ArrayInterface
 {
+    /**
+     * Return array of Countries options
+     *
+     * @return array[]
+     */
     public function toOptionArray(): array
     {
         return [
