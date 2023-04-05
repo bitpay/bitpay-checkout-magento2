@@ -37,7 +37,8 @@ class ConfigTest extends TestCase
      */
     private $objectManager;
 
-    private const DECODED_MERCHANT_DATA = '{"data":{"0":{"token":"34GB93@jf234222","pairingCode":"12334"}}}';
+    //phpcs:ignore
+    private const DECODED_MERCHANT_DATA = '{"data":{"0":{"token":"HK4huiR44343ByCLfxwN95wNJXVv3HUU3ZRcTwZh51FtCXij","pairingCode":"5Vt432zcwh"}}}';
     //phpcs:ignore
     private const ENCODED_MERCHANT_DATA = '0:3:uypNhzezLLyRrkExqXXhiCB595zsfnTrp/1hY5thRVYVMpkzgUYRPpTe802dM6NuHbyrYbIQUl6a6bFuINKhiN5yJNO9mJTnUc0OcCqdOwCgboS9kw+je9icSnE=';
 
@@ -64,7 +65,7 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @magentoConfigFixture current_store bitpay_merchant_facade/authenticate/token_data 0:3:uypNhzezLLyRrkExqXXhiCB595zsfnTrp/1hY5thRVYVMpkzgUYRPpTe802dM6NuHbyrYbIQUl6a6bFuINKhiN5yJNO9mJTnUc0OcCqdOwCgboS9kw+je9icSnE=
+     * @magentoDataFixture Bitpay_BPCheckout::Test/Integration/_files/config.php
      */
     public function testGetToken(): void
     {

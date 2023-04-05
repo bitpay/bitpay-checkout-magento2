@@ -166,8 +166,7 @@ class IpnManagementTest extends TestCase
      * @magentoDataFixture Bitpay_BPCheckout::Test/Integration/_files/transaction.php
      * @magentoDataFixture Bitpay_BPCheckout::Test/Integration/_files/order.php
      * @magentoConfigFixture current_store payment/bpcheckout/bitpay_endpoint test
-     * @magentoConfigFixture current_store bitpay_merchant_facade/authenticate/token_data 0:3:uypNhzezLLyRrkExqXXhiCB595zsfnTrp/1hY5thRVYVMpkzgUYRPpTe802dM6NuHbyrYbIQUl6a6bFuINKhiN5yJNO9mJTnUc0OcCqdOwCgboS9kw+je9icSnE=
-     *
+     * @magentoDataFixture Bitpay_BPCheckout::Test/Integration/_files/config.php
      */
     public function testPostIpn()
     {
@@ -183,6 +182,7 @@ class IpnManagementTest extends TestCase
                 'name' => 'invoice_completed'
             ]
         ];
+
         $content = $this->serializer->serialize($data);
         $this->request->setContent($content);
         $params = new DataObject($this->getParams());

@@ -50,8 +50,7 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\AbstractOrder
     }
 
     /**
-     * Get BitPay additional info to display in creditmemo
-     * detail page in Payment Information section
+     * Get BitPay additional info to display in creditmemo detail page
      *
      * @return array
      */

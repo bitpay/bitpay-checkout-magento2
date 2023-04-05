@@ -37,7 +37,6 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\AbstractOrder
 
     /**
      * Get BitPay additional info to display in order detail page
-     * in Payment Information section
      *
      * @return array
      * @throws \Magento\Framework\Exception\LocalizedException
