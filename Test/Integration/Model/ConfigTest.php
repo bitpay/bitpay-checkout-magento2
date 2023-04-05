@@ -38,7 +38,7 @@ class ConfigTest extends TestCase
     private $objectManager;
 
     //phpcs:ignore
-    private const DECODED_MERCHANT_DATA = '{"data":{"0":{"token":"HK4huiR44343ByCLfxwN95wNJXVv3HUU3ZRcTwZh51FtCXij","pairingCode":"5Vt432zcwh"}}}';
+    private const DECODED_MERCHANT_DATA = '{"data":{"0":{"token":"testToken","pairingCode":"1234"}}}';
     //phpcs:ignore
     private const ENCODED_MERCHANT_DATA = '0:3:uypNhzezLLyRrkExqXXhiCB595zsfnTrp/1hY5thRVYVMpkzgUYRPpTe802dM6NuHbyrYbIQUl6a6bFuINKhiN5yJNO9mJTnUc0OcCqdOwCgboS9kw+je9icSnE=';
 
