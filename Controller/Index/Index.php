@@ -8,6 +8,9 @@ use Magento\Framework\App\Action\Context;
 use Magento\Framework\View\Result\PageFactory;
 use Magento\Framework\View\Result\Page;
 
+/**
+ * @SuppressWarnings(PHPMD.AllPurposeAction)
+ */
 class Index extends Action
 {
     /** @var PageFactory $pageFactory */

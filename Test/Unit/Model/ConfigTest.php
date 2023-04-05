@@ -86,7 +86,6 @@ class ConfigTest extends TestCase
     public function testEncryptTokenMerchantDataEmpty(): void
     {
         $tokenEncryptData = ':3:zduacP+9hbAhK4XgHh/RCZhPTxVS44234324234232hgffd';
-        $tokenDecryptData = null;
         $this->scopeConfig->expects($this->once())
             ->method('getValue')
             ->with(Config::BITPAY_MERCHANT_TOKEN_DATA, ScopeInterface::SCOPE_STORE)

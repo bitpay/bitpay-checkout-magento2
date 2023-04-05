@@ -35,6 +35,10 @@ use Magento\Sales\Model\OrderRepository;
 use Magento\TestFramework\Helper\Bootstrap;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @SuppressWarnings(PHPMD.TooManyFields)
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class BPRedirectTest extends TestCase
 {
     /**
@@ -181,7 +185,6 @@ class BPRedirectTest extends TestCase
         $order = $this->objectManager->get(Order::class);
         $session = $this->objectManager->get(Session::class);
         $invoiceId = 'VjvZbvsW56tzYX65ZXk4xq';
-        $baseUrl = $this->config->getBaseUrl();
         $order = $order->loadByIncrementId('100000001');
         $orderId = $order->getId();
         $session->setLastOrderId($orderId);
@@ -230,7 +233,6 @@ class BPRedirectTest extends TestCase
     {
         $order = $this->objectManager->get(Order::class);
         $session = $this->objectManager->get(Session::class);
-        $baseUrl = $this->config->getBaseUrl();
         $order = $order->loadByIncrementId('100000001');
         $orderId = $order->getId();
         $session->setLastOrderId($orderId);

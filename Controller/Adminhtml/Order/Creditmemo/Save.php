@@ -13,6 +13,9 @@ use Magento\Sales\Helper\Data as SalesData;
 use Magento\Sales\Model\Order\Email\Sender\CreditmemoSender;
 use Magento\Directory\Model\PriceCurrency;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class Save extends CreditmemoSave
 {
     /**
@@ -80,6 +83,7 @@ class Save extends CreditmemoSave
      * Save creditmemo
      *
      * @return \Magento\Backend\Model\View\Result\Redirect|\Magento\Backend\Model\View\Result\Forward
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     public function execute()
     {

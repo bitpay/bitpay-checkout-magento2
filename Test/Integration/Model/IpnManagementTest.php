@@ -25,6 +25,10 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @SuppressWarnings(PHPMD.TooManyFields)
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class IpnManagementTest extends TestCase
 {
     /**
@@ -151,10 +155,10 @@ class IpnManagementTest extends TestCase
         $this->request->setParam('orderID', $order->getEntityId());
         $quoteId = $order->getQuoteId();
         /** @var \Magento\Quote\Model\Quote $quote */
-        $quote = $this->quoteFactory->create()->loadByIdWithoutStore($quoteId);
+        $this->quoteFactory->create()->loadByIdWithoutStore($quoteId);
 
         $this->ipnManagement->postClose();
-        $order = $this->orderInterface->loadByIncrementId('100000001');
+        $this->orderInterface->loadByIncrementId('100000001');
         $this->assertEquals($quoteId, $this->checkoutSession->getQuoteId());
     }
 

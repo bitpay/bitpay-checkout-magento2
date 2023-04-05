@@ -52,8 +52,9 @@ class ConfigProviderTest extends TestCase
         $fileID = $this->getFileId();
         $isAvailable = true;
         $assetUrl = 'http://localhost/pub/image/test.png';
-        $method = $this->getMockBuilder(MethodInterface::class)->getMock();
+
         $asset = $this->getMockBuilder(File::class)->disableOriginalConstructor()->getMock();
+        $method = $this->getMockBuilder(MethodInterface::class)->getMock();
         $method->expects($this->once())->method('isAvailable')->willReturn($isAvailable);
         $this->paymentHelper->expects($this->once())
             ->method('getMethodInstance')
@@ -77,7 +78,6 @@ class ConfigProviderTest extends TestCase
     public function testGetConfigMethodNotAvailable(): void
     {
         $isAvailable = false;
-        $fileID = $this->getFileId();
         $method = $this->getMockBuilder(MethodInterface::class)->getMock();
         $method->expects($this->once())->method('isAvailable')->willReturn($isAvailable);
         $this->paymentHelper->expects($this->once())
@@ -92,7 +92,6 @@ class ConfigProviderTest extends TestCase
     {
         $fileID = $this->getFileId();
         $isAvailable = true;
-        $assetUrl = 'http://localhost/pub/image/test.png';
         $method = $this->getMockBuilder(MethodInterface::class)->getMock();
         $asset = $this->getMockBuilder(File::class)->disableOriginalConstructor()->getMock();
         $method->expects($this->once())->method('isAvailable')->willReturn($isAvailable);

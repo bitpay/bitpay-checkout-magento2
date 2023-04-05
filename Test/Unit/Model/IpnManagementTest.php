@@ -29,6 +29,9 @@ use Magento\Sales\Model\Order;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class IpnManagementTest extends TestCase
 {
     /**
@@ -127,17 +130,16 @@ class IpnManagementTest extends TestCase
 
     public function testPostClose(): void
     {
-        $orderId = '000000012';
         $quoteId = 21;
+        $cartUrl = 'http://localhost/checkout/cart?reload=1';
+        $quote = $this->getMock(Quote::class);
         $response = $this->getMock(\Magento\Framework\HTTP\PhpEnvironment\Response::class);
         $order = $this->getMock(Order::class);
-        $quote = $this->getMock(Quote::class);
-        $this->url->expects($this->once())
-            ->method('getUrl')
-            ->willReturn('http://localhost/checkout/cart?reload=1');
+        $orderId = '000000012';
+        $this->url->expects($this->once())->method('getUrl')->willReturn($cartUrl);
 
-        $this->responseFactory->expects($this->once())->method('create')->willReturn($response);
         $this->request->expects($this->once())->method('getParam')->willReturn($orderId);
+        $this->responseFactory->expects($this->once())->method('create')->willReturn($response);
         $order->expects($this->once())->method('getData')->willReturn(['quote_id' => $quoteId]);
         $this->orderInterface->expects($this->once())->method('loadByIncrementId')->willReturn($order);
 
@@ -180,10 +182,8 @@ class IpnManagementTest extends TestCase
     public function testPostCloseExeception(): void
     {
         $orderId = '000000012';
-        $quoteId = 21;
         $response = $this->getMock(\Magento\Framework\HTTP\PhpEnvironment\Response::class);
         $order = $this->getMock(Order::class);
-        $quote = $this->getMock(Quote::class);
         $this->url->expects($this->once())
             ->method('getUrl')
             ->willReturn('http://localhost/checkout/cart?reload=1');
@@ -241,8 +241,6 @@ class IpnManagementTest extends TestCase
 
     public function testPostIpnException(): void
     {
-        $token = bin2hex(random_bytes(20));
-        $orderInvoiceId = '12';
         $data = null;
         $serializer = new Json();
         $serializerData = $serializer->serialize($data);
@@ -256,17 +254,17 @@ class IpnManagementTest extends TestCase
 
     public function testPostIpnTransactionNotFound(): void
     {
-        $token = bin2hex(random_bytes(20));
-        $eventName = 'ivoice_confirmed';
         $orderInvoiceId = '12';
-        $data = $this->prepareData($orderInvoiceId, $eventName);
+        $eventName = 'ivoice_confirmed';
         $serializer = new Json();
-        $serializerData = $serializer->serialize($data);
+        $data = $this->prepareData($orderInvoiceId, $eventName);
+        $client = $this->getMockBuilder(\BitPaySDK\Client::class)->disableOriginalConstructor()->getMock();
+
         $this->serializer->expects($this->once())->method('unserialize')->willReturn($data);
+        $serializerData = $serializer->serialize($data);
         $this->request->expects($this->once())->method('getContent')->willReturn($serializerData);
 
         $invoice = $this->prepareInvoice();
-        $client = $this->getMockBuilder(\BitPaySDK\Client::class)->disableOriginalConstructor()->getMock();
         $client->expects($this->once())->method('getInvoice')->willReturn($invoice);
         $this->client->expects($this->once())->method('initialize')->willReturn($client);
         $this->transactionRepository->expects($this->once())->method('findBy')->willReturn([]);
@@ -276,7 +274,6 @@ class IpnManagementTest extends TestCase
 
     public function testPostIpnValidatorError(): void
     {
-        $token = bin2hex(random_bytes(20));
         $eventName = 'ivoice_confirmed';
         $orderInvoiceId = '12';
         $data = [
@@ -317,7 +314,6 @@ class IpnManagementTest extends TestCase
 
     private function preparePostIpn(string $eventName, string $invoiceStatus): void
     {
-        $token = bin2hex(random_bytes(20));
         $orderInvoiceId = '12';
         $data = $this->prepareData($orderInvoiceId, $eventName);
         $serializer = new Json();
@@ -338,11 +334,6 @@ class IpnManagementTest extends TestCase
 
         $this->config->expects($this->once())->method('getBitpayEnv')->willReturn('test');
         $this->config->expects($this->once())->method('getToken')->willReturn('test');
-        $item = new BPCItem(
-            $token,
-            new DataObject(['invoiceID' => $orderInvoiceId, 'extension_version' => Config::EXTENSION_VERSION]),
-            'test'
-        );
         $this->invoice->expects($this->once())->method('getBPCCheckInvoiceStatus')->willReturn($invoiceStatus);
         $order = $this->getMock(Order::class);
         $this->orderInterface->expects($this->once())->method('loadByIncrementId')->willReturn($order);

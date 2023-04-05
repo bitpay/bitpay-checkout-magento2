@@ -96,6 +96,7 @@ class CreateToken extends Field
      *
      * @param \Magento\Framework\Data\Form\Element\AbstractElement $element
      * @return mixed
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     protected function _getElementHtml(\Magento\Framework\Data\Form\Element\AbstractElement $element)
     {

@@ -20,6 +20,7 @@ class ModalManagement implements ModalManagementInterface
     }
     /**
      * @inheritdoc
+     * @SuppressWarnings(PHPMD.UnusedLocalVariable)
      */
     public function postModal()
     {

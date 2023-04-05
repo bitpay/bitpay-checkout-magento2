@@ -19,6 +19,10 @@ use Magento\Framework\Webapi\Rest\Response;
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Api\Data\OrderInterface;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * @SuppressWarnings(PHPMD.CookieAndSessionMisuse)
+ */
 class IpnManagement implements IpnManagementInterface
 {
     /** @var ResponseFactory $responseFactory */
@@ -80,6 +84,7 @@ class IpnManagement implements IpnManagementInterface
      * @param Request $request
      * @param Client $client
      * @param Response $response
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         ResponseFactory $responseFactory,
@@ -151,6 +156,7 @@ class IpnManagement implements IpnManagementInterface
      * Handle Instant Payment Notification
      *
      * @return string|void
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     public function postIpn()
     {

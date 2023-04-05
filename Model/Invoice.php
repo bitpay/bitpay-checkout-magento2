@@ -16,6 +16,10 @@ use Magento\Sales\Model\OrderRepository;
 use Magento\Sales\Model\Service\InvoiceService;
 use Bitpay\BPCheckout\Logger\Logger;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * @SuppressWarnings(PHPMD.CookieAndSessionMisuse)
+ */
 class Invoice
 {
     /** @var InvoiceService $invoiceService */

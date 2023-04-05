@@ -26,6 +26,7 @@ class SuccessPlugin
      * @return \Magento\Framework\View\Result\Page|null
      * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function afterExecute(
         \Magento\Checkout\Controller\Onepage\Success $subject,

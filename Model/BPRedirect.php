@@ -27,6 +27,11 @@ use Magento\Framework\View\Result\PageFactory;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\OrderRepository;
 
+/**
+ * @SuppressWarnings(PHPMD.TooManyFields)
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * @SuppressWarnings(PHPMD.CookieAndSessionMisuse)
+ */
 class BPRedirect
 {
     /** @var Session $checkoutSession */
@@ -94,6 +99,7 @@ class BPRedirect
      * @param Client $client
      * @param OrderRepository $orderRepository
      * @param BitpayInvoiceRepository $bitpayInvoiceRepository
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         Session $checkoutSession,

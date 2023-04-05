@@ -64,10 +64,10 @@ class TransactionTest extends TestCase
 
     public function testNotFound(): void
     {
-        $orderId = '33';
         $orderInvoiceId = '11';
-        $select = $this->getMockBuilder(Select::class)->disableOriginalConstructor()->getMock();
+        $orderId = '33';
         $this->prepareTableName();
+        $select = $this->getMockBuilder(Select::class)->disableOriginalConstructor()->getMock();
         $this->adapter->expects($this->once())->method('select')->willReturn($select);
         $select->expects($this->any())->method('from')->with('bitpay_transactions')->willReturn($select);
         $select->expects($this->any())->method('where')->willReturn($select);

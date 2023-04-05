@@ -69,7 +69,7 @@ class ConfigTest extends TestCase
     public function testGetToken(): void
     {
         $token = json_decode(self::DECODED_MERCHANT_DATA, true)['data'][0]['token'];
-        $this->assertEquals('34GB93@jf234222', $this->config->getToken());
+        $this->assertEquals($token, $this->config->getToken());
     }
 
     public function testGetBaseUrl(): void
