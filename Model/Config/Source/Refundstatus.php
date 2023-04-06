@@ -14,6 +14,11 @@ use Magento\Framework\Option\ArrayInterface;
  */
 class Refundstatus implements ArrayInterface
 {
+    /**
+     * Return array of Refund statuses
+     *
+     * @return array[]
+     */
     public function toOptionArray(): array
     {
         return [

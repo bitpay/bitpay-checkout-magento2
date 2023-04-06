@@ -14,8 +14,14 @@ use Magento\Sales\Helper\Data as SalesData;
 use Magento\Sales\Model\Order\Email\Sender\CreditmemoSender;
 use Magento\Directory\Model\PriceCurrency;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class Save extends CreditmemoSave
 {
+    /**
+     * @var Client $bitpayClient
+     */
     protected $bitpayClient;
 
     /**
@@ -23,8 +29,14 @@ class Save extends CreditmemoSave
      */
     protected $priceCurrency;
 
+    /**
+     * @var BitpayInvoiceRepository $bitpayInvoiceRepository
+     */
     protected $bitpayInvoiceRepository;
 
+    /**
+     * @var BitpayRefundRepository $bitpayRefundRepository
+     */
     protected $bitpayRefundRepository;
 
     protected $logger;
@@ -34,6 +46,17 @@ class Save extends CreditmemoSave
      */
     private $salesData;
 
+    /**
+     * @param Action\Context $context
+     * @param \Magento\Sales\Controller\Adminhtml\Order\CreditmemoLoader $creditmemoLoader
+     * @param CreditmemoSender $creditmemoSender
+     * @param \Magento\Backend\Model\View\Result\ForwardFactory $resultForwardFactory
+     * @param Client $bitpayClient
+     * @param PriceCurrency $priceCurrency
+     * @param BitpayInvoiceRepository $bitpayInvoiceRepository
+     * @param BitpayRefundRepository $bitpayRefundRepository
+     * @param SalesData|null $salesData
+     */
     public function __construct(
         Action\Context $context,
         \Magento\Sales\Controller\Adminhtml\Order\CreditmemoLoader $creditmemoLoader,
@@ -61,6 +84,12 @@ class Save extends CreditmemoSave
         $this->logger = $logger;
     }
 
+    /**
+     * Save creditmemo
+     *
+     * @return \Magento\Backend\Model\View\Result\Redirect|\Magento\Backend\Model\View\Result\Forward
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     */
     public function execute()
     {
         $resultRedirect = $this->resultRedirectFactory->create();
@@ -139,7 +168,10 @@ class Save extends CreditmemoSave
     }
 
     /**
+     * Create BitPay Refund
+     *
      * @param bool|\Magento\Sales\Model\Order\Creditmemo $creditmemo
+     * @param array $data
      * @return void
      * @throws \BitPaySDK\Exceptions\BitPayException
      * @throws \BitPaySDK\Exceptions\RefundCreationException

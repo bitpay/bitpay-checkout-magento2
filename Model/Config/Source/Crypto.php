@@ -14,6 +14,11 @@ use Magento\Framework\Option\ArrayInterface;
  */
 class Crypto implements ArrayInterface
 {
+    /**
+     * Return array of Crypto options
+     *
+     * @return array[]
+     */
     public function toOptionArray(): array
     {
         return [

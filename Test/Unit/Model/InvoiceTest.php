@@ -23,6 +23,9 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\ScopeInterface;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class InvoiceTest extends TestCase
 {
     /**
@@ -161,7 +164,6 @@ class InvoiceTest extends TestCase
             ->method('prepareInvoice')
             ->willThrowException(new LocalizedException(new Phrase('Something went wrong')));
 
-
         $this->invoice->complete($order, $item);
     }
 
@@ -210,15 +212,17 @@ class InvoiceTest extends TestCase
         $bitpayToken = bin2hex(random_bytes(10));
         $params = new DataObject($this->getParams('00000240000', $bitpayToken));
         $order = $this->getMock(Order::class);
+        $invoice = $this->getMock(Order\Invoice::class);
         $item = new BPCItem($bitpayToken, $params, 'test');
 
         $this->config->expects($this->once())->method('getBitpayIpnMapping')->willReturn('processing');
-        $order->expects($this->once())->method('setState')->willReturnSelf();
-        $order->expects($this->once())->method('setStatus')->willReturnSelf();
 
-        $invoice = $this->getMock(Order\Invoice::class);
-        $invoice->expects($this->once())->method('register')->willReturnSelf();
+        $order->expects($this->once())->method('setStatus')->willReturnSelf();
+        $order->expects($this->once())->method('setState')->willReturnSelf();
+
         $invoice->expects($this->once())->method('getOrder')->willReturn($order);
+        $invoice->expects($this->once())->method('register')->willReturnSelf();
+
         $this->invoiceService->expects($this->once())->method('prepareInvoice')->willReturn($invoice);
 
         $this->transaction->expects($this->any())->method('addObject')->willReturnSelf();

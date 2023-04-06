@@ -12,12 +12,26 @@ use Magento\Tax\Helper\Data as TaxHelper;
 
 class Info extends \Magento\Sales\Block\Adminhtml\Order\AbstractOrder
 {
+    /** @var BitpayRefundRepository $bitpayRefundRepository */
     protected $bitpayRefundRepository;
 
+    /** @var PriceCurrency $priceCurrency */
     protected $priceCurrency;
 
+    /** @var Config $config */
     protected $config;
 
+    /**
+     * @param \Magento\Backend\Block\Template\Context $context
+     * @param \Magento\Framework\Registry $registry
+     * @param \Magento\Sales\Helper\Admin $adminHelper
+     * @param BitpayRefundRepository $bitpayRefundRepository
+     * @param PriceCurrency $priceCurrency
+     * @param Config $config
+     * @param array $data
+     * @param ShippingHelper|null $shippingHelper
+     * @param TaxHelper|null $taxHelper
+     */
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
         \Magento\Framework\Registry $registry,
@@ -35,6 +49,11 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\AbstractOrder
         parent::__construct($context, $registry, $adminHelper, $data, $shippingHelper, $taxHelper);
     }
 
+    /**
+     * Get BitPay additional info to display in creditmemo detail page
+     *
+     * @return array
+     */
     public function getBitpayAdditionalInfo(): array
     {
         if (!$this->config->isPaymentActive()) {
@@ -61,6 +80,8 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\AbstractOrder
     }
 
     /**
+     * Get creditmemo
+     *
      * @return Creditmemo
      */
     public function getCreditmemo()
@@ -69,6 +90,8 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\AbstractOrder
     }
 
     /**
+     * Check whether is BitPay payment method
+     *
      * @param \Magento\Sales\Model\Order $order
      * @return bool
      */

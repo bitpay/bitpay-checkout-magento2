@@ -25,6 +25,10 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\TestFramework\Helper\Bootstrap;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @SuppressWarnings(PHPMD.TooManyFields)
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class IpnManagementTest extends TestCase
 {
     /**
@@ -151,10 +155,10 @@ class IpnManagementTest extends TestCase
         $this->request->setParam('orderID', $order->getEntityId());
         $quoteId = $order->getQuoteId();
         /** @var \Magento\Quote\Model\Quote $quote */
-        $quote = $this->quoteFactory->create()->loadByIdWithoutStore($quoteId);
+        $this->quoteFactory->create()->loadByIdWithoutStore($quoteId);
 
         $this->ipnManagement->postClose();
-        $order = $this->orderInterface->loadByIncrementId('100000001');
+        $this->orderInterface->loadByIncrementId('100000001');
         $this->assertEquals($quoteId, $this->checkoutSession->getQuoteId());
     }
 
@@ -162,26 +166,35 @@ class IpnManagementTest extends TestCase
      * @magentoDataFixture Bitpay_BPCheckout::Test/Integration/_files/transaction.php
      * @magentoDataFixture Bitpay_BPCheckout::Test/Integration/_files/order.php
      * @magentoConfigFixture current_store payment/bpcheckout/bitpay_endpoint test
-     * @magentoConfigFixture current_store bitpay_merchant_facade/authenticate/token_data 0:3:uypNhzezLLyRrkExqXXhiCB595zsfnTrp/1hY5thRVYVMpkzgUYRPpTe802dM6NuHbyrYbIQUl6a6bFuINKhiN5yJNO9mJTnUc0OcCqdOwCgboS9kw+je9icSnE=
-     *
+     * @magentoDataFixture Bitpay_BPCheckout::Test/Integration/_files/config.php
      */
     public function testPostIpn()
     {
         $orderId = '100000001';
         $orderInvoiceId = 'VjvZuvsWT36tzYX65ZXk4xq';
         $data = [
-            'data' => ['orderId' => $orderId, 'id' => $orderInvoiceId, 'amountPaid' => 12312321, 'buyerFields' => ['buyerName' => 'test', 'buyerEmail' => 'test@example.com']],
-            'event' => ['name' => 'invoice_completed']
+            'data' => [
+                'orderId' => $orderId,
+                'id' => $orderInvoiceId,
+                'amountPaid' => 12312321,
+                'buyerFields' => ['buyerName' => 'test', 'buyerEmail' => 'test@example.com']],
+            'event' => [
+                'name' => 'invoice_completed'
+            ]
         ];
+
         $content = $this->serializer->serialize($data);
         $this->request->setContent($content);
         $params = new DataObject($this->getParams());
         $invoice = $this->prepareInvoice($params);
-        $bitpayClient = $this->getMockBuilder(\BitPaySDK\Client::class)->disableOriginalConstructor()->getMock();
+        $bitpayClient = $this->getMockBuilder(\BitPaySDK\Client::class)
+            ->disableOriginalConstructor()
+            ->getMock();
         $this->client->expects($this->once())->method('initialize')->willReturn($bitpayClient);
-
         $bitpayClient->expects($this->once())->method('getInvoice')->willReturn($invoice);
-        $this->invoice->expects($this->once())->method('getBPCCheckInvoiceStatus')->willReturn('complete');
+        $this->invoice->expects($this->once())
+            ->method('getBPCCheckInvoiceStatus')
+            ->willReturn('complete');
 
         $this->ipnManagement->postIpn();
 
@@ -200,7 +213,10 @@ class IpnManagementTest extends TestCase
      */
     private function prepareInvoice(DataObject $params): \BitPaySDK\Model\Invoice\Invoice
     {
-        $invoice = new \BitPaySDK\Model\Invoice\Invoice($params->getData('price'), $params->getData('currency'));
+        $invoice = new \BitPaySDK\Model\Invoice\Invoice(
+            $params->getData('price'),
+            $params->getData('currency')
+        );
         $buyer = new Buyer();
         $buyer->setName($params->getData('buyer')['name']);
         $buyer->setEmail($params->getData('buyer')['email']);

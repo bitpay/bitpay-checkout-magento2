@@ -5,10 +5,11 @@
  * See COPYING.txt for license details.
  */
 -->
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../Store/etc/config.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="../../Store/etc/config.xsd">
     <default>
         <payment>
-                <bpcheckout>
+            <bpcheckout>
                 <active>1</active>
                 <title>BitPay</title>
                 <order_status>pending_payment</order_status>

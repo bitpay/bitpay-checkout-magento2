@@ -10,14 +10,20 @@ use BitPayKeyUtils\Storage\EncryptedFilesystemStorage;
 
 class Token
 {
+    /** @var BitpayConfig $config */
     protected $config;
 
+    /**
+     * @param BitpayConfig $config
+     */
     public function __construct(Config $config)
     {
         $this->config = $config;
     }
 
     /**
+     * Create bitpay token
+     *
      * @param string $privateKeyPath
      * @param string $password
      * @param string|null $tokenLabel
@@ -34,6 +40,8 @@ class Token
     }
 
     /**
+     * Make token request
+     *
      * @param PrivateKey $privateKey
      * @param string|null $tokenLabel
      * @return array
@@ -57,6 +65,7 @@ class Token
         }
 
         $postData = json_encode($postData);
+        // phpcs:disable Magento2.Functions.DiscouragedFunction
         $curlCli = curl_init($resourceUrl);
         $xSignature = $privateKey->sign($resourceUrl . $postData);
 
@@ -72,7 +81,7 @@ class Token
         curl_setopt($curlCli, CURLOPT_RETURNTRANSFER, true);
 
         $result = curl_exec($curlCli);
-        $resultData = json_decode($result, TRUE);
+        $resultData = json_decode($result, true);
 
         curl_close($curlCli);
 

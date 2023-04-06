@@ -21,6 +21,9 @@ class DataTest extends TestCase
      */
     private $session;
 
+    /**
+     * @var JsonFactory|\PHPUnit\Framework\MockObject\MockObject $jsonFactory
+     */
     private $jsonFactory;
 
     public function setUp(): void

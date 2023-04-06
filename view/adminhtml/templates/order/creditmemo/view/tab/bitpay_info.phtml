@@ -4,5 +4,11 @@
 $additionalBitpayData = $block->getBitpayAdditionalInfo();
 ?>
 <?php if ($additionalBitpayData): ?>
-    <div style="margin-top: 1rem"><span>Bitpay refund of <?= $additionalBitpayData['amount'] ?> using refund id: <?= $additionalBitpayData['refund_id'] ?></span></div>
+    <div style="margin-top: 1rem">
+        <span>Bitpay refund of <?= /* @noEscape */
+            $additionalBitpayData['amount'] ?>
+            using refund id: <?= /* @noEscape */
+            $additionalBitpayData['refund_id'] ?>
+        </span>
+    </div>
 <?php endif; ?>

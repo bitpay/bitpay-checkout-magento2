@@ -135,6 +135,5 @@ class BPEmailTest extends TestCase
         if ($exception) {
             $order->expects($this->once())->method('save')->willThrowException($exception);
         }
-
     }
 }

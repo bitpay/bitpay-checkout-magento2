@@ -56,7 +56,7 @@ class ConfigProviderTest extends TestCase
      * @return void
      * @throws \Magento\Framework\Exception\LocalizedException
      * @magentoConfigFixture current_store payment/bpcheckout/active 1
-     * @magentoConfigFixture current_store payment/bpcheckout/bitpay_devtoken AMLTTY9x9TGXFPcsnLLjem1CaDJL3mRMWupBrm9baacy
+     * @magentoConfigFixture current_store payment/bpcheckout/bitpay_devtoken AMLTTY9x9TGXFPcsnLLjem1CaDJL3mRMWupBrm9ba
      * @magentoConfigFixture current_store payment/bpcheckout/bitpay_endpoint test
      * @magentoAppArea frontend
      */
@@ -66,12 +66,17 @@ class ConfigProviderTest extends TestCase
         $this->assertEquals(true, $bitpayMethod->isAvailable());
 
         $asset = $this->assetRepository->createAsset(
-            Config::BITPAY_MODULE_NAME . "::" . Config::BITPAY_PAYMENT_DIR_IMAGES . DIRECTORY_SEPARATOR . Config::BITPAY_PAYMENT_ICON,
-            []);
+            Config::BITPAY_MODULE_NAME . "::" . Config::BITPAY_PAYMENT_DIR_IMAGES
+            . DIRECTORY_SEPARATOR . Config::BITPAY_PAYMENT_ICON,
+            []
+        );
         $filePath = $this->assetSource->findSource($asset);
         $config = $this->configProvider->getConfig();
         if ($filePath) {
-            $this->assertEquals($config['payment'][Config::BITPAY_PAYMENT_METHOD_NAME]['paymentIcon'], $asset->getUrl());
+            $this->assertEquals(
+                $config['payment'][Config::BITPAY_PAYMENT_METHOD_NAME]['paymentIcon'],
+                $asset->getUrl()
+            );
         }
 
         $this->assertTrue(is_array($config));

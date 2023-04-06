@@ -14,6 +14,11 @@ use Magento\Framework\Option\ArrayInterface;
  */
 class Environment implements ArrayInterface
 {
+    /**
+     * Return array of Environment options
+     *
+     * @return string[]
+     */
     public function toOptionArray(): array
     {
         return [

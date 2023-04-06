@@ -10,6 +10,8 @@ class BitpayRefund extends AbstractDb
     private const TABLE_NAME = 'bitpay_refund';
 
     /**
+     * Resource initialization
+     *
      * @codeCoverageIgnore
      */
     public function _construct()
@@ -17,6 +19,14 @@ class BitpayRefund extends AbstractDb
         $this->_init(self::TABLE_NAME, 'id');
     }
 
+    /**
+     * Add Bitpay Refund data
+     *
+     * @param string $orderId
+     * @param string $refundId
+     * @param float $amount
+     * @return void
+     */
     public function add(string $orderId, string $refundId, float $amount)
     {
         $connection = $this->getConnection();
@@ -30,7 +40,13 @@ class BitpayRefund extends AbstractDb
             ]
         );
     }
-    
+
+    /**
+     * Get Refund by order id
+     *
+     * @param string $orderId
+     * @return array|null
+     */
     public function getByOrderId(string $orderId): ?array
     {
         $connection = $this->getConnection();

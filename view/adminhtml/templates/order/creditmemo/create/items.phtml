@@ -30,7 +30,8 @@ $commentText = $block->getCreditmemo()->getCommentText();
                     <th class="col-price"><span><?= $block->escapeHtml(__('Price')) ?></span></th>
                     <th class="col-ordered-qty"><span><?= $block->escapeHtml(__('Qty')) ?></span></th>
                     <?php if ($block->canReturnToStock()): ?>
-                        <th class="col-return-to-stock"><span><?= $block->escapeHtml(__('Return to Stock')) ?></span></th>
+                        <th class="col-return-to-stock"><span><?= $block->escapeHtml(__('Return to Stock')) ?></span>
+                        </th>
                     <?php endif; ?>
                     <th class="col-refund"><span><?= $block->escapeHtml(__('Qty to Refund')) ?></span></th>
                     <th class="col-subtotal"><span><?= $block->escapeHtml(__('Subtotal')) ?></span></th>

@@ -37,7 +37,9 @@ class ConfigTest extends TestCase
      */
     private $objectManager;
 
-    private const DECODED_MERCHANT_DATA = '{"data":{"0":{"token":"34GB93@jf234222","pairingCode":"12334"}}}';
+    //phpcs:ignore
+    private const DECODED_MERCHANT_DATA = '{"data":{"0":{"token":"testToken","pairingCode":"1234"}}}';
+    //phpcs:ignore
     private const ENCODED_MERCHANT_DATA = '0:3:uypNhzezLLyRrkExqXXhiCB595zsfnTrp/1hY5thRVYVMpkzgUYRPpTe802dM6NuHbyrYbIQUl6a6bFuINKhiN5yJNO9mJTnUc0OcCqdOwCgboS9kw+je9icSnE=';
 
     public function setUp(): void
@@ -63,12 +65,12 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @magentoConfigFixture current_store bitpay_merchant_facade/authenticate/token_data 0:3:uypNhzezLLyRrkExqXXhiCB595zsfnTrp/1hY5thRVYVMpkzgUYRPpTe802dM6NuHbyrYbIQUl6a6bFuINKhiN5yJNO9mJTnUc0OcCqdOwCgboS9kw+je9icSnE=
+     * @magentoDataFixture Bitpay_BPCheckout::Test/Integration/_files/config.php
      */
     public function testGetToken(): void
     {
         $token = json_decode(self::DECODED_MERCHANT_DATA, true)['data'][0]['token'];
-        $this->assertEquals('34GB93@jf234222', $this->config->getToken());
+        $this->assertEquals($token, $this->config->getToken());
     }
 
     public function testGetBaseUrl(): void
@@ -84,7 +86,6 @@ class ConfigTest extends TestCase
     {
         $this->assertEquals('modal', $this->config->getBitpayUx());
     }
-
 
     /**
      * @magentoConfigFixture current_store payment/bpcheckout/bitpay_ipn_mapping pending
@@ -135,11 +136,15 @@ class ConfigTest extends TestCase
     }
 
     /**
+     * phpcs:ignore
      * @magentoConfigFixture current_store bitpay_merchant_facade/authenticate/password 0:3:qHccgp+LBPr1uzar1cQjTwQBwnH3A+GB3giLnEZMm+3mSezk
      */
     public function testGetMerchantFacadePassword(): void
     {
-        $this->assertEquals('0:3:qHccgp+LBPr1uzar1cQjTwQBwnH3A+GB3giLnEZMm+3mSezk', $this->config->getMerchantFacadePassword());
+        $this->assertEquals(
+            '0:3:qHccgp+LBPr1uzar1cQjTwQBwnH3A+GB3giLnEZMm+3mSezk',
+            $this->config->getMerchantFacadePassword()
+        );
     }
 
     /**

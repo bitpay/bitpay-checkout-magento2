@@ -33,8 +33,9 @@ class AccessChangeQuoteControlTest extends TestCase
     public function testBeforeSave(): void
     {
         $cart = $this->getMockBuilder(CartInterface::class)->disableOriginalConstructor()->getMock();
-        $cartRepository = $this->getMockBuilder(CartRepositoryInterface::class)->disableOriginalConstructor()->getMock();
-
+        $cartRepository = $this->getMockBuilder(CartRepositoryInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
 
         $this->accessChangeQuoteControl->beforeSave($cartRepository, $cart);
     }

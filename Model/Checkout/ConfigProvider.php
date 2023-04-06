@@ -13,10 +13,20 @@ use Magento\Payment\Helper\Data as PaymentHelper;
 
 class ConfigProvider implements ConfigProviderInterface
 {
+    /** @var Source $assetSource */
     protected $assetSource;
+
+    /** @var Repository $assetRepository */
     private $assetRepository;
+
+    /** @var PaymentHelper $paymentHelper */
     private $paymentHelper;
 
+    /**
+     * @param PaymentHelper $paymentHelper
+     * @param Repository $assetRepository
+     * @param Source $assetSource
+     */
     public function __construct(
         PaymentHelper $paymentHelper,
         Repository $assetRepository,
@@ -28,6 +38,8 @@ class ConfigProvider implements ConfigProviderInterface
     }
 
     /**
+     * Add bitpay payment icon to checkout config provider
+     *
      * @return array
      * @throws LocalizedException
      */
@@ -41,8 +53,12 @@ class ConfigProvider implements ConfigProviderInterface
 
         /** @var File $file */
         $asset = $this->assetRepository->createAsset(
-            Config::BITPAY_MODULE_NAME . "::" . Config::BITPAY_PAYMENT_DIR_IMAGES . DIRECTORY_SEPARATOR . Config::BITPAY_PAYMENT_ICON,
-            []);
+            Config::BITPAY_MODULE_NAME . "::"
+            . Config::BITPAY_PAYMENT_DIR_IMAGES
+            . DIRECTORY_SEPARATOR
+            . Config::BITPAY_PAYMENT_ICON,
+            []
+        );
         $filePath = $this->assetSource->findSource($asset);
         if (!$filePath) {
             return $config;

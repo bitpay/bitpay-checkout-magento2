@@ -8,9 +8,16 @@ use Magento\Framework\Event\ObserverInterface;
 
 class BPEmail implements ObserverInterface
 {
+    /** @var Logger $logger */
     protected $logger;
+
+    /** @var Config $config */
     protected $config;
 
+    /**
+     * @param Logger $logger
+     * @param Config $config
+     */
     public function __construct(
         Logger $logger,
         Config $config
@@ -19,6 +26,12 @@ class BPEmail implements ObserverInterface
         $this->config = $config;
     }
 
+    /**
+     * Handle sending order email
+     *
+     * @param \Magento\Framework\Event\Observer $observer
+     * @return void
+     */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
         try {
@@ -37,6 +50,12 @@ class BPEmail implements ObserverInterface
         }
     }
 
+    /**
+     * Stop sending new order email
+     *
+     * @param \Magento\Sales\Model\Order $order
+     * @return void
+     */
     public function stopNewOrderEmail(\Magento\Sales\Model\Order $order)
     {
         $order->setCanSendNewEmailFlag(false);

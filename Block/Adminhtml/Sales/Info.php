@@ -10,8 +10,18 @@ use Magento\Tax\Helper\Data as TaxHelper;
 
 class Info extends \Magento\Sales\Block\Adminhtml\Order\AbstractOrder
 {
+    /** @var BitpayInvoiceRepository $bitpayInvoiceRepository */
     protected $bitpayInvoiceRepository;
 
+    /**
+     * @param \Magento\Backend\Block\Template\Context $context
+     * @param \Magento\Framework\Registry $registry
+     * @param \Magento\Sales\Helper\Admin $adminHelper
+     * @param BitpayInvoiceRepository $bitpayInvoiceRepository
+     * @param array $data
+     * @param ShippingHelper|null $shippingHelper
+     * @param TaxHelper|null $taxHelper
+     */
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
         \Magento\Framework\Registry $registry,
@@ -25,6 +35,12 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\AbstractOrder
         parent::__construct($context, $registry, $adminHelper, $data, $shippingHelper, $taxHelper);
     }
 
+    /**
+     * Get BitPay additional info to display in order detail page
+     *
+     * @return array
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
     public function getBitpayAdditionalInfo(): array
     {
         $order = $this->getOrder();
@@ -53,8 +69,19 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\AbstractOrder
         return $this->prepareResult($bitpayInvoideData['invoice_id'], $expirationTime, $acceptanceWindowTime);
     }
 
-    protected function prepareResult(string $invoiceId = '', string $expirationTime = '', ?string $acceptanceWindowTime = ''): array
-    {
+    /**
+     * Prepare invoice result data
+     *
+     * @param string $invoiceId
+     * @param string $expirationTime
+     * @param string|null $acceptanceWindowTime
+     * @return array
+     */
+    protected function prepareResult(
+        string $invoiceId = '',
+        string $expirationTime = '',
+        ?string $acceptanceWindowTime = ''
+    ): array {
         return [
             ['label' => 'Invoice ID', 'value' => $invoiceId],
             ['label' => 'Expiration Time', 'value' => $expirationTime],

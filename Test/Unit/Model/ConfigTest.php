@@ -36,9 +36,15 @@ class ConfigTest extends TestCase
 
     public function setUp(): void
     {
-        $this->scopeConfig = $this->getMockBuilder(ScopeConfigInterface::class)->disableOriginalConstructor()->getMock();
-        $this->storeManagerInterface = $this->getMockBuilder(StoreManagerInterface::class)->disableOriginalConstructor()->getMock();
-        $this->encryptor = $this->getMockBuilder(EncryptorInterface::class)->disableOriginalConstructor()->getMock();
+        $this->scopeConfig = $this->getMockBuilder(ScopeConfigInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->storeManagerInterface = $this->getMockBuilder(StoreManagerInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->encryptor = $this->getMockBuilder(EncryptorInterface::class)
+            ->disableOriginalConstructor()
+            ->getMock();
         $this->config = new Config(
             $this->scopeConfig,
             $this->storeManagerInterface,
@@ -80,7 +86,6 @@ class ConfigTest extends TestCase
     public function testEncryptTokenMerchantDataEmpty(): void
     {
         $tokenEncryptData = ':3:zduacP+9hbAhK4XgHh/RCZhPTxVS44234324234232hgffd';
-        $tokenDecryptData = null;
         $this->scopeConfig->expects($this->once())
             ->method('getValue')
             ->with(Config::BITPAY_MERCHANT_TOKEN_DATA, ScopeInterface::SCOPE_STORE)

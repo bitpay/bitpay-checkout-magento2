@@ -6,8 +6,10 @@
         <column xsi:type="int" name="id" padding="10" unsigned="true" nullable="false" identity="true" comment="ID"/>
         <column xsi:type="varchar" name="order_id" nullable="false" length="255" comment="Order ID"/>
         <column xsi:type="varchar" name="transaction_id" nullable="false" length="255" comment="Transaction ID"/>
-        <column xsi:type="varchar" name="transaction_status" nullable="false" length="255" comment="Transaction Status"/>
-        <column xsi:type="timestamp" default="CURRENT_TIMESTAMP" on_update="true" name="date_added" nullable="false" comment="Date Added"/>
+        <column xsi:type="varchar" name="transaction_status" nullable="false" length="255"
+                comment="Transaction Status"/>
+        <column xsi:type="timestamp" default="CURRENT_TIMESTAMP" on_update="true" name="date_added" nullable="false"
+                comment="Date Added"/>
 
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="id"/>
@@ -19,10 +21,13 @@
         <column xsi:type="int" name="order_id" unsigned="true" nullable="false" identity="false"
                 comment="Order ID"/>
         <column xsi:type="varchar" name="invoice_id" nullable="false" length="255" comment="Bitpay Invoice Id"/>
-        <column xsi:type="varchar" name="expiration_time" nullable="false" length="255" comment="Expiration time to pay invoice"/>
-        <column xsi:type="int" name="acceptance_window" unsigned="false" nullable="true" comment="Miliseconds pay an invoice before it expires"/>
+        <column xsi:type="varchar" name="expiration_time" nullable="false" length="255"
+                comment="Expiration time to pay invoice"/>
+        <column xsi:type="int" name="acceptance_window" unsigned="false" nullable="true"
+                comment="Miliseconds pay an invoice before it expires"/>
 
-        <constraint xsi:type="foreign" referenceId="BITPAY_INVOICE_ORDER_ID_SALES_ORDER_ENTITY_ID" table="bitpay_invoice"
+        <constraint xsi:type="foreign" referenceId="BITPAY_INVOICE_ORDER_ID_SALES_ORDER_ENTITY_ID"
+                    table="bitpay_invoice"
                     column="order_id" referenceTable="sales_order" referenceColumn="entity_id" onDelete="CASCADE"/>
 
         <constraint xsi:type="primary" referenceId="PRIMARY">

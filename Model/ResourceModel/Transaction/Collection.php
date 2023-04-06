@@ -14,6 +14,7 @@ class Collection extends AbstractCollection
 {
     /**
      * Initialize transaction collection
+     *
      * @codeCoverageIgnore
      */
     protected function _construct()

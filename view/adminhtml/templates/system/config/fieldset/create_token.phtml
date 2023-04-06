@@ -1,13 +1,15 @@
 <?php
-/** @var $block \Bitpay\BPCheckout\Block\Adminhtml\System\Config\Form\Field\CreateToken  */
+/** @var $block \Bitpay\BPCheckout\Block\Adminhtml\System\Config\Form\Field\CreateToken */
 ?>
 <input type="button" name="create_token" id="create_token" onclick="createToken()" value="Create Token">
 <p class="note"><span>Each time before creating token please save private key path and password</span></p>
 <input type="text" class="hidden" name="groups[authenticate][fields][token_data][value]" value="">
 
-<div id="tokenInfo" class="<?= !$block->getPairingCode() ? "hidden" : "" ?>">
-    <div style="margin-top: 15px">Pairing code: <span id="pairingCode"><?= $block->getPairingCode() ?></span></div>
-    <div><span id="info"><?= $block->getMessage() ?></span></div>
+<div id="tokenInfo" class="<?= /** @noEscape */ !$block->getPairingCode() ? "hidden" : "" ?>">
+    <div style="margin-top: 15px">
+        Pairing code: <span id="pairingCode"><?= /** @noEscape */ $block->getPairingCode() ?></span>
+    </div>
+    <div><span id="info"><?= /** @noEscape */ $block->getMessage() ?></span></div>
 </div>
 
 <div id="loader" class="loading-mask hidden" data-role="loader">
@@ -15,20 +17,22 @@
         <p>Loading...</p>
     </div>
 </div>
-<script type="text/javascript">
-    function createToken () {
+
+<script>
+    function createToken() {
         require([
             "mage/storage",
             "mage/url",
             'mage/backend/notification'
-        ], function(storage, urlBuilder, notification) {
+        ], function (storage, urlBuilder, notification) {
             var tokenLabel = document.getElementById('bitpay_merchant_facade_authenticate_token_label').value;
 
 
             let password = document.getElementById('bitpay_merchant_facade_authenticate_password').value;
             let privatePath = document.getElementById('bitpay_merchant_facade_authenticate_private_key_path').value;
             if (!password || !privatePath) {
-                prepareMessage(notification, 'error', 'Cannot generate new token. Please save password and private key path first');
+                prepareMessage(notification, 'error', 'Cannot generate new token. Please save ' +
+                    'password and private key path first');
                 return;
             }
 
@@ -37,21 +41,27 @@
                 token_label: tokenLabel
             };
 
-            storage.post('<?= $block->getTokenUrl() ?>', payload, true, 'application/x-www-form-urlencoded ').done(function (data) {
-                document.getElementById('loader').classList.add('hidden')
-                if (!data) {
-                    return;
-                }
+            storage.post(
+                '<?= /** @noEscape */ $block->getTokenUrl() ?>',
+                payload,
+                true,
+                'application/x-www-form-urlencoded ')
+                .done(function (data) {
+                    document.getElementById('loader').classList.add('hidden')
+                    if (!data) {
+                        return;
+                    }
 
-                if (data.error) {
-                    prepareMessage(notification, 'error', 'Cannot generate new token. ' +  data.message);
-                } else {
-                    document.getElementById('tokenInfo').classList.remove('hidden');
-                    document.getElementById('pairingCode').innerText = data.pairingCode;
-                    document.getElementById('info').innerHTML = 'Claim your pairing code on <a href="' + data.url + '">Bitpay</a>';
-                    prepareMessage(notification, 'success', 'Token created');
-                }
-            }).fail(function (response) {
+                    if (data.error) {
+                        prepareMessage(notification, 'error', 'Cannot generate new token. ' + data.message);
+                    } else {
+                        document.getElementById('tokenInfo').classList.remove('hidden');
+                        document.getElementById('pairingCode').innerText = data.pairingCode;
+                        document.getElementById('info')
+                            .innerHTML = 'Claim your pairing code on <a href="' + data.url + '">Bitpay</a>';
+                        prepareMessage(notification, 'success', 'Token created');
+                    }
+                }).fail(function (response) {
                 document.getElementById('loader').classList.add('hidden')
             })
 

@@ -15,6 +15,9 @@ class BPCItemTest extends TestCase
      */
     private $bpcItem;
 
+    /**
+     * @var string $token
+     */
     private $token;
 
     public function setUp(): void
