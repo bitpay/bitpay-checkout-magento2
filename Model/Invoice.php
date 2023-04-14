@@ -135,7 +135,7 @@ class Invoice
      */
     public function confirmed(Order $order, string $invoiceStatus, BPCItem $item): void
     {
-        $msg = $this->prepareMessage("processing has been completed");
+        $msg = $this->prepareMessage("status has changed to Confirmed");
         $params = $item->getItemParams();
         if ($invoiceStatus !== 'confirmed') {
             return;
@@ -147,6 +147,9 @@ class Invoice
         if ($this->config->getBitpayIpnMapping() != 'processing') {
             $order->setState(Order::STATE_NEW, true)->setStatus(IpnManagement::ORDER_STATUS_PENDING, true);
         } else {
+            if ($this->isFullyInvoiced($order)) {
+                return;
+            }
             $order->setState(Order::STATE_PROCESSING)->setStatus(Order::STATE_PROCESSING);
             $this->createMGInvoice($order);
         }
@@ -300,6 +303,23 @@ class Invoice
     protected function prepareMessage(string $msg): string
     {
         return "BitPay Invoice <a href = \"http://%s/dashboard/payments/%s\" target = \"_blank\">%s</a> $msg.";
+    }
+
+    /**
+     * @param Order $order
+     * @return bool
+     */
+    protected function isFullyInvoiced(Order $order): bool
+    {
+        $isInvoiced = true;
+        foreach ($order->getAllItems() as $item) {
+            if ($item->getQtyToInvoice()>0 && !$item->getLockedDoInvoice()) {
+                $isInvoiced = false;
+                break;
+            }
+        }
+
+        return $isInvoiced;
     }
 
     /**
