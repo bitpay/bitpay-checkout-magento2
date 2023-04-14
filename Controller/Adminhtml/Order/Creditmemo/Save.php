@@ -9,7 +9,10 @@ use Bitpay\BPCheckout\Model\BitpayRefundRepository;
 use Bitpay\BPCheckout\Model\Client;
 use Bitpay\BPCheckout\Model\Config;
 use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Backend\Model\View\Result\ForwardFactory;
 use Magento\Sales\Controller\Adminhtml\Order\Creditmemo\Save as CreditmemoSave;
+use Magento\Sales\Controller\Adminhtml\Order\CreditmemoLoader;
 use Magento\Sales\Helper\Data as SalesData;
 use Magento\Sales\Model\Order\Email\Sender\CreditmemoSender;
 use Magento\Directory\Model\PriceCurrency;
@@ -39,6 +42,9 @@ class Save extends CreditmemoSave
      */
     protected $bitpayRefundRepository;
 
+    /**
+     * @var Logger $logger
+     */
     protected $logger;
 
     /**
@@ -47,14 +53,15 @@ class Save extends CreditmemoSave
     private $salesData;
 
     /**
-     * @param Action\Context $context
-     * @param \Magento\Sales\Controller\Adminhtml\Order\CreditmemoLoader $creditmemoLoader
+     * @param Context $context
+     * @param CreditmemoLoader $creditmemoLoader
      * @param CreditmemoSender $creditmemoSender
-     * @param \Magento\Backend\Model\View\Result\ForwardFactory $resultForwardFactory
+     * @param ForwardFactory $resultForwardFactory
      * @param Client $bitpayClient
      * @param PriceCurrency $priceCurrency
      * @param BitpayInvoiceRepository $bitpayInvoiceRepository
      * @param BitpayRefundRepository $bitpayRefundRepository
+     * @param Logger $logger
      * @param SalesData|null $salesData
      */
     public function __construct(
@@ -201,6 +208,10 @@ class Save extends CreditmemoSave
                 $currency = $bitpayInvoice->getCurrency();
                 $refund = $client->createRefund($invoiceId, $baseOrderRefund, $currency);
                 $this->bitpayRefundRepository->add($orderId, $refund->getId(), $refund->getAmount());
+
+                $amount = $this->priceCurrency->format($refund->getAmount());
+                $message = "A refund request of {$amount} was sent for Bitpay Invoice {$refund->getId()}";
+                $order->getPayment()->setData('message', $message);
             }
         }
     }
