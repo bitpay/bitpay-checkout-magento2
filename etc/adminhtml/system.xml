@@ -39,23 +39,27 @@
                 <field id="preview_mode" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1"
                        showInStore="0">
                     <label>Preview Mode</label>
+                    <comment>No funds deducted, refund will not proceed automatically</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
                 <field id="immediate_refund" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1"
                        showInStore="0">
                     <label>Immediate Refund</label>
+                    <comment>If set to yes, Merchant funds will be removed from account ledger immediately</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
                 <field id="buyer_pays_refund_fee" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1"
                        showInStore="0">
                     <label>Buyer Pays Refund Fee</label>
+                    <comment>Determines whether the Buyer or Merchant pays the refund fee</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
                 <field id="suppress_order_emails" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1"
                        showInStore="0">
                     <label>Suppress Order Emails</label>
+                    <comment>When set to Yes, BitPay will not send refund emails</comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
             </group>
