@@ -202,7 +202,7 @@ class InvoiceTest extends TestCase
 
         $result = sprintf(
             'BitPay Invoice <a href = "http://%s/dashboard/payments/%s" target = "_blank">%s</a> ' .
-            'processing has been completed.',
+            'status has changed to Confirmed.',
             $item->getInvoiceEndpoint(),
             $params['invoiceID'],
             $params['invoiceID']

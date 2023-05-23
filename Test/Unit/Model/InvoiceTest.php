@@ -213,10 +213,14 @@ class InvoiceTest extends TestCase
         $params = new DataObject($this->getParams('00000240000', $bitpayToken));
         $order = $this->getMock(Order::class);
         $invoice = $this->getMock(Order\Invoice::class);
+        $orderItem = $this->getMock(Order\Item::class);
         $item = new BPCItem($bitpayToken, $params, 'test');
 
         $this->config->expects($this->once())->method('getBitpayIpnMapping')->willReturn('processing');
 
+        $orderItem->expects($this->once())->method('getQtyToInvoice')->willReturn(1);
+        $orderItem->expects($this->once())->method('getLockedDoInvoice')->willReturn(null);
+        $order->expects($this->once())->method('getAllItems')->willReturn([$orderItem]);
         $order->expects($this->once())->method('setStatus')->willReturnSelf();
         $order->expects($this->once())->method('setState')->willReturnSelf();
 
