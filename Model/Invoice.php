@@ -306,6 +306,8 @@ class Invoice
     }
 
     /**
+     * Is order full invoiced
+     *
      * @param Order $order
      * @return bool
      */

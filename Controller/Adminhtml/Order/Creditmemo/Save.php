@@ -63,6 +63,7 @@ class Save extends CreditmemoSave
      * @param BitpayRefundRepository $bitpayRefundRepository
      * @param Logger $logger
      * @param SalesData|null $salesData
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
      */
     public function __construct(
         Action\Context $context,
@@ -95,6 +96,7 @@ class Save extends CreditmemoSave
      * Save creditmemo
      *
      * @return \Magento\Backend\Model\View\Result\Redirect|\Magento\Backend\Model\View\Result\Forward
+     * @SuppressWarnings(PHPMD.NPathComplexity)
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     public function execute()
@@ -217,20 +219,27 @@ class Save extends CreditmemoSave
     }
 
     /**
+     * Handle refund creation exception
+     *
      * @param \BitPaySDK\Exceptions\RefundCreationException $refundCreationException
      * @return void
      */
-    protected function handleRefundCreationException(\BitPaySDK\Exceptions\RefundCreationException $refundCreationException): void
-    {
+    protected function handleRefundCreationException(
+        \BitPaySDK\Exceptions\RefundCreationException $refundCreationException
+    ): void {
         $apiCode = $refundCreationException->getApiCode();
         switch ($apiCode) {
             case "010207":
                 $this->logger->error($refundCreationException->getMessage());
-                $this->messageManager->addErrorMessage(__('A Credit Memo cannot be created until Payment is Confirmed.'));
+                $this->messageManager->addErrorMessage(
+                    __('A Credit Memo cannot be created until Payment is Confirmed.')
+                );
                 break;
             case "010000":
                 $this->logger->error($refundCreationException->getMessage());
-                $this->messageManager->addErrorMessage(__('Only full refunds can be processed before the Payment is Completed'));
+                $this->messageManager->addErrorMessage(
+                    __('Only full refunds can be processed before the Payment is Completed')
+                );
                 break;
             default:
                 $this->logger->error($refundCreationException->getMessage());
