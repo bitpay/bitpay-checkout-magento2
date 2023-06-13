@@ -10,6 +10,7 @@ class Transaction extends AbstractModel
 {
     /**
      * Initialize Transaction model
+     *
      * @codeCoverageIgnore
      */
     public function _construct()

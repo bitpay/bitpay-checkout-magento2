@@ -80,4 +80,3 @@ $order->setIncrementId('100000001')
 /** @var OrderRepositoryInterface $orderRepository */
 $orderRepository = $objectManager->create(OrderRepositoryInterface::class);
 $orderRepository->save($order);
-

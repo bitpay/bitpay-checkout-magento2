@@ -7,6 +7,65 @@
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Config/etc/system_file.xsd">
     <system>
+        <tab id="bitpay" translate="label" sortOrder="999999">
+            <label>Bitpay</label>
+        </tab>
+        <section id="bitpay_merchant_facade" translate="label" type="text" sortOrder="162000" showInDefault="1" showInWebsite="1" showInStore="1">
+            <class>separator-top</class>
+            <resource>Bitpay_BPCheckout::config</resource>
+            <label>Merchant Facade</label>
+            <tab>bitpay</tab>
+            <group id="authenticate" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Authenticate</label>
+                <field id="token_label" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Token Label</label>
+                </field>
+                <field id="password" translate="label" type="obscure" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Password</label>
+                    <comment>Used to decrypt your private key</comment>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                </field>
+                <field id="private_key_path" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Full Path to private key</label>
+                </field>
+                <field id="create" translate="label" type="label" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <frontend_model>Bitpay\BPCheckout\Block\Adminhtml\System\Config\Form\Field\CreateToken</frontend_model>
+                </field>
+            </group>
+
+
+            <group id="refund" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Refund</label>
+                <field id="preview_mode" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1"
+                       showInStore="0">
+                    <label>Preview Mode</label>
+                    <comment>No funds deducted, refund will not proceed automatically</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="immediate_refund" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1"
+                       showInStore="0">
+                    <label>Immediate Refund</label>
+                    <comment>If set to yes, Merchant funds will be removed from account ledger immediately</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="buyer_pays_refund_fee" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1"
+                       showInStore="0">
+                    <label>Buyer Pays Refund Fee</label>
+                    <comment>Determines whether the Buyer or Merchant pays the refund fee</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="suppress_order_emails" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1"
+                       showInStore="0">
+                    <label>Suppress Order Emails</label>
+                    <comment>When set to Yes, BitPay will not send refund emails</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+
+
+        </section>
         <section id="payment">
             <group id="bpcheckout" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1"
                 showInStore="1">
@@ -14,34 +73,6 @@
                 <comment>
                     <![CDATA[
                         <div style="background-color:#002855;padding:5px;color:#ffffff"><img src="https://raw.githubusercontent.com/bitpay/bitpay-brand/master/bitpay-logo-primary.png" style = "vertical-align:middle;" alt="BitPay"  height="44" /><a style="color:#ffffff;font-family:\'Ubuntu\',sans-serif;text-decoration:none;margin:15px" href="https://support.bitpay.com/?ref=magento" target="_blank">Support</a><a style="color:#ffffff;font-family:\'Ubuntu\',sans-serif;text-decoration:none;margin:15px" href="https://bitpay.com/start?ref=magento" target="_blank">Sign Up</a><a style="color:#ffffff;font-family:\'Ubuntu\',sans-serif;text-decoration:none;margin:15px" href="https://bitpay.com/merchant-login?ref=magento" target="_blank">Login</a></div>
-                   
-                    <script type = "text/javascript">
-                    document.getElementById('save').onclick=function(){
-                        //we have to check all the values and enable/disable based on tokens
-                        var $enabled = document.getElementById('payment_us_bpcheckout_active').value;
-                        var $env_text = '';
-                            if($enabled == 1){
-                            //extension enabled, make sure values are set
-                            var $token = '';
-                            var $env = document.getElementById('payment_us_bpcheckout_bitpay_endpoint').value
-                            if($env == 'test'){
-                                $env_text = 'Test'
-                                $token = document.getElementById('payment_us_bpcheckout_bitpay_devtoken').value
-                            }else{
-                                $env_text = 'Production'
-                                $token = document.getElementById('payment_us_bpcheckout_bitpay_prodtoken').value
-                            }
-                            if($token == ''){
-                            //disable the extension befor the form is saved and alert the user
-                                document.getElementById('payment_us_bpcheckout_active').selectedIndex = 1
-                                    alert('You must set a token for the ' +$env_text+ ' environment, BitPay Checkout will be disabled until it is set')
-
-                            }
-                            }//end enabled check
-                        }
-
-                    </script>
-
                     ]]>
                 </comment>
                 <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1"
@@ -59,15 +90,10 @@
                     <source_model>Bitpay\BPCheckout\Model\Config\Source\Order\Status\Pendingpayment</source_model>
                 </field>
 
-                <field id="bitpay_devtoken" translate="label" type="text" sortOrder="10" showInDefault="1"
-                    showInWebsite="1" showInStore="1">
-                    <label>Developer Token</label>
-                    <comment><![CDATA[Your <b>development</b> merchant token.  <a href = "https://test.bitpay.com/dashboard/merchant/api-tokens" target = "_blank">Create one here</a> and <b>uncheck</b> `Require Authentication`.]]></comment>
-                </field>
-                <field id="bitpay_prodtoken" translate="label" type="text" sortOrder="10" showInDefault="1"
-                    showInWebsite="1" showInStore="1">
-                    <label>Production Token</label>
-                    <comment><![CDATA[Your <b>production</b> merchant token.  <a href = "https://www.bitpay.com/dashboard/merchant/api-tokens" target = "_blank">Create one here</a> and <b>uncheck</b> `Require Authentication`.]]></comment>
+                <field id="send_order_email" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1"
+                       showInStore="0">
+                    <label>Send emails for BitPay Orders</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
 
                 <field id="bitpay_endpoint" translate="label" type="select" sortOrder="10" showInDefault="1"
@@ -95,14 +121,14 @@
                     <source_model>Bitpay\BPCheckout\Model\Config\Source\Cancelstatus</source_model>
                 </field>
 
-                
+
                 <field id="bitpay_ux" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Checkout Flow </label>
                     <comment><![CDATA[If this is set to <b>Redirect</b>, then the customer will be redirected to <b>BitPay</b> to checkout, and return to the checkout page once the payment is made.<br><br>If this is set to <b>Modal</b>, the user will stay on your e-commerce site and complete the transaction.]]></comment>
                     <source_model>Bitpay\BPCheckout\Model\Config\Source\Ux</source_model>
                 </field>
- 
-                
+
+
                 <field id="specificcountry" translate="label" type="multiselect" sortOrder="41" showInDefault="1"
                     showInWebsite="1" showInStore="0">
                     <label>Payment from Specific Countries</label>

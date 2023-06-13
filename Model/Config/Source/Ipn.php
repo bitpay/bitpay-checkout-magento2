@@ -14,6 +14,11 @@ use Magento\Framework\Option\ArrayInterface;
  */
 class Ipn implements ArrayInterface
 {
+    /**
+     * Return array of IPN options
+     *
+     * @return string[]
+     */
     public function toOptionArray(): array
     {
         return [

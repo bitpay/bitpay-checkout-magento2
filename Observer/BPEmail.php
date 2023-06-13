@@ -3,23 +3,42 @@
 namespace Bitpay\BPCheckout\Observer;
 
 use Bitpay\BPCheckout\Logger\Logger;
+use Bitpay\BPCheckout\Model\Config;
 use Magento\Framework\Event\ObserverInterface;
 
 class BPEmail implements ObserverInterface
 {
-    private $logger;
+    /** @var Logger $logger */
+    protected $logger;
 
-    public function __construct(Logger $logger)
-    {
+    /** @var Config $config */
+    protected $config;
+
+    /**
+     * @param Logger $logger
+     * @param Config $config
+     */
+    public function __construct(
+        Logger $logger,
+        Config $config
+    ) {
         $this->logger = $logger;
+        $this->config = $config;
     }
 
+    /**
+     * Handle sending order email
+     *
+     * @param \Magento\Framework\Event\Observer $observer
+     * @return void
+     */
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
         try {
             $order = $observer->getEvent()->getOrder();
             $payment = $order->getPayment()->getMethodInstance()->getCode();
-            if ($payment == "bpcheckout") {
+            $isSendOrderEmail = (bool) $this->config->getIsSendOrderEmail();
+            if ($payment == "bpcheckout" && $isSendOrderEmail === false) {
                 $this->stopNewOrderEmail($order);
             }
         } catch (\ErrorException $ee) {
@@ -31,6 +50,12 @@ class BPEmail implements ObserverInterface
         }
     }
 
+    /**
+     * Stop sending new order email
+     *
+     * @param \Magento\Sales\Model\Order $order
+     * @return void
+     */
     public function stopNewOrderEmail(\Magento\Sales\Model\Order $order)
     {
         $order->setCanSendNewEmailFlag(false);

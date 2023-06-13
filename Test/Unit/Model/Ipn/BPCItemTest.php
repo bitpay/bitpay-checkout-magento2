@@ -15,7 +15,7 @@ class BPCItemTest extends TestCase
      */
     private $bpcItem;
 
-    const TOKEN = 'Tdew2124wre32313Df';
+    public const TOKEN = 'Tdew2124wre32313Df';
 
     public function setUp(): void
     {

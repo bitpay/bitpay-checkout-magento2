@@ -5,7 +5,10 @@
  * See COPYING.txt for license details.
  */
 -->
-<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="../../../../../../../lib/internal/Magento/Framework/View/Layout/etc/page_configuration.xsd">
+
+<!--phpcs:ignore-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column"
+      xsi:noNamespaceSchemaLocation="../../../../../../../lib/internal/Magento/Framework/View/Layout/etc/page_configuration.xsd">
     <head>
         <script src="Bitpay_BPCheckout::js/checkout.js"/>
     </head>
@@ -24,17 +27,21 @@
                                                     <item name="children" xsi:type="array">
                                                         <item name="renders" xsi:type="array">
                                                             <item name="children" xsi:type="array">
-                                                            <!-- merge payment method renders here -->
+                                                                <!-- merge payment method renders here -->
                                                                 <item name="bpcheckout-bpcheckout" xsi:type="array">
-                                                                    <item name="component" xsi:type="string">Bitpay_BPCheckout/js/view/payment/bpcheckout</item>
+                                                                    <item name="component" xsi:type="string">
+                                                                        Bitpay_BPCheckout/js/view/payment/bpcheckout
+                                                                    </item>
                                                                     <item name="methods" xsi:type="array">
-                                                                  
-																		 <item name="bpcheckout" xsi:type="array">
-                                                                            <item name="isBillingAddressRequired" xsi:type="boolean">true</item>
+
+                                                                        <item name="bpcheckout" xsi:type="array">
+                                                                            <item name="isBillingAddressRequired"
+                                                                                  xsi:type="boolean">true
+                                                                            </item>
                                                                         </item>
                                                                     </item>
                                                                 </item>
-                                                            <!-- item-renderer -->
+                                                                <!-- item-renderer -->
                                                             </item>
                                                         </item>
                                                     </item>

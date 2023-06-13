@@ -4,8 +4,10 @@ declare(strict_types=1);
 namespace Bitpay\BPCheckout\Model;
 
 use Bitpay\BPCheckout\Api\IpnManagementInterface;
+use Bitpay\BPCheckout\Exception\IPNValidationException;
 use Bitpay\BPCheckout\Logger\Logger;
 use Bitpay\BPCheckout\Model\Ipn\BPCItem;
+use Bitpay\BPCheckout\Model\Ipn\Validator;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\ResponseFactory;
 use Magento\Framework\DataObject;
@@ -13,26 +15,77 @@ use Magento\Framework\Registry;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\UrlInterface;
 use Magento\Framework\Webapi\Rest\Request;
+use Magento\Framework\Webapi\Rest\Response;
 use Magento\Quote\Model\QuoteFactory;
 use Magento\Sales\Api\Data\OrderInterface;
 
+/**
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * @SuppressWarnings(PHPMD.CookieAndSessionMisuse)
+ */
 class IpnManagement implements IpnManagementInterface
 {
+    /** @var ResponseFactory $responseFactory */
     protected $responseFactory;
+
+    /** @var UrlInterface $url */
     protected $url;
+
+    /** @var Session $checkoutSession */
     protected $checkoutSession;
+
+    /** @var QuoteFactory $quoteFactory */
     protected $quoteFactory;
+
+    /** @var OrderInterface $orderInterface */
     protected $orderInterface;
+
+    /** @var Registry $coreRegistry */
     protected $coreRegistry;
+
+    /** @var Logger $logger */
     protected $logger;
+
+    /** @var Config $config */
     protected $config;
+
+    /** @var Json $serializer */
     protected $serializer;
+
+    /** @var TransactionRepository $transactionRepository */
     protected $transactionRepository;
+
+    /** @var Invoice $invoice */
     protected $invoice;
+
+    /** @var Request $request */
     protected $request;
 
-    const ORDER_STATUS_PENDING = 'pending';
+    /** @var Client $client */
+    protected $client;
 
+    /** @var Response $response */
+    protected $response;
+
+    public const ORDER_STATUS_PENDING = 'pending';
+
+    /**
+     * @param ResponseFactory $responseFactory
+     * @param UrlInterface $url
+     * @param Registry $registry
+     * @param Session $checkoutSession
+     * @param OrderInterface $orderInterface
+     * @param QuoteFactory $quoteFactory
+     * @param Logger $logger
+     * @param Config $config
+     * @param Json $serializer
+     * @param TransactionRepository $transactionRepository
+     * @param Invoice $invoice
+     * @param Request $request
+     * @param Client $client
+     * @param Response $response
+     * @SuppressWarnings(PHPMD.ExcessiveParameterList)
+     */
     public function __construct(
         ResponseFactory $responseFactory,
         UrlInterface $url,
@@ -45,7 +98,9 @@ class IpnManagement implements IpnManagementInterface
         Json $serializer,
         TransactionRepository $transactionRepository,
         Invoice $invoice,
-        Request $request
+        Request $request,
+        Client $client,
+        Response $response
     ) {
         $this->coreRegistry = $registry;
         $this->responseFactory = $responseFactory;
@@ -59,8 +114,15 @@ class IpnManagement implements IpnManagementInterface
         $this->transactionRepository = $transactionRepository;
         $this->invoice = $invoice;
         $this->request = $request;
+        $this->client = $client;
+        $this->response = $response;
     }
 
+    /**
+     * Handle close invoice and redirect to cart
+     *
+     * @return string|void
+     */
     public function postClose()
     {
         $redirectUrl = $this->url->getUrl('checkout/cart', ['_query' => 'reload=1']);
@@ -90,6 +152,12 @@ class IpnManagement implements IpnManagementInterface
         }
     }
 
+    /**
+     * Handle Instant Payment Notification
+     *
+     * @return string|void
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     */
     public function postIpn()
     {
         try {
@@ -99,6 +167,13 @@ class IpnManagement implements IpnManagementInterface
             $orderId = $data['orderId'];
             $orderInvoiceId = $data['id'];
             $row = $this->transactionRepository->findBy($orderId, $orderInvoiceId);
+            $client = $this->client->initialize();
+            $invoice = $client->getInvoice($orderInvoiceId);
+            $ipnValidator = new Validator($invoice, $data);
+            if (!empty($ipnValidator->getErrors())) {
+                throw new IPNValidationException(implode(', ', $ipnValidator->getErrors()));
+            }
+
             if (!$row) {
                 return;
             }
@@ -110,15 +185,15 @@ class IpnManagement implements IpnManagementInterface
                 new DataObject(['invoiceID' => $orderInvoiceId, 'extension_version' => Config::EXTENSION_VERSION]),
                 $env
             );
-            $invoiceStatus = $this->invoice->getBPCCheckInvoiceStatus($item);
-            $updateWhere = ['order_id = ?' => $orderId, 'transaction_id = ?' => $orderInvoiceId,];
+
+            $invoiceStatus = $this->invoice->getBPCCheckInvoiceStatus($client, $orderInvoiceId);
+            $updateWhere = ['order_id = ?' => $orderId, 'transaction_id = ?' => $orderInvoiceId];
             $this->transactionRepository->update('transaction_status', $invoiceStatus, $updateWhere);
             $order = $this->orderInterface->loadByIncrementId($orderId);
             switch ($event['name']) {
                 case Invoice::COMPLETED:
                     if ($invoiceStatus == 'complete') {
                         $this->invoice->complete($order, $item);
-                        return true;
                     }
                     break;
 
@@ -146,6 +221,7 @@ class IpnManagement implements IpnManagementInterface
                     break;
             }
         } catch (\Exception $e) {
+            $this->response->addMessage($e->getMessage(), 500);
             $this->logger->error($e->getMessage());
         }
     }

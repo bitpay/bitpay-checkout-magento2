@@ -33,43 +33,51 @@ class BPPaymentMethodAvailableTest extends TestCase
 
     public function testExecute(): void
     {
-        $tokenDev = bin2hex(random_bytes(10));
-        $tokenProd = bin2hex(random_bytes(10));
-        $env = 'prod';
+        $tokenData = '{"data":{"0":{"token":"34GB93@jf234222","pairingCode":"12334"}}}';
         $observer = $this->getMockBuilder(Observer::class)->disableOriginalConstructor()->getMock();
-        $order = $this->getMockBuilder(Order::class)->disableOriginalConstructor()->getMock();
-        $event = $this->getMockBuilder(Event::class)->addMethods(['getMethodInstance', 'getResult'])->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder(Event::class)
+            ->addMethods(['getMethodInstance', 'getResult'])
+            ->disableOriginalConstructor()
+            ->getMock();
         $method = $this->getMockBuilder(MethodInterface::class)->disableOriginalConstructor()->getMock();
-
 
         $event->expects($this->once())->method('getMethodInstance')->willReturn($method);
         $observer->expects($this->once())->method('getEvent')->willReturn($event);
         $method->expects($this->once())->method('getCode')->willReturn('bpcheckout');
+        $this->config->expects($this->any())->method('getMerchantTokenData')->willReturn($tokenData);
 
-        $this->config->expects($this->any())->method('getBitpayDevToken')->willReturn($tokenDev);
-        $this->config->expects($this->any())->method('getBitpayProdToken')->willReturn($tokenProd);
-        $this->config->expects($this->once())->method('getBitpayEnv')->willReturn($env);
+        $this->bpPaymentMethodAvailable->execute($observer);
+    }
+
+    public function testExecuteNoBitpayPayment(): void
+    {
+        $observer = $this->getMockBuilder(Observer::class)->disableOriginalConstructor()->getMock();
+        $method = $this->getMockBuilder(MethodInterface::class)->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder(Event::class)
+            ->addMethods(['getMethodInstance', 'getResult'])
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $event->expects($this->once())->method('getMethodInstance')->willReturn($method);
+        $observer->expects($this->once())->method('getEvent')->willReturn($event);
+        $method->expects($this->once())->method('getCode')->willReturn('checmo');
 
         $this->bpPaymentMethodAvailable->execute($observer);
     }
 
     public function testExecuteNoToken(): void
     {
-        $tokenDev = '';
-        $env = 'test';
         $observer = $this->getMockBuilder(Observer::class)->disableOriginalConstructor()->getMock();
-        $order = $this->getMockBuilder(Order::class)->disableOriginalConstructor()->getMock();
-        $event = $this->getMockBuilder(Event::class)->addMethods(['getMethodInstance', 'getResult'])->disableOriginalConstructor()->getMock();
+        $event = $this->getMockBuilder(Event::class)
+            ->addMethods(['getMethodInstance', 'getResult'])
+            ->disableOriginalConstructor()
+            ->getMock();
         $method = $this->getMockBuilder(MethodInterface::class)->disableOriginalConstructor()->getMock();
-
 
         $event->expects($this->once())->method('getMethodInstance')->willReturn($method);
         $event->expects($this->once())->method('getResult')->willReturn(new DataObject(['is_available' => true]));
         $observer->expects($this->any())->method('getEvent')->willReturn($event);
         $method->expects($this->once())->method('getCode')->willReturn('bpcheckout');
-
-        $this->config->expects($this->any())->method('getBitpayDevToken')->willReturn($tokenDev);
-        $this->config->expects($this->once())->method('getBitpayEnv')->willReturn($env);
 
         $this->bpPaymentMethodAvailable->execute($observer);
     }

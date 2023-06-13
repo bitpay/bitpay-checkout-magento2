@@ -5,6 +5,7 @@ interface ModalManagementInterface
 {
     /**
      * POST for modal api
+     *
      * @return string
      */
     public function postModal();

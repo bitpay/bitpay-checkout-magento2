@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="admin-2columns-left"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="form">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Bitpay_BPCheckout::order/creditmemo/view/form.phtml
+                </argument>
+            </action>
+        </referenceBlock>
+        <referenceBlock name="form">
+            <block class="Bitpay\BPCheckout\Block\Adminhtml\Sales\Creditmemo\Info" name="bitpay_additional_info"
+                   template="Bitpay_BPCheckout::order/creditmemo/view/tab/bitpay_info.phtml"/>
+        </referenceBlock>
+    </body>
+</page>

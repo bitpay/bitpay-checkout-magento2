@@ -14,6 +14,11 @@ use Magento\Framework\Option\ArrayInterface;
  */
 class Capture implements ArrayInterface
 {
+    /**
+     * Return array of Captures options
+     *
+     * @return string[]
+     */
     public function toOptionArray(): array
     {
         return [

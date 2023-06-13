@@ -1,0 +1,15 @@
+<?php
+/** @var $block \Bitpay\BPCheckout\Block\Adminhtml\Sales\Info */
+
+?>
+
+<table class="data-table admin__table-secondary">
+    <?php foreach ($block->getBitpayAdditionalInfo() as $info): ?>
+        <tr>
+            <th><?= $block->escapeHtml($info['label']) ?>:</th>
+            <td>
+                <?= /* @noEscape */ nl2br($block->escapeHtml($info['value'])) ?>
+            </td>
+        </tr>
+    <?php endforeach; ?>
+</table>

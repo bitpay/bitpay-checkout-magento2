@@ -5,6 +5,7 @@ namespace Bitpay\BPCheckout\Test\Integration\Model;
 
 use Bitpay\BPCheckout\Model\Config;
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Framework\ObjectManagerInterface;
@@ -28,19 +29,29 @@ class ConfigTest extends TestCase
      */
     private $storeManagerInterface;
 
+    /** @var EncryptorInterface $encryptor */
+    private $encryptor;
+
     /**
      * @var ObjectManagerInterface $objectManager
      */
     private $objectManager;
+
+    //phpcs:ignore
+    private const DECODED_MERCHANT_DATA = '{"data":{"0":{"token":"testToken","pairingCode":"1234"}}}';
+    //phpcs:ignore
+    private const ENCODED_MERCHANT_DATA = '0:3:uypNhzezLLyRrkExqXXhiCB595zsfnTrp/1hY5thRVYVMpkzgUYRPpTe802dM6NuHbyrYbIQUl6a6bFuINKhiN5yJNO9mJTnUc0OcCqdOwCgboS9kw+je9icSnE=';
 
     public function setUp(): void
     {
         $this->objectManager = Bootstrap::getObjectManager();
         $this->scopeConfig = $this->objectManager->get(ScopeConfigInterface::class);
         $this->storeManagerInterface = $this->objectManager->get(StoreManagerInterface::class);
+        $this->encryptor = $this->objectManager->get(EncryptorInterface::class);
         $this->config = new Config(
             $this->scopeConfig,
-            $this->storeManagerInterface
+            $this->storeManagerInterface,
+            $this->encryptor
         );
     }
 
@@ -54,12 +65,12 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @magentoConfigFixture current_store payment/bpcheckout/bitpay_devtoken AMLTTY9x9TGXFPcsnLLjem1CaDJL3mRMWupBrm9baacy
-     * @magentoConfigFixture current_store payment/bpcheckout/bitpay_endpoint test
+     * @magentoDataFixture Bitpay_BPCheckout::Test/Integration/_files/config.php
      */
     public function testGetToken(): void
     {
-        $this->assertEquals('AMLTTY9x9TGXFPcsnLLjem1CaDJL3mRMWupBrm9baacy', $this->config->getToken());
+        $token = json_decode(self::DECODED_MERCHANT_DATA, true)['data'][0]['token'];
+        $this->assertEquals($token, $this->config->getToken());
     }
 
     public function testGetBaseUrl(): void
@@ -75,7 +86,6 @@ class ConfigTest extends TestCase
     {
         $this->assertEquals('modal', $this->config->getBitpayUx());
     }
-
 
     /**
      * @magentoConfigFixture current_store payment/bpcheckout/bitpay_ipn_mapping pending
@@ -102,26 +112,54 @@ class ConfigTest extends TestCase
     }
 
     /**
-     * @magentoConfigFixture current_store payment/bpcheckout/bitpay_devtoken AMLTTY9x9TGXFPcsnLLjem1CaDJL3mRMWupBrm9baacy
-     */
-    public function testGetBitpayDevToken(): void
-    {
-        $this->assertEquals('AMLTTY9x9TGXFPcsnLLjem1CaDJL3mRMWupBrm9baacy', $this->config->getBitpayDevToken());
-    }
-
-    /**
-     * @magentoConfigFixture current_store payment/bpcheckout/bitpay_prodtoken AMLTTY9xTGXFPcsnLLjem1CaDJL3mRMWupBrm9baac
-     */
-    public function testGetBitpayProdToken(): void
-    {
-        $this->assertEquals('AMLTTY9xTGXFPcsnLLjem1CaDJL3mRMWupBrm9baac', $this->config->getBitpayProdToken());
-    }
-
-    /**
      * @magentoConfigFixture current_store payment/bpcheckout/bitpay_refund_mapping closed
      */
     public function testGetBitpayRefundMapping(): void
     {
         $this->assertEquals('closed', $this->config->getBitpayRefundMapping());
+    }
+
+    /**
+     * @magentoConfigFixture current_store bitpay_merchant_facade/authenticate/token_data 0:3:uypNhzezLLyRrkExqXXhiCB595zsfnTrp/1hY5thRVYVMpkzgUYRPpTe802dM6NuHbyrYbIQUl6a6bFuINKhiN5yJNO9mJTnUc0OcCqdOwCgboS9kw+je9icSnE=
+     */
+    public function testGetMerchantTokenData(): void
+    {
+        $this->assertEquals(self::ENCODED_MERCHANT_DATA, $this->config->getMerchantTokenData());
+    }
+
+    /**
+     * @magentoConfigFixture current_store bitpay_merchant_facade/authenticate/private_key_path /app/secure/private.key
+     */
+    public function testGetPrivateKeyPath(): void
+    {
+        $this->assertEquals('/app/secure/private.key', $this->config->getPrivateKeyPath());
+    }
+
+    /**
+     * phpcs:ignore
+     * @magentoConfigFixture current_store bitpay_merchant_facade/authenticate/password 0:3:qHccgp+LBPr1uzar1cQjTwQBwnH3A+GB3giLnEZMm+3mSezk
+     */
+    public function testGetMerchantFacadePassword(): void
+    {
+        $this->assertEquals(
+            '0:3:qHccgp+LBPr1uzar1cQjTwQBwnH3A+GB3giLnEZMm+3mSezk',
+            $this->config->getMerchantFacadePassword()
+        );
+    }
+
+    /**
+     * @magentoConfigFixture current_store payment/bpcheckout/send_order_email 0
+     */
+    public function testGetIsSendOrderEmail(): void
+    {
+        $this->assertEquals('0', $this->config->getIsSendOrderEmail());
+    }
+
+    /**
+     * @magentoConfigFixture current_store payment/bpcheckout/active 0
+     */
+    public function testIsPaymentActive(): void
+    {
+        $this->assertEquals(false, $this->config->isPaymentActive());
     }
 }

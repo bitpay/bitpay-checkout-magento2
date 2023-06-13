@@ -3,11 +3,14 @@ declare(strict_types=1);
 
 namespace Bitpay\BPCheckout\Test\Unit\Model;
 
+use Bitpay\BPCheckout\Model\BitpayInvoiceRepository;
 use Bitpay\BPCheckout\Model\BPRedirect;
 use Bitpay\BPCheckout\Logger\Logger;
+use Bitpay\BPCheckout\Model\Client;
 use Bitpay\BPCheckout\Model\Config;
 use Bitpay\BPCheckout\Model\Invoice;
 use Bitpay\BPCheckout\Model\TransactionRepository;
+use BitPaySDK\Model\Invoice\Buyer;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\ActionFlag;
@@ -29,9 +32,14 @@ use Magento\Sales\Model\Order;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Magento\Payment\Model\MethodInterface;
 use Magento\Sales\Api\Data\OrderAddressInterface;
+use Magento\Sales\Model\OrderRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @SuppressWarnings(PHPMD.TooManyFields)
+ * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ */
 class BPRedirectTest extends TestCase
 {
     /**
@@ -70,9 +78,19 @@ class BPRedirectTest extends TestCase
     private $config;
 
     /**
-     * @var ActionFlag|MockObject $actionFlag
+     * @var Client|MockObject $client
      */
-    private $actionFlag;
+    private $client;
+
+    /**
+     * @var OrderRepository $orderRepository
+     */
+    private $orderRepository;
+
+    /**
+     * @var BitpayInvoiceRepository $bitpayInvoiceRepository
+     */
+    private $bitpayInvoiceRepository;
 
     /**
      * @var ResponseFactory|MockObject $responseFactory
@@ -112,7 +130,7 @@ class BPRedirectTest extends TestCase
     public function setUp(): void
     {
         $this->checkoutSession = $this->getMock(Session::class);
-        $this->actionFlag = $this->getMock(ActionFlag::class);
+        $this->client = $this->getMock(Client::class);
         $this->redirect = $this->getMock(RedirectInterface::class);
         $this->response = $this->getMock(\Magento\Framework\App\Response\Http::class);
         $this->order = $this->getMock(\Magento\Sales\Model\Order::class);
@@ -125,10 +143,18 @@ class BPRedirectTest extends TestCase
         $this->url = $this->getMock(UrlInterface::class);
         $this->logger = $this->getMock(Logger::class);
         $this->resultPageFactory = $this->getMock(PageFactory::class);
+        $this->orderRepository = $this->getMock(OrderRepository::class);
+        $this->bitpayInvoiceRepository = $this->getMock(BitpayInvoiceRepository::class);
         $this->bpRedirect = $this->getClass();
     }
 
-    public function testExecuteModal(): void
+    /**
+     * @param $ux
+     * @return void
+     * @throws \Exception
+     * @dataProvider getUxDataProvider
+     */
+    public function testExecute($ux): void
     {
         $incrementId = '0000012121';
         $bitpayToken = 'A32nRffe34dF2312vmm';
@@ -137,7 +163,6 @@ class BPRedirectTest extends TestCase
         $payment = $this->getMock(\Magento\Quote\Model\Quote\Payment::class);
         $billingAddress = $this->getMock(\Magento\Sales\Model\Order\Address::class);
         $lastOrderId = 12;
-        $env = 'test';
 
         $params = new DataObject($this->getParams($incrementId, $bitpayToken));
         $this->checkoutSession->expects($this->once())
@@ -145,21 +170,42 @@ class BPRedirectTest extends TestCase
             ->with('last_order_id')
             ->willReturn($lastOrderId);
 
-        $item = new BPCItem($bitpayToken, $params, $env);
         $billingAddress->expects($this->once())->method('getData')
             ->willReturn(['first_name' => 'test', 'last_name' => 'test1']);
         $billingAddress->expects($this->once())->method('getFirstName')->willReturn('test');
         $billingAddress->expects($this->once())->method('getLastName')->willReturn('test1');
-        $order = $this->getOrder($incrementId, $payment, $billingAddress);
-        $this->prepareConfig($env, $bitpayToken, $baseUrl, 'modal');
+        $order = $this->getOrder($incrementId, $payment, $billingAddress, $lastOrderId);
+        $this->prepareConfig($baseUrl, $ux);
         $method->expects($this->once())->method('getCode')->willReturn(Config::BITPAY_PAYMENT_METHOD_NAME);
         $payment->expects($this->once())->method('getMethodInstance')->willReturn($method);
         $this->order->expects($this->once())->method('load')->with($lastOrderId)->willReturn($order);
-        $this->invoice->expects($this->once())->method('BPCCreateInvoice')->willReturn(['data' => ['id' => 232]]);
 
-        $this->prepareResponse();
+        $invoice = $this->prepareInvoice($params);
+
+        $bitpayClient = new \BitPaySDK\Client();
+        $this->client->expects($this->once())->method('initialize')->willReturn($bitpayClient);
+
+        $this->invoice->expects($this->once())->method('BPCCreateInvoice')->willReturn($invoice);
+
+        $this->orderRepository->expects($this->once())->method('save')->willReturn($order);
+        $this->bitpayInvoiceRepository->expects($this->once())->method('add');
+        $this->transactionRepository->expects($this->once())->method('add');
+
+        if ($ux === 'modal') {
+            $this->prepareResponse();
+        }
 
         $this->bpRedirect->execute();
+    }
+
+    /**
+     * @return array[]
+     */
+    public function getUxDataProvider(): array
+    {
+        return [
+            ['modal'], ['redirect']
+        ];
     }
 
     public function testExecuteNoOrderId(): void
@@ -200,73 +246,52 @@ class BPRedirectTest extends TestCase
         $this->bpRedirect->execute();
     }
 
-    public function testExecuteException(): void
+    /**
+     * @param $exceptionType
+     * @return void
+     * @throws \Exception
+     * @dataProvider exceptionTypeDataProvider
+     */
+    public function testExecuteException($exceptionType): void
     {
         $incrementId = '0000012121';
-        $bitpayToken = 'A32nRffe34dF2312vmm';
         $baseUrl = 'http://localhost';
         $method = $this->getMock(MethodInterface::class);
         $payment = $this->getMock(\Magento\Quote\Model\Quote\Payment::class);
         $billingAddress = $this->getMock(\Magento\Sales\Model\Order\Address::class);
         $lastOrderId = 12;
-        $env = 'test';
 
-        $params = new DataObject($this->getParams($incrementId, $bitpayToken));
         $this->checkoutSession->expects($this->once())
             ->method('getData')
             ->with('last_order_id')
             ->willReturn($lastOrderId);
 
-        $item = new BPCItem($bitpayToken, $params, $env);
         $billingAddress->expects($this->once())->method('getData')
             ->willReturn(['first_name' => 'test', 'last_name' => 'test1']);
         $billingAddress->expects($this->once())->method('getFirstName')->willReturn('test');
         $billingAddress->expects($this->once())->method('getLastName')->willReturn('test1');
-        $order = $this->getOrder($incrementId, $payment, $billingAddress);
-        $this->prepareConfig($env, $bitpayToken, $baseUrl, 'modal');
+        $order = $this->getOrder($incrementId, $payment, $billingAddress, null);
+        $this->prepareConfig($baseUrl, 'redirect');
         $method->expects($this->once())->method('getCode')->willReturn(Config::BITPAY_PAYMENT_METHOD_NAME);
         $payment->expects($this->once())->method('getMethodInstance')->willReturn($method);
         $this->order->expects($this->once())->method('load')->with($lastOrderId)->willReturn($order);
+
+        $client = new \BitPaySDK\Client();
+        $this->client->expects($this->once())->method('initialize')->willReturn($client);
+        $this->prepareResponse();
+
         $this->invoice->expects($this->once())
             ->method('BPCCreateInvoice')
-            ->willThrowException(new \Exception('Something went wrong'));
-        $this->prepareResponse();
+            ->willThrowException(new $exceptionType('something went wrong'));
 
         $this->bpRedirect->execute();
     }
 
-    public function testExecuteRedirect(): void
+    public function exceptionTypeDataProvider(): array
     {
-        $incrementId = '0000012121';
-        $bitpayToken = 'A32nRffe34dF2312vmm';
-        $baseUrl = 'http://localhost';
-        $method = $this->getMock(MethodInterface::class);
-        $payment = $this->getMock(\Magento\Quote\Model\Quote\Payment::class);
-        $billingAddress = $this->getMock(\Magento\Sales\Model\Order\Address::class);
-        $lastOrderId = 12;
-        $env = 'test';
-
-        $params = new DataObject($this->getParams($incrementId, $bitpayToken));
-        $this->checkoutSession->expects($this->once())
-            ->method('getData')
-            ->with('last_order_id')
-            ->willReturn($lastOrderId);
-
-        $item = new BPCItem($bitpayToken, $params, $env);
-        $billingAddress->expects($this->once())->method('getData')
-            ->willReturn(['first_name' => 'test', 'last_name' => 'test1']);
-        $billingAddress->expects($this->once())->method('getFirstName')->willReturn('test');
-        $billingAddress->expects($this->once())->method('getLastName')->willReturn('test1');
-        $order = $this->getOrder($incrementId, $payment, $billingAddress);
-        $this->prepareConfig($env, $bitpayToken, $baseUrl, 'redirect');
-        $method->expects($this->once())->method('getCode')->willReturn(Config::BITPAY_PAYMENT_METHOD_NAME);
-        $payment->expects($this->once())->method('getMethodInstance')->willReturn($method);
-        $this->order->expects($this->once())->method('load')->with($lastOrderId)->willReturn($order);
-        $this->invoice->expects($this->once())
-            ->method('BPCCreateInvoice')
-            ->willReturn(['data' => ['id' => 232, 'url' => 'https://localhost/example']]);
-
-        $this->bpRedirect->execute();
+        return [
+            [new \Exception], [new \Error]
+        ];
     }
 
     private function prepareResponse(): void
@@ -276,25 +301,26 @@ class BPRedirectTest extends TestCase
         $this->responseFactory->expects($this->once())->method('create')->willReturn($response);
     }
 
-    private function getOrder(string $incrementId, MockObject $payment, MockObject $billingAddress)
+    private function getOrder(string $incrementId, MockObject $payment, MockObject $billingAddress, ?int $orderId)
     {
         $order = $this->getMock(Order::class);
         $order->expects($this->once())->method('getIncrementId')->willReturn($incrementId);
+        if ($orderId) {
+            $order->expects($this->once())->method('getId')->willReturn($orderId);
+        }
+
         $order->expects($this->once())->method('getPayment')->willReturn($payment);
         $order->expects($this->once())->method('setState')->willReturn($order);
         $order->expects($this->once())->method('setStatus')->willReturn($order);
-        $order->expects($this->once())->method('save')->willReturn($order);
         $order->expects($this->any())->method('getCustomerEmail')->willReturn('test@example.com');
         $order->expects($this->any())->method('getBillingAddress')->willReturn($billingAddress);
 
         return $order;
     }
 
-    private function prepareConfig(string $env, string $bitpayToken, string $baseUrl, string $ux): void
+    private function prepareConfig(string $baseUrl, string $ux): void
     {
         $this->config->expects($this->once())->method('getBPCheckoutOrderStatus')->willReturn('pending');
-        $this->config->expects($this->once())->method('getBitpayEnv')->willReturn($env);
-        $this->config->expects($this->once())->method('getToken')->willReturn($bitpayToken);
         $this->config->expects($this->once())->method('getBitpayUx')->willReturn($ux);
         $this->config->expects($this->once())->method('getBaseUrl')->willReturn($baseUrl);
     }
@@ -324,7 +350,6 @@ class BPRedirectTest extends TestCase
     {
         return new BPRedirect(
             $this->checkoutSession,
-            $this->actionFlag,
             $this->redirect,
             $this->response,
             $this->order,
@@ -336,7 +361,32 @@ class BPRedirectTest extends TestCase
             $this->registry,
             $this->url,
             $this->logger,
-            $this->resultPageFactory
+            $this->resultPageFactory,
+            $this->client,
+            $this->orderRepository,
+            $this->bitpayInvoiceRepository
         );
+    }
+
+    /**
+     * @param DataObject $params
+     * @return \BitPaySDK\Model\Invoice\Invoice
+     */
+    private function prepareInvoice(DataObject $params): \BitPaySDK\Model\Invoice\Invoice
+    {
+        $invoice = new \BitPaySDK\Model\Invoice\Invoice($params->getData('price'), $params->getData('currency'));
+        $buyer = new Buyer();
+        $buyer->setEmail($params->getData('buyer')['email']);
+        $buyer->setName($params->getData('buyer')['name']);
+        $invoice->setBuyer($buyer);
+        $invoice->setOrderId($params->getData('orderId'));
+        $invoice->setId('test');
+        $invoice->setCloseURL($params->getData('closeURL'));
+        $invoice->setRedirectURL($params->getData('redirectURL'));
+        $invoice->setNotificationURL($params->getData('notificationURL'));
+        $invoice->setExtendedNotifications($params->getData('extendedNotifications'));
+        $invoice->setExpirationTime('23323423423423');
+
+        return $invoice;
     }
 }

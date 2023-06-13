@@ -10,5 +10,36 @@
         "constraint": {
             "PRIMARY": true
         }
+    },
+    "bitpay_invoice": {
+        "column": {
+            "id": true,
+            "order_id": true,
+            "expiration_time": true,
+            "acceptance_window": true,
+            "invoice_id": true
+        },
+        "index": {
+            "BITPAY_INVOICE_ORDER_ID": true
+        },
+        "constraint": {
+            "BITPAY_INVOICE_ORDER_ID_SALES_ORDER_ENTITY_ID": true,
+            "PRIMARY": true
+        }
+    },
+    "bitpay_refund": {
+        "column": {
+            "id": true,
+            "order_id": true,
+            "refund_id": true,
+            "amount": true
+        },
+        "index": {
+            "BITPAY_REFUND_ORDER_ID": true
+        },
+        "constraint": {
+            "BITPAY_REFUND_ORDER_ID_SALES_ORDER_ENTITY_ID": true,
+            "PRIMARY": true
+        }
     }
 }

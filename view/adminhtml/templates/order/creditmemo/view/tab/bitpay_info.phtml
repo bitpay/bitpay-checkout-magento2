@@ -1,0 +1,14 @@
+<?php
+/** @var $block \Bitpay\BPCheckout\Block\Adminhtml\Sales\Creditmemo\Info */
+
+$additionalBitpayData = $block->getBitpayAdditionalInfo();
+?>
+<?php if ($additionalBitpayData): ?>
+    <div style="margin-top: 1rem">
+        <span>Bitpay refund of <?= /* @noEscape */
+            $additionalBitpayData['amount'] ?>
+            using refund id: <?= /* @noEscape */
+            $additionalBitpayData['refund_id'] ?>
+        </span>
+    </div>
+<?php endif; ?>

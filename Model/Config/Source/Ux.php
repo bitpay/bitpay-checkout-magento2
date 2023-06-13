@@ -14,6 +14,11 @@ use Magento\Framework\Option\ArrayInterface;
  */
 class Ux implements ArrayInterface
 {
+    /**
+     * Return array of Ux options
+     *
+     * @return string[]
+     */
     public function toOptionArray()
     {
         return [

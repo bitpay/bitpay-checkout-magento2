@@ -10,6 +10,8 @@ class Transaction extends AbstractDb
     private const TABLE_NAME = 'bitpay_transactions';
 
     /**
+     * Resource initialization
+     *
      * @codeCoverageIgnore
      */
     public function _construct()
@@ -17,6 +19,14 @@ class Transaction extends AbstractDb
         $this->_init(self::TABLE_NAME, 'id');
     }
 
+    /**
+     * Add BitPay transaction
+     *
+     * @param string $incrementId
+     * @param string $invoiceID
+     * @param string $status
+     * @return void
+     */
     public function add(string $incrementId, string $invoiceID, string $status): void
     {
         $connection = $this->getConnection();
@@ -27,6 +37,13 @@ class Transaction extends AbstractDb
         );
     }
 
+    /**
+     * Find transaction by order_id and transaction_id
+     *
+     * @param string $orderId
+     * @param string $orderInvoiceId
+     * @return array|null
+     */
     public function findBy(string $orderId, string $orderInvoiceId): ?array
     {
         $connection = $this->getConnection();
@@ -46,6 +63,14 @@ class Transaction extends AbstractDb
         return $row;
     }
 
+    /**
+     * Update transaction
+     *
+     * @param string $field
+     * @param string $value
+     * @param array $where
+     * @return void
+     */
     public function update(string $field, string $value, array $where): void
     {
         $connection = $this->getConnection();

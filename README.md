@@ -31,24 +31,45 @@ php bin/magento setup:static-content:deploy -f
 php bin/magento cache:flush
 ```
 
-You can now activate BitPay in the *Sales->Configuration->Sales->Payment Methods*
+You can now activate BitPay in the *Stores->Configuration->Sales->Payment Methods*
 
 
 
-
+* **Enabled** - Status for payment method
+* * **Send emails for BitPay Orders** - Allows an Admin to suppress Order emails for BitPay Orders. Default to false
 * **Title** - This will be the title that appears on the checkout page
-
-* **Merchant Tokens**
-	* A ***development*** or ***production*** token will need to be set
-* **BitPay Server Endpoint**
-	* Choose **Test** or **Production**, depending on your current setup.  Your matching API Token must be set.
+* **Environment**
+	* Choose **Test** or **Production**, depending on your current setup
+* **Status mapping - BitPay invoice / Magento order** - Map the BitPay “confirmed” invoice status to the preferred Magento order status, based on the transaction speed you have selected in your BitPay <a target="_blank" href="https://bitpay.com/dashboard/settings/edit/order">dashboard</a>
+* **Status mapping - BitPay invoice / Magento order on BitPay Refunds** - If set to TRUE, Magento will set the Order State to Closed.  If set to FALSE, no changes will be made to the Magento order
+* **Status mapping - BitPay invoice / Magento order on BitPay Canceled** - If set to TRUE, Magento will set the Order State to Canceled after the order has expired.  If set to FALSE, no changes will be made to the Magento order
 * **Checkout Flow**
 	* **Redirect** - This will send the user to the BitPay invoice screen, and they will be redirected after the transaction to the Order Completed page
 	* **Modal** - This will open a popup modal on your site, and will display the order details once the transaction is completed.
-* **Auto Capture Email** - If enabled, the plugin will attempt to auto-fill the buyer's email address when paying the invoice
+* **New Order Status** - Select status for new order
 * **Payment from Specific Countries**	 - You **MUST** select the countries to enable BitPay to appear in the checkout  
+ 
+<h3>Merchant Token</h3>
+To generate merchant token visit *Admin->Stores->Configuration->Bitpay->Merchant Facade->Authenticate.*
+You need to specify following data:
+* Token Label
+* Password (Used to decrypt your private key)
+* Full path to private key (e.g /app/secure/private2.key)
 
-	
+Note: Each time before creating token please save private key path and password
+When you hit Create token button you will get pairing code that you use in <a href="https://test.bitpay.com/dashboard/merchant/api-tokens">Bitpay Token</a>
+
+<h3>Refund</h3>
+* Refund setting are located in *Admin->Stores->Configuration->Bitpay->Merchant Facade->Refund.*
+There are following options to set:
+	* Preview Mode
+    * Immediate Refund
+    * Buyer Pays Refund Fee
+    * Suppress Order Emails
+
+	All options by default are set to false.
+* Refund request is send when user attempts to create a Credit Memo against a BitPay Order. Refund amount is configured in the credit meno
+
 
 This plugin also includes an IPN (Instant Payment Notification) endpoint that will update your Magento 2 order status.
 
