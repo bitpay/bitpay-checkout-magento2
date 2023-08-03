@@ -12,26 +12,10 @@ use Magento\Tax\Helper\Data as TaxHelper;
 
 class Info extends \Magento\Sales\Block\Adminhtml\Order\AbstractOrder
 {
-    /** @var BitpayRefundRepository $bitpayRefundRepository */
-    protected $bitpayRefundRepository;
+    protected BitpayRefundRepository $bitpayRefundRepository;
+    protected PriceCurrency $priceCurrency;
+    protected Config $config;
 
-    /** @var PriceCurrency $priceCurrency */
-    protected $priceCurrency;
-
-    /** @var Config $config */
-    protected $config;
-
-    /**
-     * @param \Magento\Backend\Block\Template\Context $context
-     * @param \Magento\Framework\Registry $registry
-     * @param \Magento\Sales\Helper\Admin $adminHelper
-     * @param BitpayRefundRepository $bitpayRefundRepository
-     * @param PriceCurrency $priceCurrency
-     * @param Config $config
-     * @param array $data
-     * @param ShippingHelper|null $shippingHelper
-     * @param TaxHelper|null $taxHelper
-     */
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
         \Magento\Framework\Registry $registry,

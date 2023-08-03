@@ -3,4 +3,8 @@
         xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <preference for="Magento\Sales\Block\Adminhtml\Order\Creditmemo\Create\Items"
                 type="Bitpay\BPCheckout\Block\Adminhtml\Sales\Creditmemo\Create\Items"/>
+    <type name="Magento\Sales\Block\Adminhtml\Order\View">
+        <plugin name="sales_order_adminhtml_view_resend_ipn_button_plugin"
+                type="Bitpay\BPCheckout\Block\Adminhtml\Order\View"/>
+    </type>
 </config>

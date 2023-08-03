@@ -8,14 +8,8 @@ use Magento\Framework\View\Element\Template;
 
 class Index extends Template
 {
-    /** @var Config $config */
-    private $config;
+    private Config $config;
 
-    /**
-     * @param Template\Context $context
-     * @param Config $config
-     * @param array $data
-     */
     public function __construct(
         Template\Context $context,
         Config $config,

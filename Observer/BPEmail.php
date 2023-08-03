@@ -8,20 +8,11 @@ use Magento\Framework\Event\ObserverInterface;
 
 class BPEmail implements ObserverInterface
 {
-    /** @var Logger $logger */
-    protected $logger;
+    protected Logger $logger;
+    protected Config $config;
 
-    /** @var Config $config */
-    protected $config;
-
-    /**
-     * @param Logger $logger
-     * @param Config $config
-     */
-    public function __construct(
-        Logger $logger,
-        Config $config
-    ) {
+    public function __construct(Logger $logger, Config $config)
+    {
         $this->logger = $logger;
         $this->config = $config;
     }

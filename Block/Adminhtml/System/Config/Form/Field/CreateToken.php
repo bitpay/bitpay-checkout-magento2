@@ -12,18 +12,9 @@ use Magento\Store\Model\ScopeInterface;
 
 class CreateToken extends Field
 {
-    /** @var Config $config */
-    protected $config;
+    protected Config $config;
+    protected EncryptorInterface $encryptor;
 
-    /** @var EncryptorInterface $encryptor */
-    protected $encryptor;
-
-    /**
-     * @param Context $context
-     * @param Config $config
-     * @param EncryptorInterface $encryptor
-     * @param array $data
-     */
     public function __construct(
         Context $context,
         Config $config,

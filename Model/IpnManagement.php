@@ -25,49 +25,22 @@ use Magento\Sales\Api\Data\OrderInterface;
  */
 class IpnManagement implements IpnManagementInterface
 {
-    /** @var ResponseFactory $responseFactory */
-    protected $responseFactory;
-
-    /** @var UrlInterface $url */
-    protected $url;
-
-    /** @var Session $checkoutSession */
-    protected $checkoutSession;
-
-    /** @var QuoteFactory $quoteFactory */
-    protected $quoteFactory;
-
-    /** @var OrderInterface $orderInterface */
-    protected $orderInterface;
-
-    /** @var Registry $coreRegistry */
-    protected $coreRegistry;
-
-    /** @var Logger $logger */
-    protected $logger;
-
-    /** @var Config $config */
-    protected $config;
-
-    /** @var Json $serializer */
-    protected $serializer;
-
-    /** @var TransactionRepository $transactionRepository */
-    protected $transactionRepository;
-
-    /** @var Invoice $invoice */
-    protected $invoice;
-
-    /** @var Request $request */
-    protected $request;
-
-    /** @var Client $client */
-    protected $client;
-
-    /** @var Response $response */
-    protected $response;
-
     public const ORDER_STATUS_PENDING = 'pending';
+
+    protected ResponseFactory $responseFactory;
+    protected UrlInterface $url;
+    protected Session $checkoutSession;
+    protected QuoteFactory $quoteFactory;
+    protected OrderInterface $orderInterface;
+    protected Registry $coreRegistry;
+    protected Logger $logger;
+    protected Config $config;
+    protected Json $serializer;
+    protected TransactionRepository $transactionRepository;
+    protected Invoice $invoice;
+    protected Request $request;
+    protected Client $client;
+    protected Response $response;
 
     /**
      * @param ResponseFactory $responseFactory
