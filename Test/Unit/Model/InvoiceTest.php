@@ -174,6 +174,11 @@ class InvoiceTest extends TestCase
         $order = $this->getMock(Order::class);
         $item = new BPCItem($bitpayToken, $params, 'test');
 
+        $order->expects(self::once())->method('addStatusHistoryComment');
+        $order->expects(self::once())->method('setState')->willReturn($order);
+        $order->expects(self::once())->method('setStatus')->willReturn($order);
+        $this->orderRepository->expects(self::once())->method('save')->with($order);
+
         $this->invoice->paidInFull($order, 'paid', $item);
     }
 
@@ -185,6 +190,9 @@ class InvoiceTest extends TestCase
         $item = new BPCItem($bitpayToken, $params, 'test');
 
         $this->invoice->paidInFull($order, 'test', $item);
+
+        $order->expects(self::never())->method('addStatusHistoryComment');
+        $order->expects(self::never())->method('save');
     }
 
     public function testFailedToConfirm(): void
@@ -193,6 +201,9 @@ class InvoiceTest extends TestCase
         $params = new DataObject($this->getParams('00000240000', $bitpayToken));
         $order = $this->getMock(Order::class);
         $item = new BPCItem($bitpayToken, $params, 'test');
+
+        $order->expects(self::once())->method('addStatusHistoryComment');
+        $this->orderRepository->expects(self::once())->method('save');
 
         $this->invoice->failedToConfirm($order, 'invalid', $item);
     }
@@ -205,6 +216,9 @@ class InvoiceTest extends TestCase
         $item = new BPCItem($bitpayToken, $params, 'test');
 
         $this->invoice->failedToConfirm($order, 'test', $item);
+
+        $order->expects(self::never())->method('addStatusHistoryComment');
+        $order->expects(self::never())->method('save');
     }
 
     public function testConfirmed(): void
@@ -243,6 +257,9 @@ class InvoiceTest extends TestCase
         $item = new BPCItem($bitpayToken, $params, 'test');
 
         $this->invoice->confirmed($order, 'test', $item);
+
+        $order->expects(self::never())->method('addStatusHistoryComment');
+        $order->expects(self::never())->method('setState');
     }
 
     public function testConfirmIpnMapping(): void

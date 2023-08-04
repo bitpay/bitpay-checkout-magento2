@@ -11,27 +11,15 @@ use PHPUnit\Framework\TestCase;
 
 class SuccessPluginTest extends TestCase
 {
-    /**
-     * @var SuccessPlugin $successPlugin
-     */
-    private $successPlugin;
-
-    /**
-     * @var BPRedirect|MockObject $bpRedirect
-     */
-    private $bpRedirect;
-
-    public function setUp(): void
-    {
-        $this->bpRedirect = $this->getMockBuilder(BPRedirect::class)->disableOriginalConstructor()->getMock();
-        $this->successPlugin = new SuccessPlugin($this->bpRedirect);
-    }
-
     public function testAfterExecute(): void
     {
+        $bpRedirect = $this->getMockBuilder(BPRedirect::class)->disableOriginalConstructor()->getMock();
         $subject = $this->getMockBuilder(Success::class)->disableOriginalConstructor()->getMock();
         $result = $this->getMockBuilder(ResultInterface::class)->disableOriginalConstructor()->getMock();
+        $testedClass = new SuccessPlugin($bpRedirect);
 
-        $this->successPlugin->afterExecute($subject, $result);
+        $bpRedirect->expects(self::once())->method('execute');
+
+        $testedClass->afterExecute($subject, $result);
     }
 }
