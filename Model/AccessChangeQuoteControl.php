@@ -17,10 +17,7 @@ use Magento\Quote\Api\Data\CartInterface;
  */
 class AccessChangeQuoteControl
 {
-    /**
-     * @var ChangeQuoteControlInterface $changeQuoteControl
-     */
-    private $changeQuoteControl;
+    private ChangeQuoteControlInterface $changeQuoteControl;
 
     /**
      * @param ChangeQuoteControlInterface $changeQuoteControl

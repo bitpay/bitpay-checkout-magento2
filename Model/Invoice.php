@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Bitpay\BPCheckout\Model;
 
-use Bitpay\BPCheckout\Model\Config;
 use Bitpay\BPCheckout\Model\Ipn\BPCItem;
 use BitPaySDK\Model\Invoice\Buyer;
 use Magento\Checkout\Model\Session;
@@ -22,27 +21,6 @@ use Bitpay\BPCheckout\Logger\Logger;
  */
 class Invoice
 {
-    /** @var InvoiceService $invoiceService */
-    protected $invoiceService;
-
-    /** @var Logger $logger */
-    protected $logger;
-
-    /** @var Transaction $transaction */
-    protected $transaction;
-
-    /** @var \Bitpay\BPCheckout\Model\Config $config */
-    protected $config;
-
-    /** @var Session $checkoutSession */
-    protected $checkoutSession;
-
-    /** @var OrderSender $orderSender */
-    protected $orderSender;
-
-    /** @var OrderRepository $orderRepository */
-    protected $orderRepository;
-
     /**
      * IPN code for invoice completed
      */
@@ -78,22 +56,21 @@ class Invoice
      */
     public const REFUND_COMPLETE = 'invoice_refundComplete';
 
-    /**
-     * @param InvoiceService $invoiceService
-     * @param Logger $logger
-     * @param Transaction $transaction
-     * @param Config $config
-     * @param Session $checkoutSession
-     * @param OrderSender $orderSender
-     * @param OrderRepository $orderRepository
-     */
+    protected InvoiceService $invoiceService;
+    protected Logger $logger;
+    protected Transaction $transaction;
+    protected Config $config;
+    protected Session $checkoutSession;
+    protected OrderSender $orderSender;
+    protected OrderRepository $orderRepository;
+
     public function __construct(
         InvoiceService $invoiceService,
-        Logger         $logger,
-        Transaction    $transaction,
-        Config         $config,
-        Session        $checkoutSession,
-        OrderSender    $orderSender,
+        Logger $logger,
+        Transaction $transaction,
+        Config $config,
+        Session $checkoutSession,
+        OrderSender $orderSender,
         OrderRepository $orderRepository
     ) {
         $this->invoiceService = $invoiceService;
@@ -263,7 +240,8 @@ class Invoice
     public function BPCCreateInvoice(
         \BitPaySDK\Client $client,
         \Magento\Framework\DataObject $params
-    ): \BitPaySDK\Model\Invoice\Invoice {
+    ): \BitPaySDK\Model\Invoice\Invoice
+    {
         $price = (float)$params->getData('price');
         $currency = $params->getData('currency');
         $invoice = new \BitPaySDK\Model\Invoice\Invoice($price, $currency);
@@ -315,7 +293,7 @@ class Invoice
     {
         $isInvoiced = true;
         foreach ($order->getAllItems() as $item) {
-            if ($item->getQtyToInvoice()>0 && !$item->getLockedDoInvoice()) {
+            if ($item->getQtyToInvoice() > 0 && !$item->getLockedDoInvoice()) {
                 $isInvoiced = false;
                 break;
             }

@@ -16,36 +16,14 @@ use Magento\Config\Model\Config\Factory;
 
 class Token implements HttpPostActionInterface
 {
-    /** @var EncryptorInterface $encryptor */
-    protected $encryptor;
+    protected EncryptorInterface $encryptor;
+    protected JsonFactory $jsonFactory;
+    protected RequestInterface $request;
+    protected Logger $logger;
+    protected BitpayConfig $bitpayConfig;
+    protected Factory $configFactory;
+    protected \Bitpay\BPCheckout\Model\Client\Token $token;
 
-    /** @var JsonFactory $jsonFactory */
-    protected $jsonFactory;
-
-    /** @var RequestInterface $request */
-    protected $request;
-
-    /** @var Logger $logger */
-    protected $logger;
-
-    /** @var BitpayConfig $bitpayConfig */
-    protected $bitpayConfig;
-
-    /** @var Factory $configFactory */
-    protected $configFactory;
-
-    /** @var \Bitpay\BPCheckout\Model\Client\Token $token */
-    protected $token;
-
-    /**
-     * @param EncryptorInterface $encryptor
-     * @param JsonFactory $jsonFactory
-     * @param RequestInterface $request
-     * @param Logger $logger
-     * @param BitpayConfig $bitpayConfig
-     * @param Factory $configFactory
-     * @param \Bitpay\BPCheckout\Model\Client\Token $token
-     */
     public function __construct(
         EncryptorInterface $encryptor,
         JsonFactory $jsonFactory,

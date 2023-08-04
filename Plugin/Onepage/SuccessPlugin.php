@@ -7,12 +7,8 @@ use Bitpay\BPCheckout\Model\BPRedirect;
 
 class SuccessPlugin
 {
-    /** @var BPRedirect $bpRedirect */
-    private $bpRedirect;
+    private BPRedirect $bpRedirect;
 
-    /**
-     * @param BPRedirect $BPRedirect
-     */
     public function __construct(BPRedirect $BPRedirect)
     {
         $this->bpRedirect = $BPRedirect;

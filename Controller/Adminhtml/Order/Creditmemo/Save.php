@@ -22,35 +22,12 @@ use Magento\Directory\Model\PriceCurrency;
  */
 class Save extends CreditmemoSave
 {
-    /**
-     * @var Client $bitpayClient
-     */
-    protected $bitpayClient;
-
-    /**
-     * @var PriceCurrency $priceCurrency
-     */
-    protected $priceCurrency;
-
-    /**
-     * @var BitpayInvoiceRepository $bitpayInvoiceRepository
-     */
-    protected $bitpayInvoiceRepository;
-
-    /**
-     * @var BitpayRefundRepository $bitpayRefundRepository
-     */
-    protected $bitpayRefundRepository;
-
-    /**
-     * @var Logger $logger
-     */
-    protected $logger;
-
-    /**
-     * @var SalesData
-     */
-    private $salesData;
+    protected Client $bitpayClient;
+    protected PriceCurrency $priceCurrency;
+    protected BitpayInvoiceRepository $bitpayInvoiceRepository;
+    protected BitpayRefundRepository $bitpayRefundRepository;
+    protected Logger $logger;
+    private SalesData $salesData;
 
     /**
      * @param Context $context

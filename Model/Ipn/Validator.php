@@ -6,7 +6,7 @@ namespace Bitpay\BPCheckout\Model\Ipn;
 class Validator
 {
     /** @var array $errors */
-    protected $errors = [];
+    protected array $errors = [];
 
     /**
      * @param \BitPaySDK\Model\Invoice\Invoice $invoice

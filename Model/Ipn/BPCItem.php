@@ -8,33 +8,21 @@ use Magento\Framework\DataObject;
 
 class BPCItem
 {
-    /** @var string $token */
-    private $token = '';
+    private string $token;
+    private DataObject $itemParams;
+    private string $invoiceEndpoint;
 
-    /** @var DataObject $itemParams */
-    private $itemParams;
-
-    /** @var string $invoiceEndpoint */
-    private $invoiceEndpoint = '';
-
-    /** @var string $env */
-    private $env = '';
-
-    /**
-     * @param string $token
-     * @param DataObject $itemParams
-     * @param string $env
-     */
-    public function __construct(string $token, DataObject $itemParams, string $env)
-    {
+    public function __construct(
+        string $token,
+        DataObject $itemParams,
+        string $env
+    ) {
         $this->token = $token;
         $this->itemParams = $itemParams;
-        $this->env = $env;
         $this->invoiceEndpoint = Config::API_HOST_DEV;
-        if ($this->env == 'prod') {
+        if (strtolower($env) === 'prod') {
             $this->invoiceEndpoint = Config::API_HOST_PROD;
         }
-        return $this->invoiceEndpoint;
     }
 
     /**
