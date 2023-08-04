@@ -10,22 +10,10 @@ use Magento\Framework\Serialize\Serializer\Json;
 
 class Client
 {
-    /** @var Config $config */
-    protected $config;
+    protected Config $config;
+    protected EncryptorInterface $encryptor;
+    protected Json $serializer;
 
-    /** @var EncryptorInterface $encryptor */
-    protected $encryptor;
-
-    /** @var Json $serializer */
-    protected $serializer;
-
-    /**
-     * Client constructor
-     *
-     * @param Config $config
-     * @param EncryptorInterface $encryptor
-     * @param Json $serializer
-     */
     public function __construct(
         Config $config,
         EncryptorInterface $encryptor,
@@ -42,7 +30,7 @@ class Client
      * @return \BitPaySDK\Client
      * @throws \BitPaySDK\Exceptions\BitPayException
      */
-    public function initialize()
+    public function initialize(): \BitPaySDK\Client
     {
         $env = $this->config->getBitpayEnv() === 'test' ? Env::Test : Env::Prod;
         $privateKeyPath = $this->config->getPrivateKeyPath();

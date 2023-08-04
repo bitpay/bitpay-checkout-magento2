@@ -7,12 +7,8 @@ use Bitpay\BPCheckout\Model\ResourceModel\BitpayInvoice;
 
 class BitpayInvoiceRepository
 {
-    /** @var BitpayInvoice $bitpayInvoice */
-    private $bitpayInvoice;
+    private BitpayInvoice $bitpayInvoice;
 
-    /**
-     * @param BitpayInvoice $bitpayInvoice
-     */
     public function __construct(BitpayInvoice $bitpayInvoice)
     {
         $this->bitpayInvoice = $bitpayInvoice;

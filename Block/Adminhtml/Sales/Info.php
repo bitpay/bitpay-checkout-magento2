@@ -10,18 +10,8 @@ use Magento\Tax\Helper\Data as TaxHelper;
 
 class Info extends \Magento\Sales\Block\Adminhtml\Order\AbstractOrder
 {
-    /** @var BitpayInvoiceRepository $bitpayInvoiceRepository */
-    protected $bitpayInvoiceRepository;
+    protected BitpayInvoiceRepository $bitpayInvoiceRepository;
 
-    /**
-     * @param \Magento\Backend\Block\Template\Context $context
-     * @param \Magento\Framework\Registry $registry
-     * @param \Magento\Sales\Helper\Admin $adminHelper
-     * @param BitpayInvoiceRepository $bitpayInvoiceRepository
-     * @param array $data
-     * @param ShippingHelper|null $shippingHelper
-     * @param TaxHelper|null $taxHelper
-     */
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
         \Magento\Framework\Registry $registry,
@@ -49,13 +39,13 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\AbstractOrder
             return [];
         }
 
-        $bitpayInvoideData = $this->bitpayInvoiceRepository->getByOrderId($order->getId());
-        if (!$bitpayInvoideData) {
+        $bitpayInvoiceData = $this->bitpayInvoiceRepository->getByOrderId($order->getId());
+        if (!$bitpayInvoiceData) {
             return $this->prepareResult();
         }
 
-        $expirationTime = $bitpayInvoideData['expiration_time'];
-        $acceptanceWindowTime = $bitpayInvoideData['acceptance_window'];
+        $expirationTime = $bitpayInvoiceData['expiration_time'];
+        $acceptanceWindowTime = $bitpayInvoiceData['acceptance_window'];
         if ($acceptanceWindowTime) {
             $acceptanceWindowTime = (int)ceil($acceptanceWindowTime/1000);
             $acceptanceWindowTime = date("d/m/Y H:i:s", $acceptanceWindowTime);
@@ -66,7 +56,7 @@ class Info extends \Magento\Sales\Block\Adminhtml\Order\AbstractOrder
             $expirationTime = date("d/m/Y H:i:s", $expirationTime);
         }
 
-        return $this->prepareResult($bitpayInvoideData['invoice_id'], $expirationTime, $acceptanceWindowTime);
+        return $this->prepareResult($bitpayInvoiceData['invoice_id'], $expirationTime, $acceptanceWindowTime);
     }
 
     /**

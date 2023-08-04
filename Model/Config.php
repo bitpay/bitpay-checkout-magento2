@@ -10,15 +10,6 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class Config
 {
-    /** @var ScopeConfigInterface $scopeConfig */
-    private $scopeConfig;
-
-    /** @var StoreManagerInterface $storeManagerInterface */
-    private $storeManagerInterface;
-
-    /** @var EncryptorInterface $encryptor */
-    private $encryptor;
-
     public const BITPAY_ENV = 'payment/bpcheckout/bitpay_endpoint';
     public const BITPAY_DEV_TOKEN = 'payment/bpcheckout/bitpay_devtoken';
     public const BITPAY_PROD_TOKEN = 'payment/bpcheckout/bitpay_prodtoken';
@@ -44,11 +35,10 @@ class Config
     public const BITPAY_API_TOKEN_PATH = 'dashboard/merchant/api-tokens';
     public const BITPAY_MERCHANT_FACADE = 'merchant';
 
-    /**
-     * @param ScopeConfigInterface $scopeConfig
-     * @param StoreManagerInterface $storeManagerInterface
-     * @param EncryptorInterface $encryptor
-     */
+    private ScopeConfigInterface $scopeConfig;
+    private StoreManagerInterface $storeManagerInterface;
+    private EncryptorInterface $encryptor;
+
     public function __construct(
         ScopeConfigInterface $scopeConfig,
         StoreManagerInterface $storeManagerInterface,

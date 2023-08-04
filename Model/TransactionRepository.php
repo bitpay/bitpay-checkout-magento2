@@ -8,11 +8,8 @@ use Bitpay\BPCheckout\Model\ResourceModel\Transaction as TransactionResource;
 class TransactionRepository
 {
     /** @var TransactionResource $resourceTransaction */
-    private $resourceTransaction;
+    private TransactionResource $resourceTransaction;
 
-    /**
-     * @param TransactionResource $resourceTransaction
-     */
     public function __construct(TransactionResource $resourceTransaction)
     {
         $this->resourceTransaction = $resourceTransaction;

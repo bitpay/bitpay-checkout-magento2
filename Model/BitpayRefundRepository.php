@@ -7,12 +7,8 @@ use Bitpay\BPCheckout\Model\ResourceModel\BitpayRefund;
 
 class BitpayRefundRepository
 {
-    /** @var BitpayRefund $bitpayRefund */
-    private $bitpayRefund;
+    private BitpayRefund $bitpayRefund;
 
-    /**
-     * @param BitpayRefund $bitpayRefund
-     */
     public function __construct(BitpayRefund $bitpayRefund)
     {
         $this->bitpayRefund = $bitpayRefund;

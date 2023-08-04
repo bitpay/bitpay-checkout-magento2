@@ -8,18 +8,8 @@ use Bitpay\BPCheckout\Model\TransactionRepository;
 
 class Items extends \Magento\Sales\Block\Adminhtml\Order\Creditmemo\Create\Items
 {
-    /** @var TransactionRepository $bitpayTransactionRepository */
-    protected $bitpayTransactionRepository;
+    protected TransactionRepository $bitpayTransactionRepository;
 
-    /**
-     * @param \Magento\Backend\Block\Template\Context $context
-     * @param \Magento\CatalogInventory\Api\StockRegistryInterface $stockRegistry
-     * @param \Magento\CatalogInventory\Api\StockConfigurationInterface $stockConfiguration
-     * @param \Magento\Framework\Registry $registry
-     * @param \Magento\Sales\Helper\Data $salesData
-     * @param TransactionRepository $bitpayTransactionRepository
-     * @param array $data
-     */
     public function __construct(
         \Magento\Backend\Block\Template\Context $context,
         \Magento\CatalogInventory\Api\StockRegistryInterface $stockRegistry,

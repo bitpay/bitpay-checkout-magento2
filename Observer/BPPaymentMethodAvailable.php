@@ -9,11 +9,7 @@ use Magento\Framework\Event\ObserverInterface;
 
 class BPPaymentMethodAvailable implements ObserverInterface
 {
-
-    /** @var Config $config
-     *
-     */
-    protected $config;
+    protected Config $config;
 
     /**
      * payment_method_is_active event handler.

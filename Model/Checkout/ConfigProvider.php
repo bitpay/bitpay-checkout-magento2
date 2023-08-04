@@ -13,20 +13,10 @@ use Magento\Payment\Helper\Data as PaymentHelper;
 
 class ConfigProvider implements ConfigProviderInterface
 {
-    /** @var Source $assetSource */
-    protected $assetSource;
+    protected Source $assetSource;
+    private Repository $assetRepository;
+    private PaymentHelper $paymentHelper;
 
-    /** @var Repository $assetRepository */
-    private $assetRepository;
-
-    /** @var PaymentHelper $paymentHelper */
-    private $paymentHelper;
-
-    /**
-     * @param PaymentHelper $paymentHelper
-     * @param Repository $assetRepository
-     * @param Source $assetSource
-     */
     public function __construct(
         PaymentHelper $paymentHelper,
         Repository $assetRepository,

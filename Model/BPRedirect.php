@@ -2,9 +2,6 @@
 namespace Bitpay\BPCheckout\Model;
 
 use Bitpay\BPCheckout\Logger\Logger;
-use Bitpay\BPCheckout\Model\Config;
-use Bitpay\BPCheckout\Model\Invoice;
-use Bitpay\BPCheckout\Model\TransactionRepository;
 use Magento\Checkout\Model\Session;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\ActionFlag;
@@ -13,7 +10,6 @@ use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\DataObject;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
-use Bitpay\BPCheckout\Model\Ipn\BPCItem;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Message\Manager;
@@ -34,53 +30,22 @@ use Magento\Sales\Model\OrderRepository;
  */
 class BPRedirect
 {
-    /** @var Session $checkoutSession */
-    protected $checkoutSession;
-
-    /** @var RedirectInterface $redirect */
-    protected $redirect;
-
-    /** @var ResponseInterface $response */
-    protected $response;
-
-    /** @var OrderInterface $orderInterface */
-    protected $orderInterface;
-
-    /** @var \Bitpay\BPCheckout\Model\TransactionRepository $transactionRepository */
-    protected $transactionRepository;
-
-    /** @var \Bitpay\BPCheckout\Model\Config $config */
-    protected $config;
-
-    /** @var ResponseFactory $responseFactory */
-    protected $responseFactory;
-
-    /** @var \Bitpay\BPCheckout\Model\Invoice $invoice */
-    protected $invoice;
-
-    /** @var Manager $messageManager */
-    protected $messageManager;
-
-    /** @var Registry $registry */
-    protected $registry;
-
-    /** @var UrlInterface $url */
-    protected $url;
-
-    /** @var Logger $logger */
-    protected $logger;
-
-    /** @var PageFactory $resultPageFactory */
-    protected $resultPageFactory;
-
-    /** @var Client $client */
-    protected $client;
-
-    /** @var OrderRepository $orderRepository */
-    protected $orderRepository;
-
-    /** @var BitpayInvoiceRepository $bitpayInvoiceRepository */
-    protected $bitpayInvoiceRepository;
+    protected Session $checkoutSession;
+    protected RedirectInterface $redirect;
+    protected ResponseInterface $response;
+    protected OrderInterface $orderInterface;
+    protected TransactionRepository $transactionRepository;
+    protected Config $config;
+    protected ResponseFactory $responseFactory;
+    protected Invoice $invoice;
+    protected Manager $messageManager;
+    protected Registry $registry;
+    protected UrlInterface $url;
+    protected Logger $logger;
+    protected PageFactory $resultPageFactory;
+    protected Client $client;
+    protected OrderRepository $orderRepository;
+    protected BitpayInvoiceRepository $bitpayInvoiceRepository;
 
     /**
      * @param Session $checkoutSession

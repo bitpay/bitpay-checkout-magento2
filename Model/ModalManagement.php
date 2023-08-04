@@ -8,12 +8,8 @@ use Bitpay\BPCheckout\Api\ModalManagementInterface;
 
 class ModalManagement implements ModalManagementInterface
 {
-    /** @var ResourceConnection $resourceConnection */
-    private $resourceConnection;
+    private ResourceConnection $resourceConnection;
 
-    /**
-     * @param ResourceConnection $resourceConnection
-     */
     public function __construct(ResourceConnection $resourceConnection)
     {
         $this->resourceConnection = $resourceConnection;

@@ -10,16 +10,9 @@ use Magento\Framework\Controller\Result\JsonFactory;
 
 class Data implements HttpGetActionInterface
 {
-    /** @var Session $checkoutSession */
     private Session $checkoutSession;
-
-    /** @var JsonFactory $jsonFactory */
     private JsonFactory $jsonFactory;
 
-    /**
-     * @param Session $checkoutSession
-     * @param JsonFactory $jsonFactory
-     */
     public function __construct(
         Session $checkoutSession,
         JsonFactory $jsonFactory

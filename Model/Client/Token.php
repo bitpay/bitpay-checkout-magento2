@@ -10,8 +10,7 @@ use BitPayKeyUtils\Storage\EncryptedFilesystemStorage;
 
 class Token
 {
-    /** @var BitpayConfig $config */
-    protected $config;
+    protected BitpayConfig $config;
 
     /**
      * @param BitpayConfig $config
@@ -28,6 +27,7 @@ class Token
      * @param string $password
      * @param string|null $tokenLabel
      * @return array
+     * @throws \Exception
      */
     public function create(string $privateKeyPath, string $password, ?string $tokenLabel): array
     {
@@ -45,6 +45,7 @@ class Token
      * @param PrivateKey $privateKey
      * @param string|null $tokenLabel
      * @return array
+     * @throws \Exception
      */
     protected function tokenRequest(PrivateKey $privateKey, ?string $tokenLabel): array
     {
