@@ -32,16 +32,36 @@ class TransactionRepositoryTest extends TestCase
 
     public function testAdd(): void
     {
-        $this->transactionRepository->add('0000000122', '23', 'new');
+        $incrementId = '0000000122';
+        $invoiceId = '23';
+        $status = 'new';
+
+        $this->transactionResource->expects(self::once())
+            ->method('add')->with($incrementId, $invoiceId, $status);
+
+        $this->transactionRepository->add($incrementId, $invoiceId, $status);
     }
 
     public function testUpdate(): void
     {
-        $this->transactionRepository->update('status', 'pending', ['order_id' => '0000000122']);
+        $field = 'status';
+        $value = 'pending';
+        $where = ['order_id' => '0000000122'];
+
+        $this->transactionResource->expects(self::once())
+            ->method('update')->with($field, $value, $where);
+
+        $this->transactionRepository->update($field, $value, $where);
     }
 
     public function testFindBy(): void
     {
-        $this->transactionRepository->findBy('000000222', '22');
+        $orderId = '000000222';
+        $orderInvoiceId = '22';
+
+        $this->transactionResource->expects(self::once())
+            ->method('findBy')->with($orderId, $orderInvoiceId);
+
+        $this->transactionRepository->findBy($orderId, $orderInvoiceId);
     }
 }
