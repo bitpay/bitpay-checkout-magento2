@@ -27,7 +27,7 @@ class Config
     public const BITPAY_PROD_TOKEN_URL = 'https://bitpay.com/tokens';
     public const API_HOST_DEV = 'test.bitpay.com';
     public const API_HOST_PROD = 'bitpay.com';
-    public const EXTENSION_VERSION = 'Bitpay_BPCheckout_Magento2_9.1.0';
+    public const EXTENSION_VERSION = 'Bitpay_BPCheckout_Magento2_9.2.0';
     public const BITPAY_PAYMENT_METHOD_NAME = 'bpcheckout';
     public const BITPAY_PAYMENT_ICON = 'Pay-with-BitPay-CardGroup.svg';
     public const BITPAY_PAYMENT_DIR_IMAGES = 'images';
