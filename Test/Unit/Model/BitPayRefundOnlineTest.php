@@ -21,7 +21,6 @@ class BitPayRefundOnlineTest extends TestCase
     private const ORDER_ID = '123213';
     private const INVOICE_ID = '123132132131';
     private const BASE_ORDER_REFUND = 13.00;
-    private const ORDER_BASE_TOTAL_REFUNDED = "0";
     private const CREDIT_MEMO_BASE_GRAND_TOTAL = "13.00";
     private const REFUND_ID = "1112";
     private const REFUND_AMOUNT = 13.00;
@@ -114,7 +113,7 @@ class BitPayRefundOnlineTest extends TestCase
         );
 
         // then
-        $creditMemo->expects(self::exactly(2))->method('getOrder')->willReturn($order);
+        $creditMemo->expects(self::once())->method('getOrder')->willReturn($order);
         $order->expects(self::exactly(2))->method('getPayment')->willReturn($payment);
         $payment->expects(self::once())->method('getMethod')->willReturn(Config::BITPAY_PAYMENT_METHOD_NAME);
         $bitPayInvoiceRepository->expects(self::once())->method('getByOrderId')->with(self::ORDER_ID)->willReturn([
@@ -158,8 +157,8 @@ class BitPayRefundOnlineTest extends TestCase
         );
 
         // then
-        $creditMemo->expects(self::exactly(2))->method('getOrder')->willReturn($order);
-        $order->expects(self::exactly(1))->method('getPayment')->willReturn($payment);
+        $creditMemo->expects(self::once())->method('getOrder')->willReturn($order);
+        $order->expects(self::once())->method('getPayment')->willReturn($payment);
         $payment->expects(self::once())->method('getMethod')->willReturn(Config::BITPAY_PAYMENT_METHOD_NAME);
         $bitPayInvoiceRepository->expects(self::once())->method('getByOrderId')->with(self::ORDER_ID)->willReturn([
             'invoice_id' => self::INVOICE_ID
@@ -224,7 +223,6 @@ class BitPayRefundOnlineTest extends TestCase
     {
         $order = $this->getMockBuilder(\Magento\Sales\Model\Order::class)->disableOriginalConstructor()->getMock();
         $order->method('getId')->willReturn(self::ORDER_ID);
-        $order->method('getBaseTotalRefunded')->willReturn(self::ORDER_BASE_TOTAL_REFUNDED);
 
         return $order;
     }
