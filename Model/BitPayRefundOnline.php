@@ -48,9 +48,7 @@ class BitPayRefundOnline
             return;
         }
 
-        $baseOrderRefund = $this->priceCurrency->round(
-            $creditMemo->getOrder()->getBaseTotalRefunded() + $creditMemo->getBaseGrandTotal()
-        );
+        $baseOrderRefund = $this->priceCurrency->round($creditMemo->getBaseGrandTotal());
         $client = $this->bitpayClient->initialize();
         $invoiceId = $bitPayInvoiceData['invoice_id'];
         $bitPayInvoice = $client->getInvoice($invoiceId);
