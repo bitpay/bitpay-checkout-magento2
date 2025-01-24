@@ -39,7 +39,7 @@ class Client
         $serializedTokenData = $this->serializer->unserialize($tokenData);
         $merchantToken = $serializedTokenData['data'][0]['token'];
         $tokens = new Tokens($merchantToken);
-        $platformInfo = 'BitPay_Magento2_v10.0.0';
+        $platformInfo = 'BitPay_Magento2_v10.1.0';
 
         return \BitPaySDK\Client::createWithData($env, $privateKeyPath, $tokens, $password, null, $platformInfo);
     }
