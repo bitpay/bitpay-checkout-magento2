@@ -28,7 +28,11 @@ class IpnNotificationSender
         if (!$invoiceData || !isset($invoiceData['invoice_id'])) {
             throw new \RuntimeException('Wrong BitPay Invoice');
         }
+        $invoice = $client->getInvoice($invoiceData['invoice_id']);
+        if (!$invoice) {
+            throw new \RuntimeException('BitPay Invoice not found');
+        }
 
-        $client->requestInvoiceNotification($invoiceData['invoice_id']);
+        $client->requestInvoiceNotification($invoiceData['invoice_id'], $invoice->getToken());
     }
 }
