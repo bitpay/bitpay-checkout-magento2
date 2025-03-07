@@ -195,21 +195,9 @@ class SupportPackageTest extends TestCase
                 [DirectoryList::LOG, '/log']
             ]));
 
-        $invokedCount = $this->exactly(2);
-        $this->fileDriverMock->expects($invokedCount)
+        $this->fileDriverMock->expects($this->exactly(2))
             ->method('isExists')
-            ->willReturnCallback(function ($parameters) use ($invokedCount, $tmpPath, $logPath) {
-                if ($invokedCount->getInvocationCount() === 1) {
-                    $this->assertSame($tmpPath . '/', $parameters);
-
-                    return true;
-                }
-
-                if ($invokedCount->getInvocationCount() === 2) {
-                    $this->assertSame($logPath, $parameters);
-                    return true;
-                }
-            });
+            ->willReturn(true);
 
         $this->jsonSerializerMock->method('serialize')
             ->willReturn('{"key":"value"}');

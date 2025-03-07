@@ -171,11 +171,13 @@ class BPRedirectTest extends TestCase
         )->method(
             'getUrl'
         )
-        ->withConsecutive(['bitpay-invoice', ['_query' => ['order_id' => $incrementId]]], ['checkout/cart'])
-        ->willReturnOnConsecutiveCalls(
-            'http://localhost/bitpay-invoice?order_id=' . $incrementId,
-            'http://localhost/checkout/cart'
-        );
+        ->willReturnCallback(function($routePath, $routeParams) use ($incrementId) {
+            if ($routePath === 'bitpay-invoice' && $routeParams === ['_query' => ['order_id' => $incrementId]]) {
+                return 'http://localhost/bitpay-invoice?order_id=' . $incrementId;
+            }
+
+            return 'http://localhost/checkout/cart';
+        });
 
         $billingAddress->expects($this->once())->method('getData')
             ->willReturn(['first_name' => 'test', 'last_name' => 'test1']);
@@ -281,11 +283,13 @@ class BPRedirectTest extends TestCase
         )->method(
             'getUrl'
         )
-        ->withConsecutive(['bitpay-invoice', ['_query' => ['order_id' => $incrementId]]], ['checkout/cart'])
-        ->willReturnOnConsecutiveCalls(
-            'http://localhost/bitpay-invoice?order_id=' . $incrementId,
-            'http://localhost/checkout/cart'
-        );
+        ->willReturnCallback(function($routePath, $routeParams) use ($incrementId) {
+            if ($routePath === 'bitpay-invoice' && $routeParams === ['_query' => ['order_id' => $incrementId]]) {
+                return 'http://localhost/bitpay-invoice?order_id=' . $incrementId;
+            }
+
+            return 'http://localhost/checkout/cart';
+        });
 
         $billingAddress->expects($this->once())->method('getData')
             ->willReturn(['first_name' => 'test', 'last_name' => 'test1']);

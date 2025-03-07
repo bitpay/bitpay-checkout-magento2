@@ -71,7 +71,7 @@ class BitPayPaymentRefundTest extends TestCase
         $creditMemo->expects(self::once())->method('getOrder')->willReturn($order);
         $order->expects(self::once())->method('getPayment')->willReturn($payment);
         $payment->expects(self::once())->method('getMethod')->willReturn(Config::BITPAY_PAYMENT_METHOD_NAME);
-        $request->expects(self::once())->method('getPost')->with('creditmemo')->willReturn([
+        $request->expects(self::once())->method('getParam')->with('creditmemo')->willReturn([
             'do_offline' => '1'
         ]);
 
@@ -99,7 +99,7 @@ class BitPayPaymentRefundTest extends TestCase
         $creditMemo->expects(self::once())->method('getOrder')->willReturn($order);
         $order->expects(self::once())->method('getPayment')->willReturn($payment);
         $payment->expects(self::once())->method('getMethod')->willReturn(Config::BITPAY_PAYMENT_METHOD_NAME);
-        $request->expects(self::once())->method('getPost')->with('creditmemo')->willReturn([
+        $request->expects(self::once())->method('getParam')->with('creditmemo')->willReturn([
             'do_offline' => '0'
         ]);
 
@@ -114,11 +114,10 @@ class BitPayPaymentRefundTest extends TestCase
     {
         $methods = \array_merge(
             \get_class_methods(\Magento\Framework\App\RequestInterface::class),
-            ['getPost']
         );
 
         return $this->getMockBuilder(\Magento\Framework\App\RequestInterface::class)
-            ->setMethods($methods)
+            ->onlyMethods($methods)
             ->disableOriginalConstructor()
             ->getMock();
     }
