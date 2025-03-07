@@ -35,7 +35,7 @@ class BitPayPaymentRefund implements ObserverInterface
             return;
         }
 
-        $data = $this->request->getPost('creditmemo');
+        $data = $this->request->getParam('creditmemo');
         $doOffline = isset($data['do_offline']) && (bool)$data['do_offline'];
 
         if (!$doOffline) {
