@@ -1,6 +1,7 @@
 <?php
 namespace Bitpay\BPCheckout\Model;
 
+use BitPaySDK\Model\Invoice\Invoice as BitPayInvoice;
 use Bitpay\BPCheckout\Helper\ReturnHash;
 use Bitpay\BPCheckout\Logger\Logger;
 use Magento\Checkout\Model\Session;
@@ -14,6 +15,7 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Controller\ResultInterface;
 use Magento\Sales\Model\OrderRepository;
+use Magento\Framework\Controller\Result\Redirect;
 use Magento\Framework\Encryption\EncryptorInterface;
 
 /**
@@ -100,7 +102,7 @@ class BPRedirect
      * @throws LocalizedException
      * @throws NoSuchEntityException|\Exception
      */
-    public function execute(ResultInterface $defaultResult, string $returnId = null): ResultInterface
+    public function execute(ResultInterface $defaultResult, ?string $returnId = null): ResultInterface
     {
         $orderId = $this->checkoutSession->getData('last_order_id');
         if (!$orderId) {
@@ -147,6 +149,9 @@ class BPRedirect
             $billingAddressData = $order->getBillingAddress()->getData();
             $this->setSessionCustomerData($billingAddressData, $order->getCustomerEmail(), $incrementId);
             $client = $this->client->initialize();
+            /**
+             * @var BitPayInvoice
+             */
             $invoice = $this->invoice->BPCCreateInvoice($client, $params);
             $invoiceID = $invoice->getId();
             $order = $this->orderRepository->save($order);
@@ -193,15 +198,15 @@ class BPRedirect
      * Sets pending order status
      *
      * @param OrderInterface $order
-     * @return void
+     * @return OrderInterface
      * @throws \Exception
      */
     private function setToPendingAndOverrideMagentoStatus(OrderInterface $order): OrderInterface
     {
-        $order->setState('new', true);
+        $order->setState('new');
         $order_status = $this->config->getBPCheckoutOrderStatus();
         $order_status = !isset($order_status) ? 'pending' : $order_status;
-        $order->setStatus($order_status, true);
+        $order->setStatus($order_status);
 
         return $order;
     }
@@ -241,9 +246,9 @@ class BPRedirect
     /**
      * Delete order and redirect to cart when error
      *
-     * @param \Exception $exception
+     * @param \Exception|\Error $exception
      * @param OrderInterface $order
-     * @return void
+     * @return ResultInterface
      * @throws \Exception
      */
     private function deleteOrderAndRedirectToCart($exception, OrderInterface $order): ResultInterface
@@ -255,9 +260,13 @@ class BPRedirect
         $this->registry->unregister('isSecureArea');
         $this->messageManager->addErrorMessage('We are unable to place your Order at this time');
 
-        return $this->resultFactory->create(
+        /**
+         * @var Redirect
+         * */
+        $redirect = $this->resultFactory->create(
             \Magento\Framework\Controller\ResultFactory::TYPE_REDIRECT
-        )
-        ->setUrl($this->url->getUrl('checkout/cart'));
+        );
+
+        return $redirect->setUrl($this->url->getUrl('checkout/cart'));
     }
 }

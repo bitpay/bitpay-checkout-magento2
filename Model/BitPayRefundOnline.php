@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Bitpay\BPCheckout\Model;
 
-use BitPaySDK\Exceptions\BitPayException;
 use Bitpay\BPCheckout\Logger\Logger;
 use Bitpay\BPCheckout\Model\BitpayInvoiceRepository;
 use Bitpay\BPCheckout\Model\BitpayRefundRepository;
 use Bitpay\BPCheckout\Model\Client;
 use Bitpay\BPCheckout\Model\Config;
+use BitPaySDK\Exceptions\BitPayApiException;
 use Magento\Directory\Model\PriceCurrency;
 
 class BitPayRefundOnline
@@ -55,7 +55,7 @@ class BitPayRefundOnline
         $currency = $bitPayInvoice->getCurrency();
         try {
             $refund = $client->createRefund($invoiceId, $baseOrderRefund, $currency);
-        } catch (BitPayException $e) {
+        } catch (BitPayApiException $e) {
             $this->handleRefundCreationException($e);
         }
         $this->bitpayRefundRepository->add($orderId, $refund->getId(), $refund->getAmount());
@@ -65,9 +65,9 @@ class BitPayRefundOnline
         $order->getPayment()->setData('message', $message);
     }
 
-    private function handleRefundCreationException(BitPayException $e): void
+    private function handleRefundCreationException(BitPayApiException $e): void
     {
-        $apiCode = $e->getApiCode();
+        $apiCode = $e->getBitPayCode();
         $this->logger->error($e->getMessage());
 
         $message = match ($apiCode) {

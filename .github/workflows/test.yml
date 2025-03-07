@@ -27,11 +27,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        MAGENTO_VERSION: ["2.4.6", "2.4.7"]
+        MAGENTO_VERSION: ["2.4.6", "2.4.7", "2.4.8-beta2"]
     steps:
       - uses: actions/checkout@v4
       - uses: extdn/github-actions-m2/magento-unit-tests/8.2@master
+        with:
+          magento_pre_install_script: "./.github/2.4.8/test-pre-install-script.sh"
         env:
+          PHPUNIT_FILE: ".github/2.4.8/phpunit.xml"
+          COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
           MAGENTO_VERSION: ${{ matrix.MAGENTO_VERSION }}
 
   unit-tests-83:
@@ -40,12 +44,35 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        MAGENTO_VERSION: ["2.4.7"]
+        MAGENTO_VERSION: ["2.4.7", "2.4.8-beta2"]
     steps:
       - uses: actions/checkout@v4
       - uses: extdn/github-actions-m2/magento-unit-tests/8.3@master
+        with:
+          magento_pre_install_script: "./.github/2.4.8/test-pre-install-script.sh"
         env:
+          PHPUNIT_FILE: ".github/2.4.8/phpunit.xml"
+          COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
           MAGENTO_VERSION: ${{ matrix.MAGENTO_VERSION }}
+
+  unit-tests-84:
+    name: Unit Tests (PHP 8.4)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        MAGENTO_VERSION: ["2.4.8-beta2"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build docker images
+        run: docker build -f .github/2.4.8/php-8.4/Dockerfile -t local .
+      - name: Run docker images
+        run: docker run -e GITHUB_WORKSPACE=$GITHUB_WORKSPACE -e MODULE_NAME=$MODULE_NAME -e MODULE_SOURCE=$MODULE_SOURCE -e COMPOSER_NAME=$COMPOSER_NAME -e MAGENTO_VERSION=$MAGENTO_VERSION -e PROJECT_NAME=$PROJECT_NAME -e PHPUNIT_FILE=$PHPUNIT_FILE -e COMPOSER_AUTH=$COMPOSER_AUTH local
+        env:
+          PHPUNIT_FILE: ".github/2.4.8/phpunit.xml"
+          COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
+          MAGENTO_VERSION: ${{ matrix.MAGENTO_VERSION }}
+          GITHUB_WORKSPACE: ${{ github.workspace }}
 
   lint:
     name: ESLint
