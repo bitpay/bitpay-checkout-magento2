@@ -12,7 +12,6 @@ define(
         Component,
         rendererList
     ) {
-        'use strict';
         rendererList.push({
             type: 'bpcheckout',
             component: 'Bitpay_BPCheckout/js/view/payment/method-renderer/bpcheckout-method'

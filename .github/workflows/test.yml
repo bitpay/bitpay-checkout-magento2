@@ -92,4 +92,5 @@ jobs:
           composer require magento/magento-coding-standard --dev
           cd vendor/magento/magento-coding-standard
           npm install
-          npm run eslint -- ../../../view
+          cd ../../../
+          ./vendor/magento/magento-coding-standard/node_modules/.bin/eslint -c ./vendor/magento/magento-coding-standard/eslint/eslint.config.mjs -- ./view

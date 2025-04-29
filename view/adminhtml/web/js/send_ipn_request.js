@@ -1,6 +1,4 @@
 define([], function () {
-    'use strict';
-
     window.sendIpnRequest = function (url, orderId) {
         jQuery.ajax({
             url: url,

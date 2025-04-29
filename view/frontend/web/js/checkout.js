@@ -4,8 +4,6 @@ require([
     'uiRegistry'
 ],
 function (storage, checkoutData, registry) {
-    'use strict';
-
     storage.get('/bitpay-invoice/customer/data').done(function (data) {
         var addressFormData = {};
 
