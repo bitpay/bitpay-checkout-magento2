@@ -1,0 +1,149 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to release from'
+        required: true
+        default: 'master'
+        type: string
+      version:
+        description: 'Version number (e.g., 10.3.0)'
+        required: true
+        type: string
+      overview:
+        description: 'Release overview (will be placed at top of notes)'
+        required: true
+        type: string
+
+jobs:
+  release:
+    name: Create tag and release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.branch }}
+          fetch-depth: 0
+      
+      - name: Validate version format
+        id: version
+        run: |
+          if ! echo "${{ inputs.version }}" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Error: Version must be in format X.Y.Z (e.g., 10.3.0)"
+            exit 1
+          fi
+          version="${{ inputs.version }}"
+          echo "version=$version" >> $GITHUB_OUTPUT
+      
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      
+      - name: Update composer.json version
+        run: |
+          jq --arg version "${{ steps.version.outputs.version }}" '.version = $version' composer.json > composer.json.tmp
+          mv composer.json.tmp composer.json
+      
+      - name: Commit version update
+        run: |
+          git add composer.json
+          git commit -m "Bump version to ${{ inputs.version }}"
+          git push origin ${{ inputs.branch }}
+      
+      - name: Create and push tag
+        run: |
+          git tag "${{ steps.version.outputs.version }}"
+          git push origin "${{ steps.version.outputs.version }}"
+      
+      - name: Get merged PR titles and format release notes
+        id: changelog
+        run: |
+          git fetch --tags
+
+          # Get most recent and previous tags
+          tags=($(git tag --sort=-creatordate))
+          new_tag="${tags[0]}"
+          prev_tag="${tags[1]}"
+
+          if [ -z "$prev_tag" ]; then
+            echo "Warning: No previous tag found. Skipping full changelog link."
+            changelog=""
+          else
+            changelog="**Full Changelog**: https://github.com/${{ github.repository }}/compare/$prev_tag...$new_tag"
+          fi
+
+          prs=$(gh pr list --state merged --base "${{ inputs.branch }}" --json title,mergedAt --jq '[.[] | select(.mergedAt != null) | .title]')
+          joined=$(echo "$prs" | jq -r '.[]' | sed 's/^/* /')
+
+          echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
+          echo "${{ github.event.inputs.overview }}" >> $GITHUB_ENV
+          echo "" >> $GITHUB_ENV
+          echo "## What's Changed" >> $GITHUB_ENV
+          echo "$joined" >> $GITHUB_ENV
+          echo "" >> $GITHUB_ENV
+          echo "$changelog" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        run: |
+          gh release create "${{ steps.version.outputs.version }}" \
+            --title "${{ steps.version.outputs.version }}" \
+            --notes "${{ env.RELEASE_NOTES }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  readme-changelog:
+    name: Publish changelog to Readme
+    needs: release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
+      - name: Extract release data
+        id: release_data
+        run: |
+          echo "title=${{ needs.release.outputs.version }}" >> $GITHUB_OUTPUT
+          body=$(gh release view ${{ needs.release.outputs.version }} --json body --jq .body)
+          body_escaped=$(echo "$body" \
+            | sed 's/&/\&#38;/g' \
+            | sed 's/</\&#60;/g' \
+            | sed 's/>/\&#62;/g' \
+            | sed 's/{/\&#123;/g' \
+            | sed 's/}/\&#125;/g')
+          {
+            echo "body<<EOF"
+            echo "$body_escaped"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish changelog to Readme
+        env:
+          README_API_KEY: ${{ secrets.README_API_KEY }}
+        run: |
+          jq -n --arg title "BitPay Checkout module for Magento 2 v${{ steps.release_data.outputs.title }}" \
+                --arg body "${{ steps.release_data.outputs.body }}" \
+                '{
+                  title: $title,
+                  content: {
+                    body: $body
+                  },
+                  privacy: { view: "public" }
+                }' > payload.json
+
+          curl --location 'https://api.readme.com/v2/changelogs' \
+            --header "Authorization: Bearer $README_API_KEY" \
+            --header 'Content-Type: application/json' \
+            --data @payload.json
