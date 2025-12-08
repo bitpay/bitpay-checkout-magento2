@@ -1,4 +1,6 @@
 require(['Magento_Customer/js/customer-data', 'mage/url'], function (customerData, url) {
+    'use strict';
+
     var queryString = window.location.search,
         urlParams = new URLSearchParams(queryString),
         reload = urlParams.get('reload');
