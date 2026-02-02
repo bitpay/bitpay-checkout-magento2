@@ -33,13 +33,14 @@ jobs:
       
       - name: Validate version format
         id: version
+        env:
+          VERSION_INPUT: ${{ inputs.version }}
         run: |
-          if ! echo "${{ inputs.version }}" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+          if ! echo "${VERSION_INPUT}" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
             echo "Error: Version must be in format X.Y.Z (e.g., 10.3.0)"
             exit 1
           fi
-          version="${{ inputs.version }}"
-          echo "version=$version" >> $GITHUB_OUTPUT
+          echo "version=${VERSION_INPUT}" >> $GITHUB_OUTPUT
       
       - name: Configure Git
         run: |
@@ -47,23 +48,35 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
       
       - name: Update composer.json version
+        env:
+          VERSION_OUTPUT: ${{ steps.version.outputs.version }}
         run: |
-          jq --arg version "${{ steps.version.outputs.version }}" '.version = $version' composer.json > composer.json.tmp
+          jq --arg version "${VERSION_OUTPUT}" '.version = $version' composer.json > composer.json.tmp
           mv composer.json.tmp composer.json
       
       - name: Commit version update
+        env:
+          VERSION_INPUT: ${{ inputs.version }}
+          BRANCH_INPUT: ${{ inputs.branch }}
         run: |
           git add composer.json
-          git commit -m "Bump version to ${{ inputs.version }}"
-          git push origin ${{ inputs.branch }}
+          git commit -m "Bump version to ${VERSION_INPUT}"
+          git push origin "${BRANCH_INPUT}"
       
       - name: Create and push tag
+        env:
+          VERSION_OUTPUT: ${{ steps.version.outputs.version }}
         run: |
-          git tag "${{ steps.version.outputs.version }}"
-          git push origin "${{ steps.version.outputs.version }}"
+          git tag "${VERSION_OUTPUT}"
+          git push origin "${VERSION_OUTPUT}"
       
       - name: Get merged PR titles and format release notes
         id: changelog
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH_INPUT: ${{ inputs.branch }}
+          OVERVIEW_INPUT: ${{ inputs.overview }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
           git fetch --tags
 
@@ -76,30 +89,30 @@ jobs:
             echo "Warning: No previous tag found. Skipping full changelog link."
             changelog=""
           else
-            changelog="**Full Changelog**: https://github.com/${{ github.repository }}/compare/$prev_tag...$new_tag"
+            changelog="**Full Changelog**: https://github.com/${GITHUB_REPOSITORY}/compare/$prev_tag...$new_tag"
           fi
 
-          prs=$(gh pr list --state merged --base "${{ inputs.branch }}" --json title,mergedAt --jq '[.[] | select(.mergedAt != null) | .title]')
+          prs=$(gh pr list --state merged --base "${BRANCH_INPUT}" --json title,mergedAt --jq '[.[] | select(.mergedAt != null) | .title]')
           joined=$(echo "$prs" | jq -r '.[]' | sed 's/^/* /')
 
           echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
-          echo "${{ github.event.inputs.overview }}" >> $GITHUB_ENV
+          echo "${OVERVIEW_INPUT}" >> $GITHUB_ENV
           echo "" >> $GITHUB_ENV
           echo "## What's Changed" >> $GITHUB_ENV
           echo "$joined" >> $GITHUB_ENV
           echo "" >> $GITHUB_ENV
           echo "$changelog" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create GitHub Release
-        run: |
-          gh release create "${{ steps.version.outputs.version }}" \
-            --title "${{ steps.version.outputs.version }}" \
-            --notes "${{ env.RELEASE_NOTES }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION_OUTPUT: ${{ steps.version.outputs.version }}
+          RELEASE_NOTES_TEXT: ${{ env.RELEASE_NOTES }}
+        run: |
+          gh release create "${VERSION_OUTPUT}" \
+            --title "${VERSION_OUTPUT}" \
+            --notes "${RELEASE_NOTES_TEXT}"
 
   readme-changelog:
     name: Publish changelog to Readme
@@ -112,9 +125,12 @@ jobs:
 
       - name: Extract release data
         id: release_data
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_VERSION: ${{ needs.release.outputs.version }}
         run: |
-          echo "title=${{ needs.release.outputs.version }}" >> $GITHUB_OUTPUT
-          body=$(gh release view ${{ needs.release.outputs.version }} --json body --jq .body)
+          echo "title=${RELEASE_VERSION}" >> $GITHUB_OUTPUT
+          body=$(gh release view "${RELEASE_VERSION}" --json body --jq .body)
           body_escaped=$(echo "$body" \
             | sed 's/&/\&#38;/g' \
             | sed 's/</\&#60;/g' \
@@ -126,15 +142,15 @@ jobs:
             echo "$body_escaped"
             echo "EOF"
           } >> $GITHUB_OUTPUT
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish changelog to Readme
         env:
           README_API_KEY: ${{ secrets.README_API_KEY }}
+          RELEASE_TITLE: ${{ steps.release_data.outputs.title }}
+          RELEASE_BODY: ${{ steps.release_data.outputs.body }}
         run: |
-          jq -n --arg title "BitPay Checkout module for Magento 2 v${{ steps.release_data.outputs.title }}" \
-                --arg body "${{ steps.release_data.outputs.body }}" \
+          jq -n --arg title "BitPay Checkout module for Magento 2 v${RELEASE_TITLE}" \
+                --arg body "${RELEASE_BODY}" \
                 '{
                   title: $title,
                   content: {
@@ -144,6 +160,6 @@ jobs:
                 }' > payload.json
 
           curl --location 'https://api.readme.com/v2/changelogs' \
-            --header "Authorization: Bearer $README_API_KEY" \
+            --header "Authorization: Bearer ${README_API_KEY}" \
             --header 'Content-Type: application/json' \
             --data @payload.json
