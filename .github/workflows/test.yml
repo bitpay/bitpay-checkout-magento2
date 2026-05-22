@@ -20,6 +20,7 @@ jobs:
       - uses: extdn/github-actions-m2/magento-unit-tests/8.1@master
         with:
           magento_pre_install_script: "./.github/2.4.4/test-pre-install-script.sh"
+          block_insecure: false
         env:
           MAGENTO_MARKETPLACE_USERNAME: ${{ secrets.MAGENTO_MARKETPLACE_USERNAME }}
           MAGENTO_MARKETPLACE_PASSWORD: ${{ secrets.MAGENTO_MARKETPLACE_PASSWORD }}
