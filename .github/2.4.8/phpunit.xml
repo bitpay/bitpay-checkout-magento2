@@ -13,6 +13,7 @@
             <directory suffix="Test.php">../../../vendor/%COMPOSER_NAME%/tests/unit</directory>
         </testsuite>
     </testsuites>
+
     <php>
         <ini name="date.timezone" value="America/Los_Angeles"/>
         <ini name="xdebug.max_nesting_level" value="200"/>
