@@ -47,19 +47,32 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
       
-      - name: Update composer.json version
+      - name: Update version
         env:
           VERSION_OUTPUT: ${{ steps.version.outputs.version }}
         run: |
+          # Update composer.json
           jq --arg version "${VERSION_OUTPUT}" '.version = $version' composer.json > composer.json.tmp
           mv composer.json.tmp composer.json
+
+          # Update Model/Client.php (line 45)
+          sed -i.bak -E "s/BitPay_Magento2_v[0-9]+\.[0-9]+\.[0-9]+/BitPay_Magento2_v${VERSION_OUTPUT}/" Model/Client.php
+          rm Model/Client.php.bak
+
+          # Update Model/Config.php (line 32)
+          sed -i.bak -E "s/Bitpay_BPCheckout_Magento2_[0-9]+\.[0-9]+\.[0-9]+/Bitpay_BPCheckout_Magento2_${VERSION_OUTPUT}/" Model/Config.php
+          rm Model/Config.php.bak
+
+          # Update etc/module.xml (line 9)
+          sed -i.bak -E "s/setup_version=\"[0-9]+\.[0-9]+\.[0-9]+\"/setup_version=\"${VERSION_OUTPUT}\"/" etc/module.xml
+          rm etc/module.xml.bak
       
       - name: Commit version update
         env:
           VERSION_INPUT: ${{ inputs.version }}
           BRANCH_INPUT: ${{ inputs.branch }}
         run: |
-          git add composer.json
+          git add composer.json Model/Client.php Model/Config.php etc/module.xml
           git commit -m "Bump version to ${VERSION_INPUT}"
           git push origin "${BRANCH_INPUT}"
       
