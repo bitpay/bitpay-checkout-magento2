@@ -21,6 +21,8 @@ jobs:
   release:
     name: Create tag and release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     outputs:
       version: ${{ steps.version.outputs.version }}
     
@@ -101,11 +103,18 @@ jobs:
           if [ -z "$prev_tag" ]; then
             echo "Warning: No previous tag found. Skipping full changelog link."
             changelog=""
+            prev_tag_date=""
           else
             changelog="**Full Changelog**: https://github.com/${GITHUB_REPOSITORY}/compare/$prev_tag...$new_tag"
+            prev_tag_date=$(git log -1 --format=%aI "$prev_tag")
           fi
 
-          prs=$(gh pr list --state merged --base "${BRANCH_INPUT}" --json title,mergedAt --jq '[.[] | select(.mergedAt != null) | .title]')
+          # Get PRs merged since the previous tag (or all if no previous tag)
+          if [ -z "$prev_tag_date" ]; then
+            prs=$(gh pr list --state merged --base "${BRANCH_INPUT}" --limit 100 --json title,mergedAt --jq '[.[] | select(.mergedAt != null) | .title]')
+          else
+            prs=$(gh pr list --state merged --base "${BRANCH_INPUT}" --limit 100 --json title,mergedAt --jq --arg since "$prev_tag_date" '[.[] | select(.mergedAt != null and .mergedAt >= $since) | .title]')
+          fi
           joined=$(echo "$prs" | jq -r '.[]' | sed 's/^/* /')
 
           echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
@@ -176,3 +185,4 @@ jobs:
             --header "Authorization: Bearer ${README_API_KEY}" \
             --header 'Content-Type: application/json' \
             --data @payload.json
+            --fail
