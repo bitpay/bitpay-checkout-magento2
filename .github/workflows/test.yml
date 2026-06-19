@@ -33,6 +33,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: extdn/github-actions-m2/magento-unit-tests/8.2@master
+        with:
+          block_insecure: false
         env:
           MAGENTO_VERSION: ${{ matrix.MAGENTO_VERSION }}
 
