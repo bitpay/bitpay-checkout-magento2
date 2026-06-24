@@ -77,19 +77,19 @@ jobs:
           git add composer.json Model/Client.php Model/Config.php etc/module.xml
           git commit -m "Bump version to ${VERSION_INPUT}"
           git push origin "${BRANCH_INPUT}"
-          
+
           # Verify the commit was pushed successfully
           git fetch origin "${BRANCH_INPUT}"
           local_sha=$(git rev-parse HEAD)
           remote_sha=$(git rev-parse "origin/${BRANCH_INPUT}")
-          
+
           if [ "$local_sha" != "$remote_sha" ]; then
             echo "❌ Error: Local commit ${local_sha} was not successfully pushed to remote"
             echo "Remote is at: ${remote_sha}"
             echo "This may indicate branch protection blocked the push."
             exit 1
           fi
-          
+
           echo "✓ Commit ${local_sha} successfully pushed to origin/${BRANCH_INPUT}"
       
       - name: Create and push tag
@@ -115,21 +115,32 @@ jobs:
           prev_tag="${tags[1]}"
 
           if [ -z "$prev_tag" ]; then
-            echo "Warning: No previous tag found. Skipping full changelog link."
+            echo "Warning: No previous tag found. Using all commits."
             changelog=""
-            prev_tag_date=""
+            commit_range="$new_tag"
           else
             changelog="**Full Changelog**: https://github.com/${GITHUB_REPOSITORY}/compare/$prev_tag...$new_tag"
-            prev_tag_date=$(git log -1 --format=%aI "$prev_tag")
+            commit_range="$prev_tag..$new_tag"
           fi
 
-          # Get PRs merged since the previous tag (or all if no previous tag)
-          if [ -z "$prev_tag_date" ]; then
-            prs=$(gh pr list --state merged --base "${BRANCH_INPUT}" --limit 100 --json title,mergedAt --jq '[.[] | select(.mergedAt != null) | .title]')
-          else
-            prs=$(gh pr list --state merged --base "${BRANCH_INPUT}" --limit 100 --json title,mergedAt --jq --arg since "$prev_tag_date" '[.[] | select(.mergedAt != null and .mergedAt >= $since) | .title]')
+          # Get PR numbers from commits between tags
+          pr_numbers=$(git log "$commit_range" --merges --oneline --pretty=format:'%s' | grep -oE '#[0-9]+' | sed 's/#//' | sort -u)
+
+          # Fetch PR titles for each PR number
+          joined=""
+          if [ -n "$pr_numbers" ]; then
+            while IFS= read -r pr_num; do
+              if [ -n "$pr_num" ]; then
+                pr_title=$(gh pr view "$pr_num" --json title --jq .title 2>/dev/null || echo "PR #$pr_num")
+                joined="${joined}* ${pr_title}"$'\n'
+              fi
+            done <<< "$pr_numbers"
           fi
-          joined=$(echo "$prs" | jq -r '.[]' | sed 's/^/* /')
+
+          # Fallback: if no PRs found, list commits
+          if [ -z "$joined" ]; then
+            joined=$(git log "$commit_range" --oneline --pretty=format:'* %s' | grep -v '^* Merge')
+          fi
 
           echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
           echo "${OVERVIEW_INPUT}" >> $GITHUB_ENV
