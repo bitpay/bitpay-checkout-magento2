@@ -111,31 +111,32 @@ jobs:
 
           # Get most recent and previous tags
           tags=($(git tag --sort=-creatordate))
-          new_tag="${tags[0]}"
-          prev_tag="${tags[1]}"
+
+          # Find the current version tag and get the previous one
+          new_tag="$VERSION"
+          prev_tag=""
+          for i in "${!tags[@]}"; do
+            if [[ "${tags[$i]}" == "$VERSION" ]]; then
+              prev_tag="${tags[$((i+1))]}"
+              break
+            fi
+          done
 
           if [ -z "$prev_tag" ]; then
-            echo "Warning: No previous tag found. Using all commits."
+            echo "Warning: No previous tag found. Skipping full changelog link."
             changelog=""
             commit_range="$new_tag"
+            # Get all merged PRs
+            prs=$(gh pr list --state merged --base "$BRANCH" --json title,mergedAt | jq '[.[] | select(.mergedAt != null) | .title]')
           else
-            changelog="**Full Changelog**: https://github.com/${GITHUB_REPOSITORY}/compare/$prev_tag...$new_tag"
+            changelog="**Full Changelog**: https://github.com/$REPOSITORY/compare/$prev_tag...$new_tag"
             commit_range="$prev_tag..$new_tag"
+            # Get date of previous tag
+            prev_tag_date=$(git log -1 --format=%aI "$prev_tag")
+            # Get PRs merged since the previous tag
+            prs=$(gh pr list --state merged --base "$BRANCH" --json title,mergedAt | jq --arg date "$prev_tag_date" '[.[] | select(.mergedAt != null and .mergedAt > $date) | .title]')
           fi
-
-          # Get PR numbers from commits between tags
-          pr_numbers=$(git log "$commit_range" --merges --oneline --pretty=format:'%s' | grep -oE '#[0-9]+' | sed 's/#//' | sort -u)
-
-          # Fetch PR titles for each PR number
-          joined=""
-          if [ -n "$pr_numbers" ]; then
-            while IFS= read -r pr_num; do
-              if [ -n "$pr_num" ]; then
-                pr_title=$(gh pr view "$pr_num" --json title --jq .title 2>/dev/null || echo "PR #$pr_num")
-                joined="${joined}* ${pr_title}"$'\n'
-              fi
-            done <<< "$pr_numbers"
-          fi
+          joined=$(echo "$prs" | jq -r '.[]' | sed 's/^/* /')
 
           # Fallback: if no PRs found, list commits
           if [ -z "$joined" ]; then
