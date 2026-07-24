@@ -17,12 +17,17 @@ on:
         required: true
         type: string
 
+concurrency:
+  group: release-${{ inputs.branch }}
+  cancel-in-progress: false
+
 jobs:
   release:
     name: Create tag and release
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: read
     outputs:
       version: ${{ steps.version.outputs.version }}
     
@@ -84,13 +89,13 @@ jobs:
           remote_sha=$(git rev-parse "origin/${BRANCH_INPUT}")
 
           if [ "$local_sha" != "$remote_sha" ]; then
-            echo "❌ Error: Local commit ${local_sha} was not successfully pushed to remote"
+            echo "Error: Local commit ${local_sha} was not successfully pushed to remote"
             echo "Remote is at: ${remote_sha}"
             echo "This may indicate branch protection blocked the push."
             exit 1
           fi
 
-          echo "✓ Commit ${local_sha} successfully pushed to origin/${BRANCH_INPUT}"
+          echo "Commit ${local_sha} successfully pushed to origin/${BRANCH_INPUT}"
       
       - name: Create and push tag
         env:
@@ -112,9 +117,7 @@ jobs:
           BRANCH: ${{ inputs.branch }}
           OVERVIEW_INPUT: ${{ inputs.overview }}
           REPOSITORY: ${{ github.repository }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH_INPUT: ${{ inputs.branch }}
-          OVERVIEW_INPUT: ${{ inputs.overview }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
           git fetch --tags
@@ -137,14 +140,14 @@ jobs:
             changelog=""
             commit_range="$new_tag"
             # Get all merged PRs
-            prs=$(gh pr list --state merged --base "$BRANCH" --json title,mergedAt | jq '[.[] | select(.mergedAt != null) | .title]')
+            prs=$(gh pr list --state merged --base "$BRANCH" --limit 100 --json title,mergedAt | jq '[.[] | select(.mergedAt != null) | .title]')
           else
             changelog="**Full Changelog**: https://github.com/$REPOSITORY/compare/$prev_tag...$new_tag"
             commit_range="$prev_tag..$new_tag"
             # Get date of previous tag
             prev_tag_date=$(git log -1 --format=%aI "$prev_tag")
             # Get PRs merged since the previous tag
-            prs=$(gh pr list --state merged --base "$BRANCH" --json title,mergedAt | jq --arg date "$prev_tag_date" '[.[] | select(.mergedAt != null and .mergedAt > $date) | .title]')
+            prs=$(gh pr list --state merged --base "$BRANCH" --limit 100 --json title,mergedAt | jq --arg date "$prev_tag_date" '[.[] | select(.mergedAt != null and .mergedAt > $date) | .title]')
           fi
           joined=$(echo "$prs" | jq -r '.[]' | sed 's/^/* /')
 
@@ -164,13 +167,6 @@ jobs:
             echo "$changelog"
             echo "$DELIM"
           } >> "$GITHUB_ENV"
-          echo "${OVERVIEW_INPUT}" >> $GITHUB_ENV
-          echo "" >> $GITHUB_ENV
-          echo "## What's Changed" >> $GITHUB_ENV
-          echo "$joined" >> $GITHUB_ENV
-          echo "" >> $GITHUB_ENV
-          echo "$changelog" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
 
       - name: Create GitHub Release
         env:
@@ -178,9 +174,13 @@ jobs:
           VERSION_OUTPUT: ${{ steps.version.outputs.version }}
           RELEASE_NOTES_TEXT: ${{ env.RELEASE_NOTES }}
         run: |
-          gh release create "${VERSION_OUTPUT}" \
-            --title "${VERSION_OUTPUT}" \
-            --notes "${RELEASE_NOTES_TEXT}"
+          if gh release view "${VERSION_OUTPUT}" >/dev/null 2>&1; then
+            echo "Release ${VERSION_OUTPUT} already exists"
+          else
+            gh release create "${VERSION_OUTPUT}" \
+              --title "${VERSION_OUTPUT}" \
+              --notes "${RELEASE_NOTES_TEXT}"
+          fi
 
   readme-changelog:
     name: Publish changelog to Readme
@@ -205,10 +205,11 @@ jobs:
             | sed 's/>/\&#62;/g' \
             | sed 's/{/\&#123;/g' \
             | sed 's/}/\&#125;/g')
+          DELIM="EOF_$(openssl rand -hex 8)"
           {
-            echo "body<<EOF"
+            echo "body<<$DELIM"
             echo "$body_escaped"
-            echo "EOF"
+            echo "$DELIM"
           } >> $GITHUB_OUTPUT
 
       - name: Publish changelog to Readme
