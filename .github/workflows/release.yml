@@ -96,12 +96,22 @@ jobs:
         env:
           VERSION_OUTPUT: ${{ steps.version.outputs.version }}
         run: |
-          git tag "${VERSION_OUTPUT}"
+          if git rev-parse "${VERSION_OUTPUT}" >/dev/null 2>&1; then
+            echo "Tag ${VERSION_OUTPUT} already exists"
+          else
+            git tag "${VERSION_OUTPUT}"
+            git push origin "${VERSION_OUTPUT}"
+          fi
           git push origin "${VERSION_OUTPUT}"
       
       - name: Get merged PR titles and format release notes
         id: changelog
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+          BRANCH: ${{ inputs.branch }}
+          OVERVIEW_INPUT: ${{ inputs.overview }}
+          REPOSITORY: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH_INPUT: ${{ inputs.branch }}
           OVERVIEW_INPUT: ${{ inputs.overview }}
@@ -143,7 +153,17 @@ jobs:
             joined=$(git log "$commit_range" --oneline --pretty=format:'* %s' | grep -v '^* Merge')
           fi
 
-          echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
+          DELIM="EOF_$(openssl rand -hex 8)"
+          {
+            echo "RELEASE_NOTES<<$DELIM"
+            echo "${OVERVIEW_INPUT}"
+            echo ""
+            echo "## What's Changed"
+            echo "$joined"
+            echo ""
+            echo "$changelog"
+            echo "$DELIM"
+          } >> "$GITHUB_ENV"
           echo "${OVERVIEW_INPUT}" >> $GITHUB_ENV
           echo "" >> $GITHUB_ENV
           echo "## What's Changed" >> $GITHUB_ENV
