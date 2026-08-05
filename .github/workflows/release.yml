@@ -153,7 +153,7 @@ jobs:
 
           # Fallback: if no PRs found, list commits
           if [ -z "$joined" ]; then
-            joined=$(git log "$commit_range" --oneline --pretty=format:'* %s' | grep -v '^* Merge')
+            joined=$(git log "$commit_range" --oneline --pretty=format:'* %s' | grep -v '^* Merge' || true)
           fi
 
           DELIM="EOF_$(openssl rand -hex 8)"
