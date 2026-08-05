@@ -107,7 +107,6 @@ jobs:
             git tag "${VERSION_OUTPUT}"
             git push origin "${VERSION_OUTPUT}"
           fi
-          git push origin "${VERSION_OUTPUT}"
       
       - name: Get merged PR titles and format release notes
         id: changelog
