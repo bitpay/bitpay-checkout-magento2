@@ -1,4 +1,6 @@
 define(['ko', 'uiComponent', 'jquery'], function (ko, Component, $) {
+    'use strict';
+
     return Component.extend({
         defaults: {
             template: 'Bitpay_BPCheckout/download_support_package',

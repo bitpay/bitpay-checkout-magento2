@@ -1,4 +1,6 @@
 require(['mage/storage'], function (storage) {
+    'use strict';
+
     // autofill form guest form
     setTimeout(function () {
         storage.get('/bitpay-invoice/customer/data').done(function (data) {

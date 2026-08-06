@@ -16,8 +16,10 @@ jobs:
       matrix:
         MAGENTO_VERSION: ["2.4.4", "2.4.5", "2.4.6"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: extdn/github-actions-m2/magento-unit-tests/8.1@master
+        with:
+          block_insecure: false
         env:
           MAGENTO_VERSION: ${{ matrix.MAGENTO_VERSION }}
 
@@ -29,14 +31,11 @@ jobs:
       matrix:
         MAGENTO_VERSION: ["2.4.6", "2.4.7", "2.4.8"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: extdn/github-actions-m2/magento-unit-tests/8.2@master
         with:
-          magento_pre_install_script: "./.github/2.4.8/test-pre-install-script.sh"
+          block_insecure: false
         env:
-          PHPUNIT_FILE: ".github/2.4.8/phpunit.xml"
-          MAGENTO_MARKETPLACE_USERNAME: ${{ secrets.MAGENTO_MARKETPLACE_USERNAME }}
-          MAGENTO_MARKETPLACE_PASSWORD: ${{ secrets.MAGENTO_MARKETPLACE_PASSWORD }}
           MAGENTO_VERSION: ${{ matrix.MAGENTO_VERSION }}
 
   unit-tests-83:
@@ -47,14 +46,9 @@ jobs:
       matrix:
         MAGENTO_VERSION: ["2.4.7", "2.4.8"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: extdn/github-actions-m2/magento-unit-tests/8.3@master
-        with:
-          magento_pre_install_script: "./.github/2.4.8/test-pre-install-script.sh"
         env:
-          PHPUNIT_FILE: ".github/2.4.8/phpunit.xml"
-          MAGENTO_MARKETPLACE_USERNAME: ${{ secrets.MAGENTO_MARKETPLACE_USERNAME }}
-          MAGENTO_MARKETPLACE_PASSWORD: ${{ secrets.MAGENTO_MARKETPLACE_PASSWORD }}
           MAGENTO_VERSION: ${{ matrix.MAGENTO_VERSION }}
 
   unit-tests-84:
@@ -65,23 +59,16 @@ jobs:
       matrix:
         MAGENTO_VERSION: ["2.4.8"]
     steps:
-      - uses: actions/checkout@v4
-      - name: Build docker image
-        run: docker build -f .github/2.4.8/php-8.4/Dockerfile -t local .
-      - name: Run docker image
-        run: docker run -e GITHUB_WORKSPACE=$GITHUB_WORKSPACE -e MODULE_NAME=$MODULE_NAME -e MODULE_SOURCE=$MODULE_SOURCE -e COMPOSER_NAME=$COMPOSER_NAME -e MAGENTO_VERSION=$MAGENTO_VERSION -e PROJECT_NAME=$PROJECT_NAME -e PHPUNIT_FILE=$PHPUNIT_FILE -e MAGENTO_MARKETPLACE_USERNAME=$MAGENTO_MARKETPLACE_USERNAME -e MAGENTO_MARKETPLACE_PASSWORD=$MAGENTO_MARKETPLACE_PASSWORD local
+      - uses: actions/checkout@v6
+      - uses: extdn/github-actions-m2/magento-unit-tests/8.4@master
         env:
-          PHPUNIT_FILE: ".github/2.4.8/phpunit.xml"
-          MAGENTO_MARKETPLACE_USERNAME: ${{ secrets.MAGENTO_MARKETPLACE_USERNAME }}
-          MAGENTO_MARKETPLACE_PASSWORD: ${{ secrets.MAGENTO_MARKETPLACE_PASSWORD }}
           MAGENTO_VERSION: ${{ matrix.MAGENTO_VERSION }}
-          GITHUB_WORKSPACE: ${{ github.workspace }}
 
   lint:
     name: ESLint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
