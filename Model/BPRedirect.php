@@ -238,7 +238,10 @@ class BPRedirect
             'orderId' => trim($incrementId),
             'redirectURL' => $redirectUrl,
             'notificationURL' => $baseUrl . 'rest/V1/bitpay-bpcheckout/ipn',
-            'closeURL' => $baseUrl . 'rest/V1/bitpay-bpcheckout/close?orderID=' . $incrementId,
+            'closeURL' => $baseUrl . 'rest/V1/bitpay-bpcheckout/close?' . http_build_query([
+                'orderID' => $incrementId,
+                'return_id' => $this->returnHashHelper->generate($order)
+            ]),
             'extendedNotifications' => true
         ]);
     }
