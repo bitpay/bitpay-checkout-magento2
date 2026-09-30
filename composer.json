@@ -1,26 +1,26 @@
 {
-    "name": "bitpay/module-bpcheckout",
-    "description": "",
-    "type": "magento2-module",
-    "license": "mit",
-    "version": "10.2.0",
-    "authors": [
-        {
-            "email": "integrations@bitpay.com",
-            "name": "BitPay"
-        }
-    ],
-    "minimum-stability": "stable",
-    "require": {
-        "php": "~8.1",
-        "bitpay/sdk": "^9.2"
-    },
-    "autoload": {
-        "files": [
-            "registration.php"
-        ],
-        "psr-4": {
-            "Bitpay\\BPCheckout\\": ""
-        }
+  "name": "bitpay/module-bpcheckout",
+  "description": "",
+  "type": "magento2-module",
+  "license": "mit",
+  "version": "10.2.1",
+  "authors": [
+    {
+      "email": "integrations@bitpay.com",
+      "name": "BitPay"
     }
+  ],
+  "minimum-stability": "stable",
+  "require": {
+    "php": "~8.1",
+    "bitpay/sdk": "^9.2"
+  },
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "Bitpay\\BPCheckout\\": ""
+    }
+  }
 }
