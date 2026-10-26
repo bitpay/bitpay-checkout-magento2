@@ -150,35 +150,25 @@ class IpnManagementTest extends TestCase
         $this->ipnManagement = $this->getClass();
     }
 
-    public function testPostClose(): void
+    public function testPostCloseDeletesUnpaidOrder(): void
     {
-        $quoteId = 21;
-        $cartUrl = 'http://localhost/checkout/cart?reload=1';
-        $quote = $this->getMock(Quote::class);
-        $response = $this->getMock(\Magento\Framework\HTTP\PhpEnvironment\Response::class);
-        $order = $this->getMock(Order::class);
-        $orderId = '000000012';
-        $this->url->expects($this->once())->method('getUrl')->willReturn($cartUrl);
-        $order->expects($this->once())
-            ->method('loadByIncrementId')
-            ->with($orderId)
-            ->willReturnSelf();
-        $this->request->expects($this->once())->method('getParam')->willReturn($orderId);
-        $this->responseFactory->expects($this->once())->method('create')->willReturn($response);
-        $order->expects($this->once())->method('getData')->willReturn(['quote_id' => $quoteId]);
+        $order = $this->prepareCloseRequest();
+        $this->prepareUnpaidInvoice('new');
+        $this->expectQuoteRestored($order);
+        $this->config->method('getBitpayInvoiceCloseHandling')->willReturn('delete_order');
 
-        $this->orderFactory->expects($this->once())
-            ->method('create')
-            ->willReturn($order);
+        $order->expects($this->once())->method('delete')->willReturnSelf();
 
-        $quote->expects($this->once())->method('loadByIdWithoutStore')->willReturnSelf();
-        $quote->expects($this->once())->method('getId')->willReturn($quoteId);
-        $quote->expects($this->once())->method('setIsActive')->willReturnSelf();
-        $quote->expects($this->once())->method('setReservedOrderId')->willReturnSelf();
+        $this->ipnManagement->postClose();
+    }
 
-        $this->quoteFactory->expects($this->once())->method('create')->willReturn($quote);
+    public function testPostCloseDeletesOrderWithExpiredInvoice(): void
+    {
+        $order = $this->prepareCloseRequest();
+        $this->prepareUnpaidInvoice('expired');
+        $this->expectQuoteRestored($order);
+        $this->config->method('getBitpayInvoiceCloseHandling')->willReturn('delete_order');
 
-        $response->expects($this->once())->method('setRedirect')->willReturnSelf();
         $order->expects($this->once())->method('delete')->willReturnSelf();
 
         $this->ipnManagement->postClose();
@@ -186,25 +176,9 @@ class IpnManagementTest extends TestCase
 
     public function testPostCloseKeepOrder(): void
     {
-        $this->config->expects($this->once())->method('getBitpayInvoiceCloseHandling')->willReturn('keep_order');
-
-        $cartUrl = 'http://localhost/checkout/cart?reload=1';
-        $response = $this->getMock(\Magento\Framework\HTTP\PhpEnvironment\Response::class);
-        $order = $this->getMock(Order::class);
-        $orderId = '000000012';
-        $this->url->expects($this->once())->method('getUrl')->willReturn($cartUrl);
-
-        $this->request->expects($this->once())->method('getParam')->willReturn($orderId);
-        $this->responseFactory->expects($this->once())->method('create')->willReturn($response);
-
-        $order->expects($this->once())
-            ->method('loadByIncrementId')
-            ->with($orderId)
-            ->willReturnSelf();
-        $this->orderFactory->expects($this->once())
-            ->method('create')
-            ->willReturn($order);
-
+        $order = $this->prepareCloseRequest();
+        $this->config->method('getBitpayCheckoutSuccess')->willReturn('standard');
+        $this->config->method('getBitpayInvoiceCloseHandling')->willReturn('keep_order');
         $this->checkoutSession
             ->method('__call')
             ->willReturnCallback(fn($operation) => match ([$operation]) {
@@ -213,61 +187,125 @@ class IpnManagementTest extends TestCase
                 ['setLastOrderId'] => $this->checkoutSession
             });
 
-        $response->expects($this->once())->method('setRedirect')->willReturnSelf();
-        $order->expects($this->never())->method('delete')->willReturnSelf();
+        $order->expects($this->never())->method('delete');
+
+        $this->ipnManagement->postClose();
+    }
+
+    public function testPostCloseWithoutReturnIdDoesNothing(): void
+    {
+        $order = $this->prepareCloseRequest('');
+        $this->returnHashHelper->expects($this->never())->method('isValid');
+        $this->quoteFactory->expects($this->never())->method('create');
+
+        $order->expects($this->never())->method('delete');
+
+        $this->ipnManagement->postClose();
+    }
+
+    public function testPostCloseWithInvalidReturnIdDoesNothing(): void
+    {
+        $order = $this->prepareCloseRequest('wrong-hash', false);
+        $this->quoteFactory->expects($this->never())->method('create');
+
+        $order->expects($this->never())->method('delete');
+
+        $this->ipnManagement->postClose();
+    }
+
+    public function testPostCloseForUnknownOrderDoesNothing(): void
+    {
+        $order = $this->prepareCloseRequest('some-hash', true, 'bpcheckout', null);
+        $this->returnHashHelper->expects($this->never())->method('isValid');
+        $this->quoteFactory->expects($this->never())->method('create');
+
+        $order->expects($this->never())->method('delete');
+
+        $this->ipnManagement->postClose();
+    }
+
+    public function testPostCloseForOtherPaymentMethodDoesNothing(): void
+    {
+        $order = $this->prepareCloseRequest('valid-hash', true, 'checkmo');
+        $this->quoteFactory->expects($this->never())->method('create');
+
+        $order->expects($this->never())->method('delete');
+
+        $this->ipnManagement->postClose();
+    }
+
+    public function testPostCloseForInvoicedOrderDoesNothing(): void
+    {
+        $order = $this->prepareCloseRequest();
+        $this->config->method('getBitpayInvoiceCloseHandling')->willReturn('delete_order');
+        $order->method('getState')->willReturn('new');
+        $order->method('canInvoice')->willReturn(false);
+        $this->quoteFactory->expects($this->never())->method('create');
+
+        $order->expects($this->never())->method('delete');
+
+        $this->ipnManagement->postClose();
+    }
+
+    public function testPostCloseWhenIpnAlreadyMovedTheTransactionDoesNothing(): void
+    {
+        $order = $this->prepareCloseRequest();
+        $this->config->method('getBitpayInvoiceCloseHandling')->willReturn('delete_order');
+        $order->method('getState')->willReturn('new');
+        $order->method('canInvoice')->willReturn(true);
+        $this->transactionRepository->method('findByOrderIdAndTransactionStatus')->willReturn(null);
+        $this->client->expects($this->never())->method('initialize');
+        $this->quoteFactory->expects($this->never())->method('create');
+
+        $order->expects($this->never())->method('delete');
+
+        $this->ipnManagement->postClose();
+    }
+
+    public function testPostCloseWhenInvoiceIsPaidInBitPayDoesNothing(): void
+    {
+        $order = $this->prepareCloseRequest();
+        $this->config->method('getBitpayInvoiceCloseHandling')->willReturn('delete_order');
+        $order->method('getState')->willReturn('new');
+        $order->method('canInvoice')->willReturn(true);
+        $this->prepareInvoiceStatus('paid');
+        $this->quoteFactory->expects($this->never())->method('create');
+
+        $order->expects($this->never())->method('delete');
 
         $this->ipnManagement->postClose();
     }
 
     public function testPostCloseQuoteNotFound(): void
     {
-        $orderId = '000000012';
-        $quoteId = 21;
-        $response = $this->getMock(\Magento\Framework\HTTP\PhpEnvironment\Response::class);
-        $order = $this->getMock(Order::class);
+        $order = $this->prepareCloseRequest();
+        $this->prepareUnpaidInvoice('new');
+        $this->config->method('getBitpayInvoiceCloseHandling')->willReturn('delete_order');
+        $order->method('getState')->willReturn('new');
+        $order->method('canInvoice')->willReturn(true);
+        $order->method('getData')->willReturn(['quote_id' => 21]);
         $quote = $this->getMock(Quote::class);
-        $this->url->expects($this->once())
-            ->method('getUrl')
-            ->willReturn('http://localhost/checkout/cart?reload=1');
-        $order->expects($this->once())
-            ->method('loadByIncrementId')
-            ->with($orderId)
-            ->willReturnSelf();
-        $this->responseFactory->expects($this->once())->method('create')->willReturn($response);
-        $this->request->expects($this->once())->method('getParam')->willReturn($orderId);
-        $order->expects($this->once())->method('getData')->willReturn(['quote_id' => $quoteId]);
-        $this->orderFactory->expects($this->once())
-            ->method('create')
-            ->willReturn($order);
         $quote->expects($this->once())->method('loadByIdWithoutStore')->willReturnSelf();
         $quote->expects($this->once())->method('getId')->willReturn(null);
         $this->quoteFactory->expects($this->once())->method('create')->willReturn($quote);
 
-        $response->expects($this->once())->method('setRedirect')->willReturnSelf();
+        $order->expects($this->never())->method('delete');
 
         $this->ipnManagement->postClose();
     }
 
     public function testPostCloseExeception(): void
     {
-        $orderId = '000000012';
-        $response = $this->getMock(\Magento\Framework\HTTP\PhpEnvironment\Response::class);
-        $order = $this->getMock(Order::class);
-        $order->expects($this->once())
-            ->method('loadByIncrementId')
-            ->with($orderId)
-            ->willReturnSelf();
-        $this->url->expects($this->once())
-            ->method('getUrl')
-            ->willReturn('http://localhost/checkout/cart?reload=1');
-        $this->responseFactory->expects($this->once())->method('create')->willReturn($response);
-        $this->request->expects($this->once())->method('getParam')->willReturn($orderId);
-        $order->expects($this->once())->method('getData')->willReturn([]);
-        $this->orderFactory->expects($this->once())
-            ->method('create')
-            ->willReturn($order);
+        $order = $this->prepareCloseRequest();
+        $this->config->method('getBitpayInvoiceCloseHandling')->willReturn('delete_order');
+        $order->method('getState')->willReturn('new');
+        $order->method('canInvoice')->willReturn(true);
+        $this->transactionRepository->method('findByOrderIdAndTransactionStatus')
+            ->willReturn([['transaction_id' => 'inv1']]);
+        $this->client->method('initialize')->willThrowException(new \Exception('BitPay unavailable'));
+        $this->logger->expects($this->once())->method('error');
 
-        $response->expects($this->once())->method('setRedirect')->willReturnSelf();
+        $order->expects($this->never())->method('delete');
 
         $this->ipnManagement->postClose();
     }
@@ -502,6 +540,74 @@ class IpnManagementTest extends TestCase
         $this->orderFactory->expects($this->once())
             ->method('create')
             ->willReturn($order);
+    }
+
+    /**
+     * Prepare a close request and return the order mock
+     *
+     * The response mock expects exactly one redirect, which every postClose path must send.
+     */
+    private function prepareCloseRequest(
+        string $returnId = 'valid-hash',
+        bool $isValidHash = true,
+        string $paymentMethod = 'bpcheckout',
+        ?int $orderEntityId = 5
+    ): MockObject {
+        $orderId = '000000012';
+        $this->url->method('getUrl')->willReturn('http://localhost/checkout/cart?reload=1');
+        $this->request->method('getParam')->willReturnMap([
+            ['orderID', '', $orderId],
+            ['return_id', '', $returnId]
+        ]);
+
+        $response = $this->getMock(\Magento\Framework\HTTP\PhpEnvironment\Response::class);
+        $response->expects($this->once())->method('setRedirect')->willReturnSelf();
+        $this->responseFactory->method('create')->willReturn($response);
+
+        $payment = $this->getMock(\Magento\Sales\Model\Order\Payment::class);
+        $payment->method('getMethod')->willReturn($paymentMethod);
+
+        $order = $this->getMock(Order::class);
+        $order->expects($this->once())->method('loadByIncrementId')->with($orderId)->willReturnSelf();
+        $order->method('getId')->willReturn($orderEntityId);
+        $order->method('getIncrementId')->willReturn($orderId);
+        $order->method('getPayment')->willReturn($payment);
+        $this->orderFactory->method('create')->willReturn($order);
+
+        $this->returnHashHelper->method('isValid')->with($returnId, $order)->willReturn($isValidHash);
+
+        return $order;
+    }
+
+    private function prepareUnpaidInvoice(string $invoiceStatus): void
+    {
+        $this->prepareInvoiceStatus($invoiceStatus);
+    }
+
+    private function prepareInvoiceStatus(string $invoiceStatus): void
+    {
+        $this->transactionRepository->method('findByOrderIdAndTransactionStatus')
+            ->with('000000012', 'new')
+            ->willReturn([['transaction_id' => 'inv1']]);
+        $invoice = $this->getMockBuilder(\BitPaySDK\Model\Invoice\Invoice::class)
+            ->disableOriginalConstructor()->getMock();
+        $invoice->method('getStatus')->willReturn($invoiceStatus);
+        $client = $this->getMockBuilder(\BitPaySDK\Client::class)->disableOriginalConstructor()->getMock();
+        $client->expects($this->once())->method('getInvoice')->with('inv1')->willReturn($invoice);
+        $this->client->method('initialize')->willReturn($client);
+    }
+
+    private function expectQuoteRestored(MockObject $order): void
+    {
+        $order->method('getState')->willReturn('new');
+        $order->method('canInvoice')->willReturn(true);
+        $order->method('getData')->willReturn(['quote_id' => 21]);
+        $quote = $this->getMock(Quote::class);
+        $quote->expects($this->once())->method('loadByIdWithoutStore')->willReturnSelf();
+        $quote->method('getId')->willReturn(21);
+        $quote->expects($this->once())->method('setIsActive')->willReturnSelf();
+        $quote->expects($this->once())->method('setReservedOrderId')->willReturnSelf();
+        $this->quoteFactory->expects($this->once())->method('create')->willReturn($quote);
     }
 
     private function getMock(string $className): MockObject

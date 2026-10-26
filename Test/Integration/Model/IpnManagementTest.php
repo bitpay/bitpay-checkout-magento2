@@ -185,38 +185,36 @@ class IpnManagementTest extends TestCase
     }
 
     /**
+     * A close request without the order's return hash must not touch the order.
+     *
      * @magentoDataFixture Bitpay_BPCheckout::Test/Integration/_files/order.php
      * @magentoConfigFixture current_store payment/bpcheckout/bitpay_invoice_close_handling delete_order
      */
-    public function testPostClose()
+    public function testPostCloseWithoutReturnIdKeepsOrder()
     {
         $order = $this->orderFactory->create()->loadByIncrementId('100000001');
         $this->request->setParam('orderID', $order->getIncrementId());
-        $quoteId = $order->getQuoteId();
-        /** @var \Magento\Quote\Model\Quote $quote */
-        $this->quoteFactory->create()->loadByIdWithoutStore($quoteId);
 
         $this->ipnManagement->postClose();
-        
-        $this->assertNull($this->orderFactory->create()->loadByIncrementId('100000001')->getId());
-        $this->assertEquals($quoteId, $this->checkoutSession->getQuoteId());
+
+        $this->assertEquals($order->getId(), $this->orderFactory->create()->loadByIncrementId('100000001')->getId());
     }
 
     /**
+     * A close request with a wrong return hash must not touch the order.
+     *
      * @magentoDataFixture Bitpay_BPCheckout::Test/Integration/_files/order.php
-     * @magentoConfigFixture current_store payment/bpcheckout/bitpay_invoice_close_handling keep_order
+     * @magentoConfigFixture current_store payment/bpcheckout/bitpay_invoice_close_handling delete_order
      */
-    public function testPostCloseKeepOrder()
+    public function testPostCloseWithInvalidReturnIdKeepsOrder()
     {
-        $order =  $this->orderFactory->create()->loadByIncrementId('100000001');
+        $order = $this->orderFactory->create()->loadByIncrementId('100000001');
         $this->request->setParam('orderID', $order->getIncrementId());
-        $quoteId = $order->getQuoteId();
-        /** @var \Magento\Quote\Model\Quote $quote */
-        $this->quoteFactory->create()->loadByIdWithoutStore($quoteId);
+        $this->request->setParam('return_id', 'not-the-right-hash');
 
         $this->ipnManagement->postClose();
+
         $this->assertEquals($order->getId(), $this->orderFactory->create()->loadByIncrementId('100000001')->getId());
-        $this->assertEquals($quoteId, $this->checkoutSession->getQuoteId());
     }
 
     /**

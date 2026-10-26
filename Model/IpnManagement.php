@@ -130,6 +130,11 @@ class IpnManagement implements IpnManagementInterface
     /**
      * Handle close invoice and redirect to cart
      *
+     * Called when the buyer closes the BitPay invoice without paying. The request must carry the
+     * return hash of the order (see BPRedirect::getParams), so only the buyer who received the
+     * close URL can use it. The order is only deleted if it is still unpaid, both in Magento
+     * and in BitPay.
+     *
      * @return string|void
      */
     public function postClose()
@@ -138,8 +143,15 @@ class IpnManagement implements IpnManagementInterface
         /** @var \Magento\Framework\App\Response\Http $response */
         $response = $this->responseFactory->create();
         try {
-            $orderID = $this->request->getParam('orderID', null);
+            $orderID = (string)$this->request->getParam('orderID', '');
+            $returnId = (string)$this->request->getParam('return_id', '');
             $order = $this->orderFactory->create()->loadByIncrementId($orderID);
+            if (!$this->isValidCloseRequest($order, $returnId)) {
+                $response->setRedirect($redirectUrl)->sendResponse();
+
+                return;
+            }
+
             $invoiceCloseHandling = $this->config->getBitpayInvoiceCloseHandling();
             if ($this->config->getBitpayCheckoutSuccess() === 'standard' && $invoiceCloseHandling === 'keep_order') {
                 $this->checkoutSession->setLastSuccessQuoteId($order->getQuoteId())
@@ -151,7 +163,7 @@ class IpnManagement implements IpnManagementInterface
                     'checkout/onepage/success',
                     ['_query' => ['return_id' => $returnHash]]
                 );
-            } else {
+            } elseif ($this->isUnpaid($order)) {
                 $orderData = $order->getData();
                 $quoteID = $orderData['quote_id'];
                 $quote = $this->quoteFactory->create()->loadByIdWithoutStore($quoteID);
@@ -171,6 +183,53 @@ class IpnManagement implements IpnManagementInterface
             $this->logger->error($exception->getMessage());
             $response->setRedirect($redirectUrl)->sendResponse();
         }
+    }
+
+    /**
+     * Check that the close request belongs to a BitPay order and carries its return hash
+     *
+     * @param \Magento\Sales\Model\Order $order
+     * @param string $returnId
+     * @return bool
+     */
+    private function isValidCloseRequest($order, string $returnId): bool
+    {
+        if (!$order->getId() || $returnId === '') {
+            return false;
+        }
+
+        if (!$this->returnHashHelper->isValid($returnId, $order)) {
+            return false;
+        }
+
+        $payment = $order->getPayment();
+
+        return $payment && $payment->getMethod() === Config::BITPAY_PAYMENT_METHOD_NAME;
+    }
+
+    /**
+     * Check that the order is still unpaid in Magento and in BitPay
+     *
+     * @param \Magento\Sales\Model\Order $order
+     * @return bool
+     */
+    private function isUnpaid($order): bool
+    {
+        if ($order->getState() !== \Magento\Sales\Model\Order::STATE_NEW || !$order->canInvoice()) {
+            return false;
+        }
+
+        $rows = $this->transactionRepository->findByOrderIdAndTransactionStatus(
+            (string)$order->getIncrementId(),
+            'new'
+        );
+        if (empty($rows)) {
+            return false;
+        }
+
+        $invoiceStatus = $this->client->initialize()->getInvoice($rows[0]['transaction_id'])->getStatus();
+
+        return in_array($invoiceStatus, ['new', 'expired'], true);
     }
 
     /**
