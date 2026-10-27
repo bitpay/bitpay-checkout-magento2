@@ -3,7 +3,7 @@ name: Test
 on: [push, pull_request]
 
 env:
-  NODE_VERSION: 18
+  NODE_VERSION: 22
   MODULE_NAME: Bitpay_BPCheckout
   COMPOSER_NAME: "bitpay/module-bpcheckout"
 
