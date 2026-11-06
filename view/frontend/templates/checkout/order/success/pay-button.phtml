@@ -3,7 +3,7 @@
 <div>
     <br/>
     <a href="<?= $block->escapeUrl($block->getButtonUrl()) ?>" title="<?= $block->escapeHtml(__('Pay with BitPay')) ?>">
-        <img src="<?php echo $block->getViewFileUrl('Bitpay_BPCheckout::images/Pay-with-BitPay-CardGroup.svg'); ?>" alt="<?= $block->escapeHtml(__('Pay with BitPay')) ?>" />
+        <img src="<?= $block->escapeUrl($block->getViewFileUrl('Bitpay_BPCheckout::images/Pay-with-BitPay-CardGroup.svg')) ?>" alt="<?= $block->escapeHtml(__('Pay with BitPay')) ?>" />
     </a>
 </div>
 <?php endif; ?>
