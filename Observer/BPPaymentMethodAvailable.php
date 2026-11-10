@@ -33,13 +33,10 @@ class BPPaymentMethodAvailable implements ObserverInterface
             return;
         }
 
-        $tokenData = $this->config->getMerchantTokenData();
-        if (!$tokenData && !$this->config->isPaymentActive()) {
-            #hide the payment method
-            $checkResult = $observer->getEvent()->getResult();
-            $checkResult->setData('is_available', false); //this is disabling the payment method at checkout page
-
-            return;
+        // Magento only dispatches this event for active methods, so the token is the only thing left to check.
+        // Without a merchant token BitPay cannot create invoices, so it must not be offered at checkout.
+        if (!$this->config->getMerchantTokenData()) {
+            $observer->getEvent()->getResult()->setData('is_available', false);
         }
     }
 }

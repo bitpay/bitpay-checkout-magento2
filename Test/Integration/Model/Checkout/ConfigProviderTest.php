@@ -56,7 +56,7 @@ class ConfigProviderTest extends TestCase
      * @return void
      * @throws \Magento\Framework\Exception\LocalizedException
      * @magentoConfigFixture current_store payment/bpcheckout/active 1
-     * @magentoConfigFixture current_store payment/bpcheckout/bitpay_devtoken AMLTTY9x9TGXFPcsnLLjem1CaDJL3mRMWupBrm9ba
+     * @magentoConfigFixture current_store bitpay_merchant_facade/authenticate/token_data encrypted-token-data
      * @magentoConfigFixture current_store payment/bpcheckout/bitpay_endpoint test
      * @magentoAppArea frontend
      */

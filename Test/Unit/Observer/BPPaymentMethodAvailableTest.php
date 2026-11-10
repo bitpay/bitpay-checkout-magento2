@@ -43,8 +43,9 @@ class BPPaymentMethodAvailableTest extends TestCase
 
         $event->expects($this->once())->method('getMethodInstance')->willReturn($method);
         $observer->expects($this->once())->method('getEvent')->willReturn($event);
+        $event->expects($this->never())->method('getResult');
         $method->expects($this->once())->method('getCode')->willReturn('bpcheckout');
-        $this->config->expects($this->any())->method('getMerchantTokenData')->willReturn($tokenData);
+        $this->config->expects($this->once())->method('getMerchantTokenData')->willReturn($tokenData);
 
         $this->bpPaymentMethodAvailable->execute($observer);
     }
@@ -60,7 +61,9 @@ class BPPaymentMethodAvailableTest extends TestCase
 
         $event->expects($this->once())->method('getMethodInstance')->willReturn($method);
         $observer->expects($this->once())->method('getEvent')->willReturn($event);
-        $method->expects($this->once())->method('getCode')->willReturn('checmo');
+        $event->expects($this->never())->method('getResult');
+        $method->expects($this->once())->method('getCode')->willReturn('checkmo');
+        $this->config->expects($this->never())->method('getMerchantTokenData');
 
         $this->bpPaymentMethodAvailable->execute($observer);
     }
@@ -74,11 +77,16 @@ class BPPaymentMethodAvailableTest extends TestCase
             ->getMock();
         $method = $this->getMockBuilder(MethodInterface::class)->disableOriginalConstructor()->getMock();
 
+        $result = new DataObject(['is_available' => true]);
+
         $event->expects($this->once())->method('getMethodInstance')->willReturn($method);
-        $event->expects($this->once())->method('getResult')->willReturn(new DataObject(['is_available' => true]));
+        $event->expects($this->once())->method('getResult')->willReturn($result);
         $observer->expects($this->any())->method('getEvent')->willReturn($event);
         $method->expects($this->once())->method('getCode')->willReturn('bpcheckout');
+        $this->config->expects($this->once())->method('getMerchantTokenData')->willReturn(null);
 
         $this->bpPaymentMethodAvailable->execute($observer);
+
+        $this->assertFalse($result->getData('is_available'));
     }
 }
