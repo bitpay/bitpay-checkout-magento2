@@ -106,12 +106,25 @@ class Pay implements HttpGetActionInterface
 
             /** @var \Magento\Sales\Model\Order $order */
             $order = $this->orderRepository->get($orderId);
+            $incrementId = trim((string) $order->getIncrementId());
+            if (!$this->isLastOrderInSession($incrementId)) {
+                throw new LocalizedException(new Phrase('Invalid request!'));
+            }
+
             if (!$order->canInvoice()) {
                 throw new LocalizedException(new Phrase('Order already paid!'));
             }
 
+            if (!$this->transactionRepository->findBy($incrementId, (string) $invoiceId)) {
+                throw new LocalizedException(new Phrase('Invalid request!'));
+            }
+
             $client = $this->client->initialize();
             $invoice = $client->getInvoice($invoiceId);
+            if (trim((string) $invoice->getOrderId()) !== $incrementId) {
+                throw new LocalizedException(new Phrase('Invalid request!'));
+            }
+
             $invoiceStatus = $invoice->getStatus();
             if ($invoiceStatus === 'paid' || $invoiceStatus === 'confirmed' || $invoiceStatus === 'complete') {
                 throw new LocalizedException(new Phrase('The invoice has already been paid!'));
@@ -135,5 +148,18 @@ class Pay implements HttpGetActionInterface
 
             return $this->resultRedirectFactory->create()->setPath('checkout/cart');
         }
+    }
+
+    /**
+     * Checks that the order is the last order placed in the current checkout session
+     *
+     * @param string $incrementId
+     * @return bool
+     */
+    private function isLastOrderInSession(string $incrementId): bool
+    {
+        $lastRealOrderId = (string) $this->checkoutSession->getData('last_real_order_id');
+
+        return $incrementId !== '' && $lastRealOrderId === $incrementId;
     }
 }
