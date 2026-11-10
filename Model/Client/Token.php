@@ -82,9 +82,15 @@ class Token
         curl_setopt($curlCli, CURLOPT_RETURNTRANSFER, true);
 
         $result = curl_exec($curlCli);
-        $resultData = json_decode($result, true);
+        if ($result === false) {
+            throw new \Exception('Could not reach BitPay to create the token: ' . curl_error($curlCli));
+        }
 
-        curl_close($curlCli);
+        $resultData = json_decode($result, true);
+        if (!isset($resultData['data'][0]['pairingCode'])) {
+            $error = $resultData['error'] ?? 'unexpected response';
+            throw new \Exception('BitPay did not return a pairing code: ' . $error);
+        }
 
         return $resultData;
     }
