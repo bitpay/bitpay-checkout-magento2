@@ -6,7 +6,7 @@ permissions:
   contents: read
 
 env:
-  NODE_VERSION: 22
+  NODE_VERSION: 24
   MODULE_NAME: Bitpay_BPCheckout
   COMPOSER_NAME: "bitpay/module-bpcheckout"
 
